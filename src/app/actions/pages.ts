@@ -16,6 +16,8 @@ import {
 } from "@/lib/pages";
 import { db } from "@/lib/db";
 import { requireOnboarded } from "@/lib/session";
+import { storeImage } from "@/lib/storage";
+import { requireWorkspaceRole } from "@/lib/workspaces";
 
 const id = z.string().min(1).max(64);
 type Result<T = object> = ({ ok: true } & T) | { ok: false; message: string };
@@ -118,4 +120,46 @@ export async function searchPalette(q: string): Promise<PaletteItem[]> {
       .filter(Boolean)
       .join(" · "),
   }));
+}
+
+/** Image upload for the editor and page covers. Signed-in people only. */
+export async function uploadImage(form: FormData): Promise<Result<{ url: string }>> {
+  await requireOnboarded();
+  const file = form.get("file");
+  if (!(file instanceof File)) return { ok: false, message: "No file." };
+  return attempt(async () => ({ url: await storeImage(file, "pages") }));
+}
+
+/** A page's saved snapshots, newest first. */
+export async function listVersions(pageId: string) {
+  const viewer = await requireOnboarded();
+  const page = await db.page.findUnique({ where: { id: id.parse(pageId) }, select: { workspaceId: true } });
+  if (!page) return [];
+  const member = await db.workspaceMember.findUnique({
+    where: { workspaceId_userId: { workspaceId: page.workspaceId, userId: viewer.user.id } },
+  });
+  if (!member) return [];
+  const rows = await db.pageVersion.findMany({
+    where: { pageId },
+    orderBy: { createdAt: "desc" },
+    take: 50,
+    select: { id: true, title: true, content: true, createdAt: true, createdBy: { select: { name: true } } },
+  });
+  return rows.map((v) => ({ id: v.id, title: v.title, content: v.content as unknown[], at: v.createdAt.toISOString(), by: v.createdBy.name }));
+}
+
+/** Put an old version back. The current one is snapshotted first, so nothing is lost. */
+export async function restoreVersion(versionId: string): Promise<Result> {
+  const viewer = await requireOnboarded();
+  return attempt(async () => {
+    const v = await db.pageVersion.findUniqueOrThrow({ where: { id: id.parse(versionId) } });
+    const page = await db.page.findUniqueOrThrow({ where: { id: v.pageId } });
+    await requireWorkspaceRole(page.workspaceId, viewer, "MEMBER");
+    await db.pageVersion.create({
+      data: { pageId: page.id, title: page.title, content: (page.content ?? []) as never, createdById: viewer.user.id },
+    });
+    await updatePage(page.id, { title: v.title, content: (v.content ?? []) as unknown[] }, viewer);
+    revalidatePath("/", "layout");
+    return {};
+  });
 }

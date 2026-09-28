@@ -1,0 +1,208 @@
+/*
+ * BlockNote, dressed in SELF's tokens. Our variables already switch between
+ * light and dark, so one mapping covers both color schemes.
+ */
+.bn-root.bn-root,
+.bn-root.bn-root[data-color-scheme="dark"] {
+  --bn-colors-editor-text: var(--fg);
+  --bn-colors-editor-background: transparent;
+  --bn-colors-menu-text: var(--fg);
+  --bn-colors-menu-background: var(--bg-popover);
+  --bn-colors-tooltip-text: var(--bg);
+  --bn-colors-tooltip-background: var(--fg);
+  --bn-colors-hovered-text: var(--fg);
+  --bn-colors-hovered-background: var(--bg-hover);
+  --bn-colors-selected-text: var(--fg);
+  --bn-colors-selected-background: var(--bg-active);
+  --bn-colors-disabled-text: var(--fg-subtle);
+  --bn-colors-disabled-background: var(--bg-inset);
+  --bn-colors-shadow: rgb(15 15 15 / 0.1);
+  --bn-colors-border: var(--border);
+  --bn-colors-side-menu: var(--fg-subtle);
+  --bn-colors-highlights-gray-text: var(--tag-gray-fg);
+  --bn-colors-highlights-gray-background: var(--tag-gray-bg);
+  --bn-colors-highlights-brown-text: var(--tag-brown-fg);
+  --bn-colors-highlights-brown-background: var(--tag-brown-bg);
+  --bn-colors-highlights-red-text: var(--tag-red-fg);
+  --bn-colors-highlights-red-background: var(--tag-red-bg);
+  --bn-colors-highlights-orange-text: var(--tag-orange-fg);
+  --bn-colors-highlights-orange-background: var(--tag-orange-bg);
+  --bn-colors-highlights-yellow-text: var(--tag-yellow-fg);
+  --bn-colors-highlights-yellow-background: var(--tag-yellow-bg);
+  --bn-colors-highlights-green-text: var(--tag-green-fg);
+  --bn-colors-highlights-green-background: var(--tag-green-bg);
+  --bn-colors-highlights-blue-text: var(--tag-blue-fg);
+  --bn-colors-highlights-blue-background: var(--tag-blue-bg);
+  --bn-colors-highlights-purple-text: var(--tag-purple-fg);
+  --bn-colors-highlights-purple-background: var(--tag-purple-bg);
+  --bn-colors-highlights-pink-text: var(--tag-pink-fg);
+  --bn-colors-highlights-pink-background: var(--tag-pink-bg);
+  --bn-font-family: var(--font-sans);
+  --bn-border-radius: 6px;
+  --bn-shadow-medium: var(--shadow-popover);
+  --bn-shadow-light: var(--shadow-popover);
+}
+
+/* Writing sizes: 16px body, calm headings. */
+.self-editor .bn-editor {
+  font-size: var(--text-md);
+  line-height: 1.65;
+}
+.self-editor [data-content-type="heading"][data-level="1"] {
+  --level: 1.75em;
+}
+.self-editor [data-content-type="heading"][data-level="2"] {
+  --level: 1.4em;
+}
+.self-editor [data-content-type="heading"][data-level="3"] {
+  --level: 1.15em;
+}
+.self-editor .bn-inline-content code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background: var(--bg-inset);
+  border-radius: 4px;
+  padding: 0.1em 0.3em;
+}
+.self-editor .bn-block-content[data-content-type="quote"] blockquote,
+.self-editor [data-content-type="quote"] {
+  border-color: var(--border-strong);
+}
+/* Side handles sit in the page margin, not over the text. */
+.self-editor .bn-side-menu {
+  opacity: 0.7;
+}
+.self-editor a {
+  color: var(--accent-text) !important;
+  text-decoration: underline !important;
+  text-underline-offset: 3px;
+}
+
+/* ── Ariakit theme: replace its hard-coded blues and greys with SELF tokens.
+   Scoped under .bn-root so these win over the theme's light and .dark rules. */
+.bn-root .bn-ak-menu,
+.bn-root .bn-ak-popover,
+.bn-root .bn-ak-hovercard,
+.bn-root .bn-ak-wrapper,
+.bn-root .bn-ak-toolbar {
+  color: var(--fg);
+  background-color: var(--bg-popover);
+  border: 0;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-popover);
+}
+.bn-root .bn-ak-menu,
+.bn-root .bn-ak-popover {
+  padding: 4px;
+}
+.bn-root .bn-ak-menu-item,
+.bn-root .bn-ak-select-item {
+  color: var(--fg);
+  border-radius: var(--radius-md);
+  padding: 6px 8px;
+  font-size: var(--text-sm);
+}
+.bn-root .bn-ak-menu-item[data-active-item],
+.bn-root .bn-ak-menu-item[aria-selected="true"],
+.bn-root .bn-ak-menu-item:hover,
+.bn-root .bn-ak-select-item[data-active-item],
+.bn-root .bn-ak-menu-item:active,
+.bn-root .bn-ak-menu-item[data-active] {
+  color: var(--fg);
+  background-color: var(--bg-hover);
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+.bn-root .bn-ak-separator {
+  border-color: var(--border);
+}
+.bn-root .bn-ak-button {
+  --border: var(--border-strong);
+  --highlight: transparent;
+  --shadow: transparent;
+  color: var(--fg);
+  background-color: var(--bg);
+  box-shadow: inset 0 0 0 1px var(--border);
+  height: 1.75rem;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+}
+.bn-root .bn-ak-button:not(:active):hover {
+  --border: var(--border-strong);
+  background-color: var(--bg-hover);
+}
+.bn-root .bn-ak-secondary,
+.bn-root .bn-toolbar .bn-ak-button {
+  box-shadow: none;
+  background-color: transparent;
+}
+.bn-root .bn-ak-secondary:hover,
+.bn-root .bn-toolbar .bn-ak-button:hover {
+  background-color: var(--bg-hover);
+}
+.bn-root .bn-toolbar .bn-ak-button[data-selected] {
+  background-color: var(--bg-active);
+  box-shadow: none;
+  padding-top: 0;
+}
+.bn-root .bn-ak-primary {
+  color: var(--accent-fg);
+  background-color: var(--accent);
+  box-shadow: none;
+}
+.bn-root .bn-ak-primary:hover {
+  background-color: var(--accent-hover);
+}
+.bn-root .bn-ak-input {
+  color: var(--fg);
+  background-color: var(--bg);
+  box-shadow: inset 0 0 0 1px var(--border);
+  height: 2rem;
+  font-size: var(--text-base);
+  border-radius: var(--radius-md);
+}
+.bn-root .bn-ak-input:hover {
+  background-color: var(--bg);
+  box-shadow: inset 0 0 0 1px var(--border-strong);
+}
+.bn-root .bn-ak-input::placeholder {
+  color: var(--fg-subtle);
+}
+.bn-root .bn-ak-tab {
+  color: var(--fg-muted);
+  outline-color: var(--accent);
+}
+.bn-root .bn-ak-tab:hover {
+  background-color: var(--bg-hover);
+}
+.bn-root .bn-ak-tab[aria-selected="true"],
+.bn-root .bn-ak-tab:hover[aria-selected="true"] {
+  color: var(--fg);
+  background-color: var(--bg-active);
+}
+.bn-root .bn-ak-tooltip {
+  color: var(--bg);
+  background-color: var(--fg);
+  border: 0;
+  font-size: var(--text-xs);
+}
+.bn-root .bn-ak-link,
+.bn-root .bn-ak-anchor {
+  color: var(--accent-text);
+}
+.bn-root .bn-ak-error {
+  color: var(--danger);
+  background-color: var(--danger-soft);
+  border-color: transparent;
+}
+.bn-root .bn-ak-suggestion-menu-item-section[data-position="right"] {
+  --border: var(--border);
+  --highlight: transparent;
+  --shadow: transparent;
+  color: var(--fg-muted);
+  background: var(--bg-inset);
+}
+.bn-root .bn-suggestion-menu-label {
+  color: var(--fg-subtle);
+  font-size: var(--text-xs);
+}

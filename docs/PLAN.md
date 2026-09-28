@@ -8,7 +8,7 @@ built in. Self1 (the Project Hub version) is saved on the `self1` branch.
 Each phase ends in something you can click through at `http://localhost:3000`.
 I stop after each phase, tell you what to test, commit, and wait for your go-ahead.
 
-Status: building. Phases 0–1 done.
+Status: building. Phases 0–2 done.
 Decisions made: calm design everywhere · first usable version covers everything
 Self1 did and more · live co-editing comes later, as its own phase.
 

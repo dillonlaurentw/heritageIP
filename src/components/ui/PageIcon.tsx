@@ -6,7 +6,7 @@ import { cn } from "@/lib/cn";
  * document glyph. Icons are content the author chose, not decoration.
  */
 export function PageIcon({ icon, size = "sm", className }: { icon?: string | null; size?: "sm" | "md" | "xl"; className?: string }) {
-  const box = size === "xl" ? "size-16 text-5xl" : size === "md" ? "size-5 text-base" : "size-4 text-sm";
+  const box = size === "xl" ? "size-[72px] text-[64px]" : size === "md" ? "size-5 text-[16px]" : "size-4 text-[14px]";
   if (icon) {
     return <span className={cn("inline-flex shrink-0 items-center justify-center leading-none", box, className)}>{icon}</span>;
   }

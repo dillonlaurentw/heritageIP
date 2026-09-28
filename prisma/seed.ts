@@ -9,7 +9,7 @@ import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { hubs, partners, people } from "./seed-data";
-import { seedWorkspaceContent } from "./seed-content";
+import { seedPrivatePages, seedTidewaterPages, seedWorkspaceContent } from "./seed-content";
 
 const db = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }) });
 const DAY = 86_400_000;
@@ -77,7 +77,7 @@ async function main() {
 
   // ── Private spaces, so the sidebar has something personal. ──
   for (const u of byKey.values()) {
-    await db.workspace.create({
+    const personal = await db.workspace.create({
       data: {
         kind: "PERSONAL",
         slug: `private-${u.email.split("@")[0]}`,
@@ -86,6 +86,7 @@ async function main() {
         members: { create: { userId: u.id, role: "OWNER" } },
       },
     });
+    if (u.email.startsWith("maya@")) await seedPrivatePages(db, personal, u.id);
   }
 
   // ── Team workspaces: one per demo company. ──
@@ -121,11 +122,12 @@ async function main() {
         data: { workspaceId: ws.id, actorId: idOf(m.key), kind: "member.joined", createdAt: new Date(Date.now() - m.daysAgo * DAY) },
       });
     }
-    await seedWorkspaceContent(db, ws, h, idOf);
+    await seedWorkspaceContent(db, ws, h);
   }
 
   // A pending invite, so People shows one.
   const tide = await db.workspace.findUniqueOrThrow({ where: { slug: "tidewater-kelp" } });
+  await seedTidewaterPages(db, tide, idOf);
   await db.invite.create({
     data: {
       workspaceId: tide.id,

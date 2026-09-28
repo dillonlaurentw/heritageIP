@@ -51,8 +51,7 @@ export async function page(
   });
 }
 
-export async function seedWorkspaceContent(db: PrismaClient, ws: Ws, h: SeedHub, idOf: IdOf) {
-  void idOf;
+export async function seedWorkspaceContent(db: PrismaClient, ws: Ws, h: SeedHub) {
   await page(db, ws, {
     title: "Start here",
     content: [
@@ -63,6 +62,77 @@ export async function seedWorkspaceContent(db: PrismaClient, ws: Ws, h: SeedHub,
       B.todo("Write down the idea in your own words", true),
       B.todo("Invite a co-founder or teammate from People"),
       B.todo("Press ⌘K to jump anywhere, or type / on a page to add blocks"),
+    ],
+  });
+}
+
+/** Phase 2: a few real-looking pages, nested, for the demo company. */
+export async function seedTidewaterPages(db: PrismaClient, ws: Ws, idOf: IdOf) {
+  const maya = idOf("maya");
+  const dev = idOf("dev");
+  const handbook = await page(db, ws, {
+    title: "Team handbook",
+    icon: "📘",
+    createdById: maya,
+    daysAgo: 20,
+    content: [
+      B.p("How Tidewater works, written down so nobody has to guess. Short on purpose; change it when it stops being true."),
+      B.h2("What we're doing"),
+      B.p("Packaging made from kelp grown on the same coast where the fish is landed. Local production beats plastic on total cost once logistics are counted."),
+      B.h2("How we decide"),
+      B.bullet("Every decision has one owner. They ask for input, then they decide."),
+      B.bullet("Write it down before the meeting, not after."),
+      B.bullet("Disagree in the room, commit outside it."),
+    ],
+  });
+  await page(db, ws, {
+    title: "How we meet",
+    parentId: handbook.id,
+    createdById: maya,
+    daysAgo: 18,
+    content: [
+      B.p("Monday: 30 minutes, plan the week. Thursday: 45 minutes, one hard problem."),
+      B.p("Notes go in Meetings. Action items become tasks before we leave the call."),
+    ],
+  });
+  await page(db, ws, {
+    title: "Brand voice",
+    parentId: handbook.id,
+    createdById: maya,
+    daysAgo: 15,
+    content: [
+      B.p("Plain, coastal, practical. We talk like people who've worked a fish market at 5am."),
+      B.labeled("Say:", "“Holds 48 hours on ice.”"),
+      B.labeled("Don't say:", "“Revolutionary eco-solution.”"),
+    ],
+  });
+  await page(db, ws, {
+    title: "Processor interviews",
+    icon: "🔍",
+    createdById: dev,
+    daysAgo: 9,
+    content: [
+      B.p("Notes from calls with seafood processors around Peniche and Nazaré."),
+      B.h3("Mar Azul (Peniche)"),
+      B.bullet("Spends about 11% of landed cost on packaging and freight."),
+      B.bullet("Their biggest buyer asked for plastic-free trays by next spring."),
+      B.quote("If it survives 48 hours on ice and doesn't smell, we'd try a pallet."),
+      B.h3("Costa Fria (Nazaré)"),
+      B.bullet("Worried about trays softening in wet chillers."),
+      B.todo("Send Costa Fria the sample-run dates"),
+    ],
+  });
+}
+
+export async function seedPrivatePages(db: PrismaClient, ws: Ws, owner: string) {
+  await page(db, ws, {
+    title: "Ideas scratchpad",
+    createdById: owner,
+    daysAgo: 4,
+    content: [
+      B.p("Half-formed things. Nobody else can see this page."),
+      B.bullet("Could the trays carry the catch's origin as a QR code?"),
+      B.bullet("Talk to Rosa about the Blue Economy grant timing."),
     ],
   });
 }
