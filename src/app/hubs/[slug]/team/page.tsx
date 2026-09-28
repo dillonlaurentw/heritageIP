@@ -27,11 +27,11 @@ export default async function TeamPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ step?: string }>;
+  searchParams: Promise<{ step?: string; compose?: string }>;
 }) {
   const viewer = await requireOnboarded();
   const { hub, isOwner } = await getHubAccess((await params).slug, viewer);
-  const { step: stepId } = await searchParams;
+  const { step: stepId, compose } = await searchParams;
 
   const [owner, members, roles, cofounderSteps] = await Promise.all([
     db.user.findUniqueOrThrow({ where: { id: hub.ownerId }, select: personSelect }),
@@ -105,8 +105,8 @@ export default async function TeamPage({
         </div>
 
         {isOwner && (
-          <div className="mt-10">
-            <RoleComposer hubId={hub.id} steps={cofounderSteps} fromStep={fromStep} />
+          <div id="post-role" className="mt-10 scroll-mt-20">
+            <RoleComposer hubId={hub.id} steps={cofounderSteps} fromStep={fromStep} startOpen={compose === "1"} />
           </div>
         )}
 

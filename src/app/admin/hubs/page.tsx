@@ -39,7 +39,7 @@ export default async function AdminHubs({ searchParams }: { searchParams: Promis
       ...(show === "public" && isPublic),
       ...(show === "private" && { NOT: isPublic }),
     },
-    orderBy: [{ featured: "desc" }, { number: "asc" }],
+    orderBy: [{ featured: "desc" }, { createdAt: "asc" }],
     select: {
       id: true,
       number: true,

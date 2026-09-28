@@ -274,6 +274,8 @@ npm run lint && npm run typecheck && npm test && npm run build   # before every 
 
 ## Hubs + agents conventions (Phase 2)
 
+- Hub numbers count per owner (`nextHubNumber()`; unique on owner + number): your
+  first hub is "HUB 01". They are labels, not identifiers; use `id`/`slug` to find hubs.
 - Hub access: `getOwnedHub(slug)` in pages, `requireOwnedHubId(id)` in actions
   (`src/lib/hubs.ts`). Non-owners get a 404, never a "forbidden".
 - Every model call goes through `runAgent(agent, ctx, { userId, hubId })`

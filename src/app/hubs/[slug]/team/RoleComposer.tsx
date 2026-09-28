@@ -15,12 +15,15 @@ export function RoleComposer({
   hubId,
   steps,
   fromStep,
+  startOpen = false,
 }: {
   hubId: string;
   steps: StepOption[];
   fromStep: StepOption | null;
+  /** Open straight away, e.g. when arriving from "Post a role" on /roles. */
+  startOpen?: boolean;
 }) {
-  const [open, setOpen] = useState(Boolean(fromStep));
+  const [open, setOpen] = useState(Boolean(fromStep) || startOpen);
   const [v, setV] = useState<RoleInput>({
     title: "",
     commitment: "Co-founder",

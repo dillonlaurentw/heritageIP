@@ -6,7 +6,7 @@ import { z } from "zod";
 import { ideasAgent, runAgent } from "@/agents";
 import { COVER_LAYOUTS, COVER_TONES } from "@/components/mosaic/CoverArt";
 import { db } from "@/lib/db";
-import { builderContext, requireOwnedHubId, uniqueSlug } from "@/lib/hubs";
+import { builderContext, nextHubNumber, requireOwnedHubId, uniqueSlug } from "@/lib/hubs";
 import { requireOnboarded } from "@/lib/session";
 import { storeImage } from "@/lib/storage";
 
@@ -22,6 +22,7 @@ async function create(userId: string, data: z.infer<typeof newHub>) {
   const hub = await db.hub.create({
     data: {
       ownerId: userId,
+      number: await nextHubNumber(userId),
       slug: await uniqueSlug(data.name),
       name: data.name,
       rawIdea: data.rawIdea,

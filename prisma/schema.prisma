@@ -154,7 +154,7 @@ enum HubStage {
 
 model Hub {
   id       String   @id @default(cuid())
-  number   Int      @unique @default(autoincrement()) // shown as "HUB 03"
+  number   Int // per owner: your first hub is "HUB 01", your second "HUB 02"
   slug     String   @unique
   ownerId  String
   owner    User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
@@ -194,6 +194,7 @@ model Hub {
   gtmWorkspace    GtmWorkspace?
   simulations     Simulation[]
 
+  @@unique([ownerId, number])
   @@index([ownerId])
   @@index([featured])
 }

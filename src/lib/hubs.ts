@@ -24,6 +24,12 @@ export async function uniqueSlug(name: string) {
   }
 }
 
+/** Hubs are numbered per owner: your first is 1, your second 2. */
+export async function nextHubNumber(ownerId: string) {
+  const last = await db.hub.findFirst({ where: { ownerId }, orderBy: { number: "desc" }, select: { number: true } });
+  return (last?.number ?? 0) + 1;
+}
+
 export const hubNumber = (n: number) => `Hub ${String(n).padStart(2, "0")}`;
 
 export const STAGE_LABEL: Record<string, string> = {

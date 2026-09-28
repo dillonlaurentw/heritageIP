@@ -222,7 +222,6 @@ const people: Person[] = [
 
 
 type SeedHub = {
-  number: number;
   owner: string;
   slug: string;
   name: string;
@@ -242,7 +241,6 @@ type SeedHub = {
 
 const hubs: SeedHub[] = [
   {
-    number: 1,
     owner: "maya",
     slug: "tidewater-kelp",
     name: "Tidewater Kelp",
@@ -269,7 +267,6 @@ const hubs: SeedHub[] = [
     },
   },
   {
-    number: 2,
     owner: "ana",
     slug: "night-shift-bakery",
     name: "Night Shift Bakery",
@@ -292,7 +289,6 @@ const hubs: SeedHub[] = [
     },
   },
   {
-    number: 3,
     owner: "kwame",
     slug: "ground-truth",
     name: "Ground Truth",
@@ -314,7 +310,6 @@ const hubs: SeedHub[] = [
     },
   },
   {
-    number: 4,
     owner: "lena",
     slug: "parallel-clinic",
     name: "Parallel Clinic",
@@ -335,7 +330,6 @@ const hubs: SeedHub[] = [
     },
   },
   {
-    number: 5,
     owner: "tomas",
     slug: "open-hand-tools",
     name: "Open Hand Tools",
@@ -354,7 +348,6 @@ const hubs: SeedHub[] = [
     },
   },
   {
-    number: 6,
     owner: "dev",
     slug: "field-notes",
     name: "Field Notes",
@@ -373,7 +366,6 @@ const hubs: SeedHub[] = [
     },
   },
   {
-    number: 7,
     owner: "maya",
     slug: "loam",
     name: "Loam",
@@ -382,7 +374,6 @@ const hubs: SeedHub[] = [
       "Restaurants throw out tonnes of food waste that gets trucked hours away. Urban farms on the edge of the city need compost. Connect them with small electric vans.",
   },
   {
-    number: 8,
     owner: "admin",
     slug: "common-thread",
     name: "Common Thread",
@@ -512,12 +503,15 @@ async function main() {
   await db.simulation.deleteMany({ where: { createdById: { in: demoUsers.map((u) => u.id) } } });
 
   const DAY = 86_400_000;
+  const perOwner = new Map<string, number>();
   for (const [i, h] of hubs.entries()) {
     const ownerId = idByKey.get(h.owner)!;
+    // Hubs are numbered per owner, in the order they were started.
+    perOwner.set(ownerId, (perOwner.get(ownerId) ?? 0) + 1);
     const created = new Date(Date.now() - (hubs.length - i) * 9 * DAY);
     const hub = await db.hub.create({
       data: {
-        number: h.number,
+        number: perOwner.get(ownerId)!,
         slug: h.slug,
         ownerId,
         name: h.name,
@@ -953,9 +947,6 @@ async function main() {
       });
     }
   }
-
-  // Keep the auto-number counter ahead of the seeded numbers.
-  await db.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"Hub"', 'number'), (SELECT MAX(number) FROM "Hub"))`);
 
   // One finished thesis dialogue, so the history reads real.
   const tide = await db.hub.findUniqueOrThrow({ where: { slug: "tidewater-kelp" }, include: { thesis: true } });
