@@ -34,7 +34,8 @@ export default async function ConnectPage({ params }: { params: Promise<{ slug: 
   const area = NEEDS[need];
   const category = NEED_TO_CATEGORY[need] ?? null;
 
-  const [steps, partners, intros] = await Promise.all([
+  const isMentor = need === "MENTOR";
+  const [steps, partners, intros, mentors, mentorAsks] = await Promise.all([
     db.planStep.findMany({ where: { hubId: hub.id, needs: { has: need } } }).then(sortSteps),
     category
       ? db.partner.findMany({ where: { categories: { has: category } }, orderBy: [{ featured: "desc" }, { name: "asc" }], take: 5 })
@@ -44,6 +45,23 @@ export default async function ConnectPage({ params }: { params: Promise<{ slug: 
           where: { kind: "PARTNER_INTRO", hubId: hub.id, partner: { categories: { has: category } } },
           orderBy: { createdAt: "desc" },
           include: { partner: { select: { name: true, slug: true } }, planStep: { select: { title: true } } },
+        })
+      : [],
+    isMentor
+      ? db.user.findMany({
+          where: {
+            id: { not: viewer.user.id },
+            profile: { roles: { has: "MENTOR" }, mentorOpen: true, ...(hub.sector && { focusAreas: { has: hub.sector } }) },
+          },
+          take: 5,
+          select: { id: true, name: true, profile: { select: { headline: true, focusAreas: true } } },
+        })
+      : [],
+    isMentor
+      ? db.signal.findMany({
+          where: { kind: "MENTOR_REQUEST", hubId: hub.id },
+          orderBy: { createdAt: "desc" },
+          include: { toUser: { select: { id: true, name: true } }, planStep: { select: { title: true } } },
         })
       : [],
   ]);
@@ -76,6 +94,11 @@ export default async function ConnectPage({ params }: { params: Promise<{ slug: 
                   <Label>{STAGE_COPY[s.stage].label}</Label>
                   <p className={`mt-1 text-lead font-semibold ${s.doneAt ? "text-smoke line-through" : ""}`}>{s.title}</p>
                 </div>
+                {isMentor && !s.doneAt && (
+                  <Link href={`/mentors?hub=${hub.slug}&step=${s.id}` as Route} className="group text-body font-semibold text-signal">
+                    Find a mentor for this <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
+                  </Link>
+                )}
                 {category && !s.doneAt && (
                   <Link
                     href={`${directory}&step=${s.id}` as Route}
@@ -111,7 +134,57 @@ export default async function ConnectPage({ params }: { params: Promise<{ slug: 
         </section>
       )}
 
-      {category ? (
+      {isMentor && mentorAsks.length > 0 && (
+        <section className="grid grid-cols-1 gap-6 border-t border-line px-edge py-10 md:grid-cols-[16rem_1fr]">
+          <Label className="self-start">Mentors asked</Label>
+          <div className="flex flex-col">
+            {mentorAsks.map((r) => (
+              <div key={r.id} className="border-b border-line py-4 last:border-b-0">
+                <Label tone={r.status === "PENDING" || r.status === "ACCEPTED" ? "signal" : "smoke"} live={r.status === "PENDING"}>
+                  {STATUS_LABEL[r.status]}
+                </Label>
+                <p className="mt-1 text-lead font-semibold">
+                  <Link href={`/mentors/${r.toUser.id}` as Route} className="hover:underline">
+                    {r.toUser.name}
+                  </Link>
+                  {r.planStep && <span className="font-normal text-smoke"> · {r.planStep.title}</span>}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {isMentor ? (
+        <section className="border-t border-line pt-10 pb-24">
+          <div className="flex flex-wrap items-baseline justify-between gap-4 px-edge pb-6">
+            <Label>{hub.sector ? `Mentors in ${hub.sector}` : "Mentors"}</Label>
+            <ArrowLink href={`/mentors?hub=${hub.slug}${hub.sector ? `&f=${encodeURIComponent(hub.sector)}` : ""}` as Route} size="inline" className="text-smoke">
+              See all
+            </ArrowLink>
+          </div>
+          <div className="px-gutter">
+            {mentors.length === 0 ? (
+              <p className="px-edge text-lead text-smoke">No open mentors in this area yet.</p>
+            ) : (
+              <Mosaic>
+                {mentors.map((m, i) => (
+                  <Tile
+                    key={m.id}
+                    index={i}
+                    span={i === 0 ? "wide" : "square"}
+                    tone={i === 0 ? "bone" : "raised"}
+                    href={`/mentors/${m.id}?hub=${hub.slug}` as Route}
+                    label={m.profile?.focusAreas.slice(0, 3).join(" · ") ?? "Mentor"}
+                    title={m.name}
+                    subtitle={m.profile?.headline}
+                  />
+                ))}
+              </Mosaic>
+            )}
+          </div>
+        </section>
+      ) : category ? (
         <section className="border-t border-line pt-10 pb-24">
           <div className="flex flex-wrap items-baseline justify-between gap-4 px-edge pb-6">
             <Label>{CATEGORY_COPY[category].label} partners</Label>

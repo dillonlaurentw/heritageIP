@@ -40,6 +40,7 @@ export function Tile<T extends string>({
   media,
   href,
   children,
+  subtitle,
   className = "",
 }: {
   span?: TileSpan;
@@ -55,6 +56,8 @@ export function Tile<T extends string>({
   href?: Route<T>;
   /** Type tiles only: free content between the label and the title. */
   children?: ReactNode;
+  /** Type tiles only: a line under the title. */
+  subtitle?: string | null;
   className?: string;
 }) {
   const t = toneClass[tone];
@@ -87,7 +90,12 @@ export function Tile<T extends string>({
         {meta}
       </div>
       {children}
-      {title && <h3 className={`${titleClass} max-w-[16ch] text-title`}>{title}</h3>}
+      {title && (
+        <div>
+          <h3 className={`${titleClass} max-w-[16ch] text-title`}>{title}</h3>
+          {subtitle && <p className="measure mt-2 text-body opacity-80">{subtitle}</p>}
+        </div>
+      )}
     </div>
   );
 

@@ -113,3 +113,21 @@ export function builderContext(viewer: Viewer): BuilderContext {
     decisionStyle: p.decisionStyle,
   };
 }
+
+/**
+ * The viewer's own hubs with their open plan steps, for "ask for help"
+ * forms. `relevant` flags steps whose needs match what's being asked for.
+ */
+export async function hubOptionsFor(userId: string, isRelevant: (needs: string[]) => boolean) {
+  const hubs = await db.hub.findMany({
+    where: { ownerId: userId },
+    orderBy: { updatedAt: "desc" },
+    select: { id: true, slug: true, name: true, planSteps: { where: { doneAt: null }, select: { id: true, title: true, needs: true } } },
+  });
+  return hubs.map((h) => ({
+    id: h.id,
+    slug: h.slug,
+    name: h.name,
+    steps: h.planSteps.map((st) => ({ id: st.id, title: st.title, relevant: isRelevant(st.needs) })),
+  }));
+}

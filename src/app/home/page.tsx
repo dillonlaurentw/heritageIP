@@ -62,11 +62,12 @@ export default async function Home() {
           />
           {has("BUILDER") && <Tile span="square" tone="field" label="Open roles" title="Join a team" href="/roles" index={2} />}
           {has("BACKER") && <Tile span="square" tone="raised" label="Backers · Interest only" title="Discover hubs" href="/backers" index={2} />}
-          {has("MENTOR") && <Tile span="square" tone="field" label="Mentor · Phase 7" title="Mentorship requests" index={3} />}
+          {has("MENTOR") && <Tile span="square" tone="raised" label="Mentor" title="Your mentor profile" href={`/mentors/${user.id}` as Route} index={3} />}
           {has("PARTNER") && partner && (
             <Tile span="square" tone="raised" label="Your firm" title={partner.name} href={`/partners/${partner.slug}` as Route} index={4} />
           )}
           <Tile span="square" tone="field" label="Legal, supply, build, marketing" title="Find partners" href="/partners" index={3} />
+          {has("BUILDER") && <Tile span="square" tone="field" label="People who have done it" title="Find a mentor" href="/mentors" index={4} />}
           {has("BUILDER") && <Tile span="square" tone="field" label="Builder · Phase 9" title="Your personal agent" index={5} />}
         </Mosaic>
       </div>

@@ -20,9 +20,6 @@ export async function Nav() {
         <div className="hidden items-center gap-7 md:flex">
           {viewer ? (
             <>
-              <Link href="/home" className={linkClass}>
-                Home
-              </Link>
               <Link href="/hubs" className={linkClass}>
                 Hubs
               </Link>
@@ -31,6 +28,9 @@ export async function Nav() {
               </Link>
               <Link href="/partners" className={linkClass}>
                 Partners
+              </Link>
+              <Link href="/mentors" className={linkClass}>
+                Mentors
               </Link>
               {(viewer.profile.roles.includes("BACKER") || viewer.profile.roles.includes("ADMIN")) && (
                 <Link href="/backers" className={linkClass}>

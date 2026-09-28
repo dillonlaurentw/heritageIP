@@ -27,7 +27,7 @@ const NEXT: { title: string; label: string; span: TileSpan; path: string }[] = [
   { title: "Team", label: "Co-founders", span: "square", path: "team" },
   { title: "Partners", label: "Legal, supply, build · Phase 5", span: "square", path: "connect/legal" },
   { title: "Backers", label: "Interest only", span: "square", path: "backers" },
-  { title: "Mentors", label: "Phase 7", span: "square", path: "connect/mentor" },
+  { title: "Mentors", label: "People who have done it", span: "square", path: "connect/mentor" },
   { title: "Go-to-market", label: "Phase 8", span: "square", path: "connect/gtm" },
   { title: "Agents", label: "Phase 10", span: "square", path: "" },
 ];

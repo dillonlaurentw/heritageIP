@@ -360,6 +360,17 @@ npm run lint && npm run typecheck && npm test && npm run build   # before every 
 - The investing seam is documented at the bottom of `prisma/schema.prisma`.
   Build none of it without a licensed partner.
 
+## Mentorship conventions (Phase 7)
+
+- Mentors are users with the MENTOR role; their profile's `focusAreas`,
+  `mentorNote` and `mentorOpen` (pause switch) drive `/mentors`.
+- `MENTOR_REQUEST` signals go hub owner → mentor, with `hubId` and optional
+  `planStepId`. Accepting swaps contacts through `contactsFor()`.
+- `HubRequestForm` (`src/components/connect`) is the shared "pick a hub, pick a
+  step, write a note" form used by partner intros and mentor requests.
+  `hubOptionsFor()` builds its options.
+- The nav has no "Home" link; the wordmark goes home.
+
 ## Design primitives (Phase 0)
 
 - `src/design/tokens.css`: colors, type scale, radii, motion. Tailwind's default

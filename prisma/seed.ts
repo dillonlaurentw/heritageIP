@@ -28,6 +28,7 @@ type Person = {
   backerNote?: string;
   partnerOrgName?: string;
   contactLink?: string;
+  mentorOpen?: boolean;
 };
 
 const people: Person[] = [
@@ -162,6 +163,34 @@ const people: Person[] = [
     location: "Manchester",
     focusAreas: ["Supply chain", "Operations", "Hardware"],
     mentorNote: "First production runs, supplier negotiation, and not getting stuck with 10,000 units.",
+  },
+  {
+    key: "rosa",
+    name: "Rosa Almeida",
+    roles: ["MENTOR"],
+    headline: "Ran EU grant programmes for food and ocean startups",
+    location: "Lisbon",
+    focusAreas: ["Climate", "Food", "Fundraising"],
+    mentorNote: "Non-dilutive funding in Europe: which grants fit, how evaluators read an application, and how to report without drowning.",
+  },
+  {
+    key: "tunde",
+    name: "Tunde Bakare",
+    roles: ["MENTOR"],
+    headline: "Built rural lending at two West African fintechs",
+    location: "Lagos",
+    focusAreas: ["Fintech", "AI", "Go-to-market"],
+    mentorNote: "Credit models for people with thin files, partnering with rural banks, and getting agents in the field to trust your product.",
+  },
+  {
+    key: "hana",
+    name: "Hana Sato",
+    roles: ["MENTOR"],
+    headline: "Shipped clinical software through German certification",
+    location: "Berlin",
+    focusAreas: ["Health", "Product", "B2B software"],
+    mentorNote: "Getting healthcare software certified without stalling the product, and selling to clinics where the buyer isn't the user.",
+    mentorOpen: false,
   },
   {
     key: "admin",
@@ -449,7 +478,7 @@ async function main() {
     // Explicit nulls so re-seeding resets anything changed while testing.
     const blank = {
       beliefs: null, workStyle: null, buildingToward: null, strengths: null, gaps: null,
-      decisionStyle: null, mentorNote: null, backerNote: null, partnerOrgName: null, contactLink: null,
+      decisionStyle: null, mentorNote: null, backerNote: null, partnerOrgName: null, contactLink: null, mentorOpen: true,
     };
     const data = {
       ...blank,
@@ -736,6 +765,32 @@ async function main() {
         note: b.note,
         createdAt: at,
         respondedAt: b.status === "ACCEPTED" ? new Date(at.getTime() + DAY) : null,
+      },
+    });
+  }
+
+  // ── Mentorship requests. ──
+  const mentorAsks: { from: string; to: string; hub: string; step?: string; status: "PENDING" | "ACCEPTED"; note: string; daysAgo: number }[] = [
+    { from: "maya", to: "ines", hub: "tidewater-kelp", step: "Food-contact certification", status: "ACCEPTED", daysAgo: 7, note: "We're about to run our first 5,000 trays and I've never taken a product through food-contact testing. An hour on what to test first would save us weeks." },
+    { from: "maya", to: "rosa", hub: "tidewater-kelp", step: "Apply for the Blue Economy grant", status: "PENDING", daysAgo: 1, note: "We're applying for the Blue Economy grant in March. I'd love your read on whether our pilot fits, before we spend a month writing." },
+    { from: "ana", to: "marcus", hub: "night-shift-bakery", step: "Pitch one employer on a staff-perk pilot", status: "PENDING", daysAgo: 2, note: "I'm pitching hospital HR on subsidising night-shift meals. You've sold to employers before; what makes them say yes?" },
+    { from: "kwame", to: "tunde", hub: "ground-truth", status: "PENDING", daysAgo: 3, note: "Would a rural bank change a loan decision based on soil data? You've built lending with these banks. I'd value 30 minutes before our first pilot pitch." },
+  ];
+  for (const m of mentorAsks) {
+    const hub = await db.hub.findUniqueOrThrow({ where: { slug: m.hub } });
+    const step = m.step ? await db.planStep.findFirst({ where: { hubId: hub.id, title: m.step } }) : null;
+    const at = new Date(Date.now() - m.daysAgo * DAY);
+    await db.signal.create({
+      data: {
+        kind: "MENTOR_REQUEST",
+        status: m.status,
+        fromUserId: idByKey.get(m.from)!,
+        toUserId: idByKey.get(m.to)!,
+        hubId: hub.id,
+        planStepId: step?.id ?? null,
+        note: m.note,
+        createdAt: at,
+        respondedAt: m.status === "ACCEPTED" ? new Date(at.getTime() + DAY) : null,
       },
     });
   }

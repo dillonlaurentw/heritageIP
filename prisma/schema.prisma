@@ -116,6 +116,7 @@ model Profile {
   // Mentor / backer / partner specifics (short, optional).
   focusAreas     String[] // mentor + backer focus, e.g. ["Climate", "Hardware"]
   mentorNote     String?
+  mentorOpen     Boolean  @default(true) // mentor is taking new requests
   backerNote     String? // what they back. Never amounts or terms.
   partnerOrgName String? // linked to a Partner record in Phase 5
 
