@@ -1,38 +1,39 @@
 "use client";
 
-/** Multi-select toggles. Square-cornered, hairline, never pills. */
+import { Check } from "lucide-react";
+import { cn } from "@/lib/cn";
+
+/** Multi-select toggles, e.g. focus areas. */
 export function Chips<T extends string>({
   options,
   value,
   onChange,
   max,
-  render = (o) => o,
 }: {
   options: readonly T[];
   value: T[];
-  onChange: (next: T[]) => void;
+  onChange: (v: T[]) => void;
   max?: number;
-  render?: (o: T) => string;
 }) {
-  function toggle(o: T) {
-    if (value.includes(o)) onChange(value.filter((v) => v !== o));
-    else if (!max || value.length < max) onChange([...value, o]);
-  }
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-1.5">
       {options.map((o) => {
         const on = value.includes(o);
+        const full = !on && max !== undefined && value.length >= max;
         return (
           <button
             key={o}
             type="button"
             aria-pressed={on}
-            onClick={() => toggle(o)}
-            className={`rounded-xs border px-3 py-2 text-small font-medium transition-colors duration-(--duration-fast) ${
-              on ? "border-bone bg-bone text-field" : "border-line text-bone hover:border-smoke"
-            }`}
+            disabled={full}
+            onClick={() => onChange(on ? value.filter((x) => x !== o) : [...value, o])}
+            className={cn(
+              "inline-flex h-7 items-center gap-1 rounded-md border px-2.5 text-sm transition-colors duration-(--duration-fast) disabled:opacity-40",
+              on ? "border-accent bg-accent-soft text-fg" : "border-border text-fg-muted hover:border-border-strong hover:text-fg",
+            )}
           >
-            {render(o)}
+            {on && <Check className="size-3.5 text-accent-text" />}
+            {o}
           </button>
         );
       })}

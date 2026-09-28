@@ -1,91 +1,73 @@
 @import "tailwindcss";
 @import "../design/tokens.css";
 
-/* Display-width axis, animated for the "type shifts" hover. */
-@property --wdth {
-  syntax: "<number>";
-  inherits: true;
-  initial-value: 100;
-}
-
 @layer base {
   html {
-    background: var(--color-field);
-    color: var(--color-bone);
+    background: var(--bg);
+    color: var(--fg);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
   }
   body {
     font-family: var(--font-sans);
-    font-size: var(--text-body);
-    line-height: var(--text-body--line-height);
+    font-size: var(--text-base);
+    line-height: var(--text-base--line-height);
     min-height: 100dvh;
+    background: var(--bg);
+    font-feature-settings: "cv11", "ss01";
   }
   ::selection {
-    background: var(--color-signal);
-    color: var(--color-field);
+    background: var(--accent-soft);
   }
   :focus-visible {
-    outline: 2px solid var(--color-signal);
-    outline-offset: 2px;
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+    border-radius: var(--radius-sm);
+  }
+  button,
+  [role="button"] {
+    cursor: default;
+  }
+  a,
+  button:not(:disabled) {
+    cursor: pointer;
+  }
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--fg-subtle);
   }
 }
 
 @layer components {
-  /* Heavy, tight grotesk for anything expressive. */
-  .type-display {
-    font-weight: 850;
-    font-variation-settings: "wdth" var(--wdth);
-    font-kerning: normal;
-  }
-  /* Mono label: small, uppercase, wide tracking. */
-  .label {
-    font-family: var(--font-mono);
-    font-size: var(--text-label);
-    line-height: var(--text-label--line-height);
-    letter-spacing: var(--text-label--letter-spacing);
-    text-transform: uppercase;
-    font-weight: 500;
-  }
+  /* Readable prose width for pages and forms. */
   .measure {
-    max-width: 60ch;
+    max-width: 72ch;
   }
-}
-
-/* ── Page wipe (React <ViewTransition>, see components/motion/PageWipe) ── */
-::view-transition-old(.wipe-out) {
-  animation: var(--duration-fast) var(--ease-out-strong) both self-fade-out;
-}
-::view-transition-new(.wipe-in) {
-  animation: 520ms var(--ease-out-strong) both self-wipe-in;
-}
-@keyframes self-fade-out {
-  to {
-    opacity: 0;
-  }
-}
-@keyframes self-wipe-in {
-  from {
-    clip-path: inset(0 0 0 100%);
-  }
-  to {
-    clip-path: inset(0 0 0 0);
+  /* Thin, quiet scrollbars. */
+  .scroll-quiet {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-strong) transparent;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  ::view-transition-old(*),
-  ::view-transition-new(*),
-  ::view-transition-group(*) {
-    animation-duration: 0s !important;
-    animation-delay: 0s !important;
-  }
   *,
   *::before,
   *::after {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }

@@ -1,88 +1,228 @@
 /*
- * SELF design tokens. The ONLY place colors, type sizes, radii and motion
- * values are defined. Components use the Tailwind utilities these generate
- * (bg-field, text-bone, text-hero, ease-out-strong, …) or var(--…) directly.
+ * SELF design tokens: a calm workspace. The ONLY place colors, type sizes,
+ * radii, shadows and motion values are defined.
  *
- * Tailwind's default palette, shadows and radii are wiped on purpose so a
- * stray `bg-blue-500`, `shadow-lg` or `rounded-xl` simply doesn't exist.
+ * Colors are CSS variables that switch between light and dark. Tailwind
+ * utilities (bg-bg, text-fg-muted, border-border, bg-accent…) read them via
+ * `@theme inline`, so components never need a `dark:` variant.
+ *
+ * Theme: light by default; dark when the OS asks for it, unless the person
+ * picked one (html[data-theme="light" | "dark"], set from a cookie).
  */
 
-@theme {
+:root {
+  --bg: #ffffff;
+  --bg-subtle: #f7f7f5; /* sidebar, table header */
+  --bg-inset: #f1f1ef; /* inputs, code, wells */
+  --bg-hover: rgb(55 53 47 / 0.06);
+  --bg-active: rgb(55 53 47 / 0.1);
+  --bg-popover: #ffffff;
+  --overlay: rgb(15 15 15 / 0.35);
+
+  --fg: #26251f;
+  --fg-muted: #6b6a65;
+  --fg-subtle: #9c9b97;
+
+  --border: #e9e9e6;
+  --border-strong: #d8d7d3;
+
+  --accent: #ff5b1f; /* SELF orange: primary action, focus, live states */
+  --accent-hover: #f04e12;
+  --accent-fg: #ffffff;
+  --accent-text: #d6470f; /* orange that's readable as text on --bg */
+  --accent-soft: rgb(255 91 31 / 0.12);
+
+  --danger: #c9463d;
+  --danger-soft: rgb(201 70 61 / 0.1);
+  --success: #2e7d57;
+  --success-soft: rgb(46 125 87 / 0.1);
+  --warning: #b7791f;
+  --warning-soft: rgb(183 121 31 / 0.12);
+
+  /* Soft tag colors for select options and labels. */
+  --tag-gray-bg: #eeeeec; --tag-gray-fg: #55534e;
+  --tag-brown-bg: #f1e9e3; --tag-brown-fg: #7a5a44;
+  --tag-orange-bg: #fce8dc; --tag-orange-fg: #b1501c;
+  --tag-yellow-bg: #fbf1d6; --tag-yellow-fg: #8a6a12;
+  --tag-green-bg: #e2f1e8; --tag-green-fg: #2f6b4a;
+  --tag-blue-bg: #e2edf8; --tag-blue-fg: #2f5f8f;
+  --tag-purple-bg: #eee7f7; --tag-purple-fg: #6a4c93;
+  --tag-pink-bg: #f8e4ee; --tag-pink-fg: #9a3f6c;
+  --tag-red-bg: #fbe3e1; --tag-red-fg: #a63a33;
+
+  --shadow-popover: 0 0 0 1px rgb(15 15 15 / 0.06), 0 4px 16px rgb(15 15 15 / 0.08);
+  --shadow-dialog: 0 0 0 1px rgb(15 15 15 / 0.06), 0 16px 48px rgb(15 15 15 / 0.16);
+
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --bg: #191919;
+  --bg-subtle: #202020;
+  --bg-inset: #262626;
+  --bg-hover: rgb(255 255 255 / 0.055);
+  --bg-active: rgb(255 255 255 / 0.09);
+  --bg-popover: #252525;
+  --overlay: rgb(0 0 0 / 0.55);
+
+  --fg: #e8e7e3;
+  --fg-muted: #a09f9b;
+  --fg-subtle: #6f6e6a;
+
+  --border: #2d2d2c;
+  --border-strong: #3b3b39;
+
+  --accent: #ff6a33;
+  --accent-hover: #ff7c4a;
+  --accent-fg: #1a1a1a;
+  --accent-text: #ff8452;
+  --accent-soft: rgb(255 106 51 / 0.16);
+
+  --danger: #e5675e;
+  --danger-soft: rgb(229 103 94 / 0.14);
+  --success: #5fb58a;
+  --success-soft: rgb(95 181 138 / 0.14);
+  --warning: #d9a441;
+  --warning-soft: rgb(217 164 65 / 0.14);
+
+  --tag-gray-bg: #333331; --tag-gray-fg: #cfceca;
+  --tag-brown-bg: #3b3029; --tag-brown-fg: #d8b8a0;
+  --tag-orange-bg: #43301f; --tag-orange-fg: #f2a773;
+  --tag-yellow-bg: #3e3620; --tag-yellow-fg: #e6c66b;
+  --tag-green-bg: #233a2e; --tag-green-fg: #86c9a3;
+  --tag-blue-bg: #1f3244; --tag-blue-fg: #8fbbe6;
+  --tag-purple-bg: #332a44; --tag-purple-fg: #bda2e6;
+  --tag-pink-bg: #402636; --tag-pink-fg: #e69cc0;
+  --tag-red-bg: #452826; --tag-red-fg: #ee9690;
+
+  --shadow-popover: 0 0 0 1px rgb(255 255 255 / 0.07), 0 8px 24px rgb(0 0 0 / 0.45);
+  --shadow-dialog: 0 0 0 1px rgb(255 255 255 / 0.07), 0 20px 56px rgb(0 0 0 / 0.55);
+
+  color-scheme: dark;
+}
+
+/* System dark, when nobody picked a theme. Same values as above. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --bg: #191919;
+    --bg-subtle: #202020;
+    --bg-inset: #262626;
+    --bg-hover: rgb(255 255 255 / 0.055);
+    --bg-active: rgb(255 255 255 / 0.09);
+    --bg-popover: #252525;
+    --overlay: rgb(0 0 0 / 0.55);
+    --fg: #e8e7e3;
+    --fg-muted: #a09f9b;
+    --fg-subtle: #6f6e6a;
+    --border: #2d2d2c;
+    --border-strong: #3b3b39;
+    --accent: #ff6a33;
+    --accent-hover: #ff7c4a;
+    --accent-fg: #1a1a1a;
+    --accent-text: #ff8452;
+    --accent-soft: rgb(255 106 51 / 0.16);
+    --danger: #e5675e;
+    --danger-soft: rgb(229 103 94 / 0.14);
+    --success: #5fb58a;
+    --success-soft: rgb(95 181 138 / 0.14);
+    --warning: #d9a441;
+    --warning-soft: rgb(217 164 65 / 0.14);
+    --tag-gray-bg: #333331; --tag-gray-fg: #cfceca;
+    --tag-brown-bg: #3b3029; --tag-brown-fg: #d8b8a0;
+    --tag-orange-bg: #43301f; --tag-orange-fg: #f2a773;
+    --tag-yellow-bg: #3e3620; --tag-yellow-fg: #e6c66b;
+    --tag-green-bg: #233a2e; --tag-green-fg: #86c9a3;
+    --tag-blue-bg: #1f3244; --tag-blue-fg: #8fbbe6;
+    --tag-purple-bg: #332a44; --tag-purple-fg: #bda2e6;
+    --tag-pink-bg: #402636; --tag-pink-fg: #e69cc0;
+    --tag-red-bg: #452826; --tag-red-fg: #ee9690;
+    --shadow-popover: 0 0 0 1px rgb(255 255 255 / 0.07), 0 8px 24px rgb(0 0 0 / 0.45);
+    --shadow-dialog: 0 0 0 1px rgb(255 255 255 / 0.07), 0 20px 56px rgb(0 0 0 / 0.55);
+    color-scheme: dark;
+  }
+}
+
+@theme inline {
   /* ── Color ─────────────────────────────────────────────── */
   --color-*: initial;
-  --color-field: #1f2620; /* main background, deep green-black */
-  --color-field-raised: #262e27; /* tile ground on field, barely lifted */
-  --color-bone: #ede8df; /* primary text + inverted sections */
-  --color-smoke: #849083; /* secondary text, hairlines */
-  --color-signal: #ff5b1f; /* hot orange, the one accent. Use sparingly. */
-  --color-line: rgb(132 144 131 / 0.35); /* hairline on field */
-  --color-line-bone: rgb(31 38 32 / 0.2); /* hairline on bone */
+  --color-bg: var(--bg);
+  --color-bg-subtle: var(--bg-subtle);
+  --color-bg-inset: var(--bg-inset);
+  --color-bg-hover: var(--bg-hover);
+  --color-bg-active: var(--bg-active);
+  --color-bg-popover: var(--bg-popover);
+  --color-overlay: var(--overlay);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-text: var(--accent-text);
+  --color-accent-soft: var(--accent-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-transparent: transparent;
+  --color-current: currentColor;
 
-  /* ── Type families (wired to next/font in layout.tsx) ──── */
+  /* ── Shadows: floating things only ─────────────────────── */
+  --shadow-*: initial;
+  --shadow-popover: var(--shadow-popover);
+  --shadow-dialog: var(--shadow-dialog);
+}
+
+@theme {
+  /* ── Type ──────────────────────────────────────────────── */
   --font-*: initial;
-  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "SF Mono", monospace;
 
-  /* ── Type scale ────────────────────────────────────────── */
   --text-*: initial;
-  --text-hero: clamp(3.75rem, 13.5vw, 15rem);
-  --text-hero--line-height: 0.86;
-  --text-hero--letter-spacing: -0.05em;
-
-  --text-display: clamp(3rem, 8vw, 8.5rem);
-  --text-display--line-height: 0.88;
-  --text-display--letter-spacing: -0.045em;
-
-  /* Questions and prompts beside an input: big, but leaves room to answer. */
-  --text-prompt: clamp(2.5rem, 5.4vw, 6rem);
-  --text-prompt--line-height: 0.9;
-  --text-prompt--letter-spacing: -0.045em;
-
-  --text-headline: clamp(2rem, 4.6vw, 4.75rem);
-  --text-headline--line-height: 0.92;
-  --text-headline--letter-spacing: -0.04em;
-
-  /* A thesis or other one-sentence statement: heavy, but readable at length. */
-  --text-statement: clamp(1.75rem, 3.1vw, 3.25rem);
-  --text-statement--line-height: 1;
-  --text-statement--letter-spacing: -0.035em;
-
-  --text-title: clamp(1.375rem, 2.1vw, 2.125rem);
-  --text-title--line-height: 1;
-  --text-title--letter-spacing: -0.03em;
-
-  --text-lead: clamp(1.125rem, 1.4vw, 1.375rem);
-  --text-lead--line-height: 1.5;
-  --text-lead--letter-spacing: 0;
-
-  --text-body: 1rem;
-  --text-body--line-height: 1.6;
-
-  --text-small: 0.875rem;
-  --text-small--line-height: 1.5;
-
-  --text-label: 0.6875rem; /* IBM Plex Mono, uppercase, wide tracking */
-  --text-label--line-height: 1.3;
-  --text-label--letter-spacing: 0.12em;
+  --text-2xs: 0.6875rem; /* 11px: tiny meta */
+  --text-2xs--line-height: 1rem;
+  --text-xs: 0.75rem; /* 12px */
+  --text-xs--line-height: 1rem;
+  --text-sm: 0.8125rem; /* 13px: sidebar, menus, tables */
+  --text-sm--line-height: 1.25rem;
+  --text-base: 0.875rem; /* 14px: UI default */
+  --text-base--line-height: 1.375rem;
+  --text-md: 1rem; /* 16px: writing */
+  --text-md--line-height: 1.625;
+  --text-lg: 1.125rem; /* 18px */
+  --text-lg--line-height: 1.6rem;
+  --text-xl: 1.375rem; /* 22px: section headings */
+  --text-xl--line-height: 1.8rem;
+  --text-2xl: 1.75rem; /* 28px */
+  --text-2xl--line-height: 2.2rem;
+  --text-title: 2.5rem; /* 40px: page titles */
+  --text-title--line-height: 1.2;
+  --text-title--letter-spacing: -0.02em;
+  --text-display: clamp(2.5rem, 6vw, 4.5rem); /* landing only */
+  --text-display--line-height: 1.05;
+  --text-display--letter-spacing: -0.035em;
 
   /* ── Shape ─────────────────────────────────────────────── */
   --radius-*: initial;
-  --radius-xs: 2px;
-  --radius-sm: 4px; /* hard ceiling */
-  --shadow-*: initial;
-  --inset-shadow-*: initial;
-  --drop-shadow-*: initial;
-  --blur-*: initial;
+  --radius-sm: 4px;
+  --radius-md: 6px; /* buttons, inputs, cards */
+  --radius-lg: 8px; /* popovers, dialogs */
+  --radius-full: 9999px; /* avatars only */
+
+  /* ── Motion: quick and quiet ───────────────────────────── */
+  --ease-*: initial;
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 120ms;
+  --duration-base: 160ms;
+  --duration-slow: 200ms;
 
   /* ── Layout ────────────────────────────────────────────── */
-  --spacing-gutter: 6px; /* mosaic gap: tight */
-  --spacing-edge: clamp(1rem, 2.5vw, 2.5rem); /* page side padding */
-
-  /* ── Motion ────────────────────────────────────────────── */
-  --ease-*: initial;
-  --ease-out-strong: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-in-out-strong: cubic-bezier(0.76, 0, 0.24, 1);
-  --duration-fast: 200ms;
-  --duration-base: 400ms;
-  --duration-slow: 600ms;
+  --spacing-sidebar: 15rem;
+  --spacing-page: 45rem; /* reading width for pages */
 }

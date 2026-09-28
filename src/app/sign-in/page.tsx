@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { googleSignIn } from "@/app/actions/auth";
-import { MaskedLines } from "@/components/motion/MaskedLines";
-import { PageWipe } from "@/components/motion/PageWipe";
-import { Arrow } from "@/components/ui/ArrowLink";
-import { Hairline } from "@/components/ui/Hairline";
-import { Label } from "@/components/ui/Label";
+import { Avatar } from "@/components/ui/Avatar";
+import { Button } from "@/components/ui/Button";
 import { googleEnabled } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { DEMO_EMAIL_DOMAIN, demoLoginEnabled } from "@/lib/demo";
@@ -13,11 +11,11 @@ import { rolesLine } from "@/lib/roles";
 import { getViewer } from "@/lib/session";
 import { MagicLinkForm } from "./MagicLinkForm";
 
-export const metadata: Metadata = { title: "Sign in · SELF" };
+export const metadata: Metadata = { title: "Sign in" };
 
-
-export default async function SignInPage() {
-  if (await getViewer()) redirect("/welcome");
+export default async function SignInPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
+  const { next } = await searchParams;
+  if (await getViewer()) redirect(next?.startsWith("/") && !next.startsWith("//") ? (next as "/home") : "/home");
 
   const demoUsers = demoLoginEnabled()
     ? await db.user.findMany({
@@ -28,51 +26,40 @@ export default async function SignInPage() {
     : [];
 
   return (
-    <PageWipe>
-      <section className="grid min-h-[calc(100dvh-3.5rem)] grid-cols-1 gap-12 px-edge pt-10 pb-16 md:grid-cols-2">
-        <div className="flex flex-col justify-between gap-10">
-          <Label>Sign in · Sign up · Same thing</Label>
-          <MaskedLines lines={["Come in."]} className="type-display text-hero" />
-        </div>
-        <div className="flex flex-col justify-end gap-10">
-          <p className="measure text-lead text-smoke">
-            No passwords. Give us your email and we&apos;ll send a link that gets you in.
-          </p>
-          <MagicLinkForm />
-          {googleEnabled && (
-            <form action={googleSignIn}>
-              <button type="submit" className="group text-lead font-semibold">
-                Or continue with Google <Arrow />
-              </button>
-            </form>
-          )}
-        </div>
-      </section>
+    <div className="flex min-h-dvh flex-col items-center px-6 pt-[12vh] pb-16">
+      <Link href="/" className="mb-8 text-lg font-semibold tracking-tight">
+        SELF
+      </Link>
+      <div className="w-full max-w-sm">
+        <h1 className="text-center text-xl font-semibold tracking-tight">Sign in or create an account</h1>
+        <p className="mt-1.5 mb-6 text-center text-sm text-fg-muted">No passwords. We&apos;ll email you a link that gets you in.</p>
+        <MagicLinkForm next={next} />
+        {googleEnabled && (
+          <form action={googleSignIn} className="mt-3">
+            <Button type="submit" size="md" className="h-9 w-full">
+              Continue with Google
+            </Button>
+          </form>
+        )}
+      </div>
 
       {demoUsers.length > 0 && (
-        <section className="px-edge pb-24">
-          <Hairline className="mb-4" />
-          <div className="mb-6 flex justify-between">
-            <Label tone="signal">Demo · Sign in as</Label>
-            <Label>Seed users · Dev only</Label>
+        <section className="mt-14 w-full max-w-2xl">
+          <div className="mb-2 flex items-baseline justify-between px-1">
+            <h2 className="text-sm font-medium">Demo: sign in as</h2>
+            <span className="text-xs text-fg-subtle">Seed people · dev only</span>
           </div>
-          <div className="grid grid-cols-1 border-t border-line md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2">
             {demoUsers.map((u) => (
-              <form key={u.email} method="post" action="/api/demo-login" className="border-b border-line md:odd:border-r">
-                <input type="hidden" name="email" value={u.email} />
-                <button
-                  type="submit"
-                  className="group flex w-full items-center justify-between gap-4 px-1 py-4 text-left transition-colors duration-(--duration-fast) hover:bg-field-raised md:px-4"
-                >
-                  <span className="min-w-0">
-                    <span className="type-display block text-title transition-[--wdth] duration-(--duration-base) ease-out-strong group-hover:[--wdth:115]">
-                      {u.name}
+              <form key={u.email} method="post" action="/api/demo-login" className="bg-bg">
+                <button type="submit" name="email" value={u.email} className="flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-bg-hover">
+                  <Avatar name={u.name || u.email} size="lg" />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-base font-medium">{u.name || u.email}</span>
+                    <span className="block truncate text-xs text-fg-muted">
+                      {rolesLine(u.profile?.roles ?? [])}
+                      {u.profile?.headline ? ` · ${u.profile.headline}` : ""}
                     </span>
-                    <span className="mt-1 block truncate text-small text-smoke">{u.profile?.headline}</span>
-                  </span>
-                  <span className="flex shrink-0 items-center gap-4">
-                    <Label>{rolesLine(u.profile?.roles ?? [])}</Label>
-                    <Arrow className="text-signal" />
                   </span>
                 </button>
               </form>
@@ -80,6 +67,6 @@ export default async function SignInPage() {
           </div>
         </section>
       )}
-    </PageWipe>
+    </div>
   );
 }

@@ -1,35 +1,31 @@
 import type { Metadata } from "next";
-import { Archivo, IBM_Plex_Mono } from "next/font/google";
-import { DemoSwitcher } from "@/components/nav/DemoSwitcher";
-import { Nav } from "@/components/nav/Nav";
+import { IBM_Plex_Mono, Inter } from "next/font/google";
+import { ToastProvider } from "@/components/ui/Toast";
+import { TooltipProvider } from "@/components/ui/Tooltip";
+import { themePref } from "@/lib/theme";
 import "./globals.css";
 
-const archivo = Archivo({
-  subsets: ["latin"],
-  axes: ["wdth"],
-  variable: "--font-archivo",
-  display: "swap",
-});
-
-const plexMono = IBM_Plex_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  variable: "--font-plex-mono",
-  display: "swap",
-});
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
+const plexMono = IBM_Plex_Mono({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-plex-mono", display: "swap" });
 
 export const metadata: Metadata = {
-  title: "SELF: for the builders of the future",
-  description: "Take an idea all the way to a real company.",
+  title: { default: "SELF", template: "%s · SELF" },
+  description: "One workspace to build a company: from the first idea to running the business and the team.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const pref = await themePref();
   return (
-    <html lang="en" className={`${archivo.variable} ${plexMono.variable}`}>
-      <body className="bg-field text-bone">
-        <Nav />
-        {children}
-        <DemoSwitcher />
+    <html
+      lang="en"
+      data-theme={pref === "system" ? undefined : pref}
+      className={`${inter.variable} ${plexMono.variable}`}
+      suppressHydrationWarning
+    >
+      <body>
+        <TooltipProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </TooltipProvider>
       </body>
     </html>
   );

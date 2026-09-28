@@ -1,5 +1,5 @@
-// SELF data model.
-// Plain-language guide: docs/PLAN.md → "Data model". Each phase adds models here.
+// SELF 2 data model: workspaces, pages and databases, plus the network.
+// Plain-language guide: CLAUDE.md → "Core objects".
 
 generator client {
   provider = "prisma-client"
@@ -25,10 +25,17 @@ model User {
   sessions           Session[]
   accounts           Account[]
   profile            Profile?
-  hubs               Hub[]
+  memberships        WorkspaceMember[]
+  workspacesCreated  Workspace[]             @relation("WorkspaceCreatedBy")
+  invitesSent        Invite[]
+  pagesCreated       Page[]                  @relation("PageCreatedBy")
+  pageVersions       PageVersion[]
+  comments           Comment[]
+  notifications      Notification[]          @relation("NotificationFor")
+  notificationsSent  Notification[]          @relation("NotificationActor")
+  activities         Activity[]
   agentThreads       AgentThread[]
   agentRuns          AgentRun[]
-  memberships        HubMember[]
   signalsSent        Signal[]                @relation("SignalFrom")
   signalsReceived    Signal[]                @relation("SignalTo")
   partner            Partner?
@@ -141,111 +148,286 @@ model Profile {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Project Hubs: one idea each.
+// Workspaces: one company or idea each. Every person also gets a
+// PERSONAL workspace for private pages.
 // ─────────────────────────────────────────────────────────────
 
-enum HubStage {
+enum WorkspaceKind {
+  PERSONAL
+  TEAM
+}
+
+enum WorkspaceRole {
+  OWNER // everything, including deleting the workspace
+  ADMIN // manage members and settings
+  MEMBER // create and edit pages
+  GUEST // read, and comment
+}
+
+enum WorkspaceStage {
   IDEA // raw idea, no thesis yet
-  THESIS // thesis saved
-  PLAN // game plan exists (Phase 3)
+  THESIS // thesis written
+  PLAN // game plan exists
   BUILDING
   LAUNCHED
 }
 
-model Hub {
-  id       String   @id @default(cuid())
-  number   Int // per owner: your first hub is "HUB 01", your second "HUB 02"
-  slug     String   @unique
-  ownerId  String
-  owner    User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  name     String
-  oneLiner String?
-  rawIdea  String // the thought it started from, kept for reference
-  stage    HubStage @default(IDEA)
-
-  // Cover: generated type-art (layout/tone override the name-based default)
-  // or an uploaded image.
-  coverLayout   String? // "initial" | "stack" | "repeat" | "index"
-  coverTone     String? // "raised" | "bone" | "signal"
+model Workspace {
+  id            String         @id @default(cuid())
+  slug          String         @unique
+  kind          WorkspaceKind  @default(TEAM)
+  name          String
+  icon          String? // a character or emoji the owner picked
+  oneLiner      String?
+  rawIdea       String? // the thought it started from
+  stage         WorkspaceStage @default(IDEA)
+  sector        String? // one of FOCUS_AREAS, for backer filters
   coverImageUrl String?
 
-  // Backer discovery (Phase 6). Off by default; the owner opts in.
-  // Only signed-in BACKERs see discoverable hubs, and only a teaser.
+  // Backer discovery. Off by default; interest only, never amounts or terms.
   discoverable   Boolean   @default(false)
   discoverableAt DateTime?
-  sector         String? // one of FOCUS_AREAS, for backer filters
-  backerAsk      String? // what help they want from a backer. Never amounts or terms.
+  backerAsk      String?
 
-  // Admin curation (Phase 11). Featured hubs lead the public mosaics
-  // (open roles, backer discovery). Only admins set it.
+  // Admin curation: featured workspaces lead the public lists.
   featured   Boolean   @default(false)
   featuredAt DateTime?
 
-  thesis          Thesis?
-  thesisRevisions ThesisRevision[]
-  agentThreads    AgentThread[]
-  agentRuns       AgentRun[]
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  planSteps       PlanStep[]
-  members         HubMember[]
-  roleOpenings    RoleOpening[]
-  signals         Signal[]
-  gtmWorkspace    GtmWorkspace?
-  simulations     Simulation[]
+  createdById String
+  createdBy   User     @relation("WorkspaceCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  @@unique([ownerId, number])
-  @@index([ownerId])
+  members       WorkspaceMember[]
+  invites       Invite[]
+  pages         Page[]
+  signals       Signal[]
+  agentThreads  AgentThread[]
+  agentRuns     AgentRun[]
+  simulations   Simulation[]
+  activities    Activity[]
+  notifications Notification[]
+
+  @@index([kind, discoverable])
   @@index([featured])
 }
 
-/// The current core thesis. Revisions keep history.
-model Thesis {
-  id            String   @id @default(cuid())
-  hubId         String   @unique
-  hub           Hub      @relation(fields: [hubId], references: [id], onDelete: Cascade)
-  statement     String // one or two sentences: the whole bet
-  problem       String
-  audience      String // who it's for
-  whyNow        String
-  whyUs         String // why this builder
-  contrarian    String // what they believe that others don't
-  openQuestions String[] // what's still weak, from the last agent pass
-  updatedAt     DateTime @updatedAt
+model WorkspaceMember {
+  id          String        @id @default(cuid())
+  workspaceId String
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role        WorkspaceRole @default(MEMBER)
+  title       String? // "Co-founder, operations"
+  joinedAt    DateTime      @default(now())
+
+  @@unique([workspaceId, userId])
+  @@index([userId])
 }
 
-enum RevisionSource {
-  AGENT // drafted in the thesis dialogue
-  EDIT // edited by hand
-}
+model Invite {
+  id          String        @id @default(cuid())
+  workspaceId String
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  email       String
+  role        WorkspaceRole @default(MEMBER)
+  token       String        @unique
+  invitedById String
+  invitedBy   User          @relation(fields: [invitedById], references: [id], onDelete: Cascade)
+  createdAt   DateTime      @default(now())
+  expiresAt   DateTime
+  acceptedAt  DateTime?
 
-model ThesisRevision {
-  id        String         @id @default(cuid())
-  hubId     String
-  hub       Hub            @relation(fields: [hubId], references: [id], onDelete: Cascade)
-  source    RevisionSource
-  snapshot  Json // the Thesis fields at that moment
-  createdAt DateTime       @default(now())
-
-  @@index([hubId, createdAt])
+  @@index([workspaceId, email])
 }
 
 // ─────────────────────────────────────────────────────────────
-// Agents: conversations and usage. Prompts live in src/agents/.
+// Pages: everything is a page. Pages nest; a DATABASE page holds
+// typed rows, and each ROW is itself a page with property values.
+// ─────────────────────────────────────────────────────────────
+
+enum PageKind {
+  PAGE
+  DATABASE
+  ROW
+}
+
+model Page {
+  id          String    @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  parentId    String? // parent page; for a ROW, its database
+  parent      Page?     @relation("PageTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Page[]    @relation("PageTree")
+  kind        PageKind  @default(PAGE)
+  title       String    @default("")
+  icon        String?
+  coverUrl    String?
+  content     Json? // BlockNote blocks
+  text        String    @default("") // plain text of content, for search
+  position    Float     @default(0) // order among siblings
+
+  /// DATABASE: property definitions (see src/lib/db-schema.ts).
+  schema    Json?
+  /// ROW: property values, keyed by property id.
+  props     Json?
+  /// Built-in databases and pages: "gamePlan", "tasks", "roles", "meetings", "goals", "crm", "thesis", "gtm"…
+  systemKey String?
+  /// Template this page was made from, if any.
+  template  String?
+  fullWidth Boolean @default(false)
+
+  createdById  String
+  createdBy    User      @relation("PageCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+  updatedById  String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  archivedAt   DateTime? // in the trash
+  archivedById String?
+
+  views         DatabaseView[]
+  versions      PageVersion[]
+  comments      Comment[]
+  signals       Signal[]
+  agentThreads  AgentThread[]
+  notifications Notification[]
+  activities    Activity[]
+
+  @@unique([workspaceId, systemKey])
+  @@index([workspaceId, parentId, position])
+  @@index([parentId, kind])
+}
+
+enum ViewType {
+  TABLE
+  BOARD
+  LIST
+  CALENDAR
+}
+
+/// A saved way of looking at a database: layout, filters, sorts, grouping.
+model DatabaseView {
+  id         String   @id @default(cuid())
+  databaseId String
+  database   Page     @relation(fields: [databaseId], references: [id], onDelete: Cascade)
+  name       String
+  type       ViewType @default(TABLE)
+  config     Json // see src/lib/db-schema.ts ViewConfig
+  position   Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  @@index([databaseId, position])
+}
+
+/// Snapshot of a page, for version history.
+model PageVersion {
+  id          String   @id @default(cuid())
+  pageId      String
+  page        Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  title       String
+  content     Json?
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@index([pageId, createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Comments, notifications and activity.
+// ─────────────────────────────────────────────────────────────
+
+model Comment {
+  id         String    @id @default(cuid())
+  pageId     String
+  page       Page      @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  blockId    String? // anchored to a block, or the page as a whole
+  quote      String? // the text it was anchored to
+  parentId   String? // replies
+  parent     Comment?  @relation("Thread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies    Comment[] @relation("Thread")
+  authorId   String
+  author     User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  body       String
+  resolvedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  notifications Notification[]
+
+  @@index([pageId, createdAt])
+}
+
+enum NotificationKind {
+  MENTION
+  COMMENT
+  ASSIGNED
+  INVITE
+  SIGNAL // a new request
+  SIGNAL_ANSWERED // your request was answered
+  SIMULATION
+  SYSTEM
+}
+
+model Notification {
+  id          String           @id @default(cuid())
+  userId      String
+  user        User             @relation("NotificationFor", fields: [userId], references: [id], onDelete: Cascade)
+  kind        NotificationKind
+  actorId     String?
+  actor       User?            @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
+  workspaceId String?
+  workspace   Workspace?       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  pageId      String?
+  page        Page?            @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  commentId   String?
+  comment     Comment?         @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  signalId    String?
+  signal      Signal?          @relation(fields: [signalId], references: [id], onDelete: Cascade)
+  text        String // one line, already written for the reader
+  href        String
+  readAt      DateTime?
+  createdAt   DateTime         @default(now())
+
+  @@index([userId, readAt, createdAt])
+}
+
+/// What happened in a workspace, for the weekly summary and history.
+model Activity {
+  id          String    @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  actorId     String
+  actor       User      @relation(fields: [actorId], references: [id], onDelete: Cascade)
+  kind        String // "page.created", "row.done", "member.joined", …
+  pageId      String?
+  page        Page?     @relation(fields: [pageId], references: [id], onDelete: SetNull)
+  data        Json?
+  createdAt   DateTime  @default(now())
+
+  @@index([workspaceId, createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Agents: conversations and one usage row per model call.
 // ─────────────────────────────────────────────────────────────
 
 model AgentThread {
-  id        String         @id @default(cuid())
-  kind      String // "thesis" now; hub agents in Phase 10
-  userId    String
-  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  hubId     String?
-  hub       Hub?           @relation(fields: [hubId], references: [id], onDelete: Cascade)
-  messages  AgentMessage[]
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  id          String         @id @default(cuid())
+  kind        String // "thesis", "agent:strategy", "page", …
+  userId      String
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspaceId String?
+  workspace   Workspace?     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  pageId      String?
+  page        Page?          @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  messages    AgentMessage[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
 
-  @@index([hubId, kind])
+  @@index([workspaceId, kind])
+  @@index([userId, kind])
 }
 
 enum MessageRole {
@@ -275,115 +457,30 @@ enum RunStatus {
 
 /// One row per agent call. Drives cost caps and the admin cost view.
 model AgentRun {
-  id               String    @id @default(cuid())
+  id               String     @id @default(cuid())
   userId           String
-  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  hubId            String?
-  hub              Hub?      @relation(fields: [hubId], references: [id], onDelete: SetNull)
+  user             User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspaceId      String?
+  workspace        Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
   purpose          String // e.g. "thesis.questions"
   model            String
   status           RunStatus
-  inputTokens      Int       @default(0)
-  outputTokens     Int       @default(0)
-  cacheReadTokens  Int       @default(0)
-  cacheWriteTokens Int       @default(0)
-  durationMs       Int       @default(0)
+  inputTokens      Int        @default(0)
+  outputTokens     Int        @default(0)
+  cacheReadTokens  Int        @default(0)
+  cacheWriteTokens Int        @default(0)
+  durationMs       Int        @default(0)
   error            String?
-  createdAt        DateTime  @default(now())
+  createdAt        DateTime   @default(now())
 
   @@index([userId, createdAt])
 }
 
-// ─────────────────────────────────────────────────────────────
-// Game plan: staged steps from idea to launch (Phase 3).
-// ─────────────────────────────────────────────────────────────
-
 enum PlanStage {
-  VALIDATE // prove the problem and the customer
-  SETUP // company, team, money, paperwork
-  BUILD // make the first real version
-  LAUNCH // get it in front of customers
-}
-
-/// What a step needs from outside the builder. Each maps to a connection
-/// area (src/lib/needs.ts): co-founders (Phase 4), partner directory
-/// categories (Phase 5), backers (Phase 6), mentors (Phase 7).
-enum NeedTag {
-  COFOUNDER
-  SUPPLIER
-  LEGAL
-  FUNDING
-  MARKETING
-  GTM
-  WEBSITE
-  MENTOR
-}
-
-enum StepSource {
-  AGENT
-  MANUAL
-}
-
-model PlanStep {
-  id           String        @id @default(cuid())
-  hubId        String
-  hub          Hub           @relation(fields: [hubId], references: [id], onDelete: Cascade)
-  stage        PlanStage
-  position     Int // order within the stage, 0-based
-  title        String
-  detail       String?
-  needs        NeedTag[]
-  source       StepSource    @default(MANUAL)
-  doneAt       DateTime?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  roleOpenings RoleOpening[]
-  signals      Signal[]
-
-  @@index([hubId, stage, position])
-}
-
-// ─────────────────────────────────────────────────────────────
-// Team (Phase 4): the owner plus people who joined through an
-// accepted ROLE_INTEREST signal.
-// ─────────────────────────────────────────────────────────────
-
-model HubMember {
-  id       String   @id @default(cuid())
-  hubId    String
-  hub      Hub      @relation(fields: [hubId], references: [id], onDelete: Cascade)
-  userId   String
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role     String // the role title they joined for
-  joinedAt DateTime @default(now())
-
-  @@unique([hubId, userId])
-}
-
-enum RoleStatus {
-  OPEN
-  FILLED
-  CLOSED
-}
-
-/// A role a hub is looking for. Posting one makes the hub's name, one-liner
-/// and thesis statement visible to other builders browsing roles.
-model RoleOpening {
-  id          String     @id @default(cuid())
-  hubId       String
-  hub         Hub        @relation(fields: [hubId], references: [id], onDelete: Cascade)
-  planStepId  String? // the game-plan step this role serves, if any
-  planStep    PlanStep?  @relation(fields: [planStepId], references: [id], onDelete: SetNull)
-  title       String // "Technical co-founder"
-  description String
-  commitment  String // "Co-founder", "Part-time", "Advisor"…
-  skills      String[]
-  status      RoleStatus @default(OPEN)
-  signals     Signal[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-
-  @@index([status, createdAt])
+  VALIDATE
+  SETUP
+  BUILD
+  LAUNCH
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -393,10 +490,10 @@ model RoleOpening {
 // ─────────────────────────────────────────────────────────────
 
 enum SignalKind {
-  ROLE_INTEREST // builder → hub owner, about a role opening (Phase 4)
-  BACKER_INTEREST // backer → hub owner. Interest only, never money (Phase 6)
-  MENTOR_REQUEST // hub owner → mentor (Phase 7)
-  PARTNER_INTRO // hub owner → partner (Phase 5)
+  ROLE_INTEREST // builder → workspace owner, about a role (a Roles row)
+  BACKER_INTEREST // backer → workspace owner. Interest only, never money
+  MENTOR_REQUEST // workspace owner → mentor
+  PARTNER_INTRO // workspace owner → partner
 }
 
 enum SignalStatus {
@@ -407,29 +504,29 @@ enum SignalStatus {
 }
 
 model Signal {
-  id            String       @id @default(cuid())
+  id            String         @id @default(cuid())
   kind          SignalKind
-  status        SignalStatus @default(PENDING)
+  status        SignalStatus   @default(PENDING)
   fromUserId    String
-  fromUser      User         @relation("SignalFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
+  fromUser      User           @relation("SignalFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
   toUserId      String // the person who decides
-  toUser        User         @relation("SignalTo", fields: [toUserId], references: [id], onDelete: Cascade)
-  hubId         String?
-  hub           Hub?         @relation(fields: [hubId], references: [id], onDelete: Cascade)
-  roleOpeningId String?
-  roleOpening   RoleOpening? @relation(fields: [roleOpeningId], references: [id], onDelete: SetNull)
-  planStepId    String?
-  planStep      PlanStep?    @relation(fields: [planStepId], references: [id], onDelete: SetNull)
+  toUser        User           @relation("SignalTo", fields: [toUserId], references: [id], onDelete: Cascade)
+  workspaceId   String?
+  workspace     Workspace?     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  /// The row it's about: a role (ROLE_INTEREST) or a game-plan step (intros, mentor asks).
+  pageId        String?
+  page          Page?          @relation(fields: [pageId], references: [id], onDelete: SetNull)
   partnerId     String? // PARTNER_INTRO: which firm
-  partner       Partner?     @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  partner       Partner?       @relation(fields: [partnerId], references: [id], onDelete: Cascade)
   note          String // the sender's message
   respondedAt   DateTime?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  notifications Notification[]
 
   @@index([toUserId, status])
   @@index([fromUserId, status])
-  @@index([hubId, kind])
+  @@index([workspaceId, kind])
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -456,7 +553,7 @@ model Partner {
   description  String
   categories   PartnerCategory[]
   services     String[] // what they actually do, short phrases
-  stages       PlanStage[] // stages they're best at
+  stages       PlanStage[] // plan stages they're best at
   location     String
   priceNote    String? // "Fixed-fee formation from €900". Services only.
   website      String?
@@ -475,22 +572,6 @@ model Partner {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Marketing + GTM workspace (Phase 8). One per hub. Agents propose
-// drafts; only the builder's explicit "use this" or save writes here.
-// ─────────────────────────────────────────────────────────────
-
-model GtmWorkspace {
-  id          String   @id @default(cuid())
-  hubId       String   @unique
-  hub         Hub      @relation(fields: [hubId], references: [id], onDelete: Cascade)
-  positioning String?
-  customers   String? // target customers
-  channels    String?
-  launchPlan  String?
-  updatedAt   DateTime @updatedAt
-}
-
-// ─────────────────────────────────────────────────────────────
 // Team simulations (Phase 9). AI stand-ins built from each person's persona
 // talk through a scenario. Always labelled SIMULATION. The fit report is a
 // conversation starter: aligned / clashed / talk about this. No scores.
@@ -506,8 +587,8 @@ model Simulation {
   id            String                  @id @default(cuid())
   createdById   String
   createdBy     User                    @relation("SimulationsStarted", fields: [createdById], references: [id], onDelete: Cascade)
-  hubId         String? // optional context
-  hub           Hub?                    @relation(fields: [hubId], references: [id], onDelete: SetNull)
+  workspaceId   String? // optional context
+  workspace     Workspace?              @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
   scenarioKey   String // preset key or "custom"
   scenarioTitle String
   scenarioBrief String
@@ -572,12 +653,12 @@ model FitReport {
 // investing, it must sit behind a licensed funding portal or broker-dealer
 // partner, and would add models roughly like:
 //
-//   Offering    hubId, partnerPlatform, externalOfferingId, status,
+//   Offering    workspaceId, partnerPlatform, externalOfferingId, status,
 //               regulatory exemption, disclosures (owned by the platform)
 //   Commitment  offeringId, backerId, externalCommitmentId, status
 //               (amounts live on the licensed platform, not here)
 //
-// linked from Hub and from the BACKER_INTEREST Signal that started the
+// linked from Workspace and from the BACKER_INTEREST Signal that started the
 // relationship. Until then: no amount, valuation, terms or "commit" fields,
 // anywhere. See src/lib/no-terms.ts for the guard on free text.
 // ─────────────────────────────────────────────────────────────

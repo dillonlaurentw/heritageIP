@@ -1,13 +1,13 @@
-import type { Route } from "next";
-import { ArrowLink } from "@/components/ui/ArrowLink";
+import type { ReactNode } from "react";
 
-/** One bold line and an arrow. Nothing else. */
-export function EmptyState<T extends string>({ line, href }: { line: string; href: Route<T> }) {
+/** One quiet line, an optional hint, and an optional action. */
+export function EmptyState({ icon, title, hint, action }: { icon?: ReactNode; title: string; hint?: string; action?: ReactNode }) {
   return (
-    <div className="px-edge py-[18vh]">
-      <ArrowLink href={href} size="hero" className="max-w-[18ch]">
-        {line}
-      </ArrowLink>
+    <div className="flex flex-col items-center gap-2 px-6 py-16 text-center">
+      {icon && <div className="mb-1 text-fg-subtle [&>svg]:size-6">{icon}</div>}
+      <p className="text-base font-medium text-fg">{title}</p>
+      {hint && <p className="max-w-sm text-sm text-fg-muted">{hint}</p>}
+      {action && <div className="mt-3">{action}</div>}
     </div>
   );
 }

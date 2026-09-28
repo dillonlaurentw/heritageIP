@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Demo login is off." }, { status: 403 });
   }
   try {
-    await auth.api.signInMagicLink({ body: { email, callbackURL: "/welcome" }, headers: req.headers });
+    await auth.api.signInMagicLink({ body: { email, callbackURL: "/home" }, headers: req.headers });
   } catch {
     return NextResponse.json({ error: "Too many switches in a minute. Wait a moment and try again." }, { status: 429 });
   }

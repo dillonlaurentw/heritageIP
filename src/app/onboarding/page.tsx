@@ -1,18 +1,16 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { PageWipe } from "@/components/motion/PageWipe";
 import { requireViewer } from "@/lib/session";
 import { OnboardingFlow } from "./OnboardingFlow";
 
-export const metadata: Metadata = { title: "Welcome · SELF" };
+export const metadata: Metadata = { title: "Welcome" };
 
 export default async function OnboardingPage() {
   const { user, profile } = await requireViewer();
   if (profile.onboardedAt) redirect("/home");
 
   return (
-    <PageWipe>
-      <OnboardingFlow
+    <OnboardingFlow
         startAt={profile.onboardingStep}
         initial={{
           name: user.name ?? "",
@@ -32,6 +30,5 @@ export default async function OnboardingPage() {
           contactLink: profile.contactLink ?? "",
         }}
       />
-    </PageWipe>
   );
 }
