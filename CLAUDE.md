@@ -326,6 +326,22 @@ npm run lint && npm run typecheck && npm test && npm run build   # before every 
   kinds there instead of building new inboxes.
 - Dev/demo: the "Demo · Switch" menu (bottom-left) signs in as any seed user.
 
+## Partner conventions (Phase 5)
+
+- `Partner` is a firm profile. `claimedById` links the PARTNER user who manages
+  it and answers intros. Unclaimed partners' intros go to SELF's concierge
+  (`CONCIERGE_EMAIL`, else the earliest admin), who makes the intro by email.
+- `PARTNER_INTRO` signals carry `partnerId` and usually `planStepId`. Accepting
+  sends the "intro email to both sides" (`sendIntroEmails`).
+- The firm's `contactEmail` is revealed only via `partnerContactsFor()` (an
+  accepted intro from one of the viewer's hubs). Person contacts still go
+  through `contactsFor()`.
+- Needs map to directory categories in `NEED_TO_CATEGORY` (`src/lib/needs.ts`).
+  `?hub=&step=` travel through the directory so a request stays tied to a step.
+- Claiming a profile is an admin action (Phase 11); partners edit their claimed
+  profile at `/partners/[slug]/edit`.
+- Magic-link rate limit: 5/min per visitor normally, 60/min in demo mode.
+
 ## Design primitives (Phase 0)
 
 - `src/design/tokens.css`: colors, type scale, radii, motion. Tailwind's default

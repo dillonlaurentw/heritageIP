@@ -64,8 +64,17 @@ export const NEEDS: Record<Need, { slug: string; label: string; title: string; l
   },
 };
 
+/** Needs served by the partner directory, and the category each maps to. */
+export const NEED_TO_CATEGORY: Partial<Record<Need, "SUPPLIER" | "LEGAL" | "WEBSITE" | "MARKETING" | "GTM">> = {
+  SUPPLIER: "SUPPLIER",
+  LEGAL: "LEGAL",
+  WEBSITE: "WEBSITE",
+  MARKETING: "MARKETING",
+  GTM: "GTM",
+};
+
 export const needFromSlug = (slug: string) =>
   (Object.keys(NEEDS) as Need[]).find((k) => NEEDS[k].slug === slug) ?? null;
 
 /** Connection areas that are live. Grows as phases ship. */
-export const LIVE_PHASE = 4;
+export const LIVE_PHASE = 5;

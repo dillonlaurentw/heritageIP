@@ -31,6 +31,7 @@ model User {
   memberships     HubMember[]
   signalsSent     Signal[]      @relation("SignalFrom")
   signalsReceived Signal[]      @relation("SignalTo")
+  partner         Partner?
 
   @@map("user")
 }
@@ -392,6 +393,8 @@ model Signal {
   roleOpening   RoleOpening? @relation(fields: [roleOpeningId], references: [id], onDelete: SetNull)
   planStepId    String?
   planStep      PlanStep?    @relation(fields: [planStepId], references: [id], onDelete: SetNull)
+  partnerId     String? // PARTNER_INTRO: which firm
+  partner       Partner?     @relation(fields: [partnerId], references: [id], onDelete: Cascade)
   note          String // the sender's message
   respondedAt   DateTime?
   createdAt     DateTime     @default(now())
@@ -400,4 +403,46 @@ model Signal {
   @@index([toUserId, status])
   @@index([fromUserId, status])
   @@index([hubId, kind])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Partner directory (Phase 5). Firms that help builders: legal,
+// suppliers, build studios, marketing, go-to-market and more.
+// ─────────────────────────────────────────────────────────────
+
+enum PartnerCategory {
+  SUPPLIER // suppliers & manufacturing
+  LEGAL
+  WEBSITE // website & build
+  MARKETING
+  GTM // go-to-market
+  DESIGN
+  FINANCE // finance & accounting
+  OTHER
+}
+
+model Partner {
+  id           String            @id @default(cuid())
+  slug         String            @unique
+  name         String
+  tagline      String
+  description  String
+  categories   PartnerCategory[]
+  services     String[] // what they actually do, short phrases
+  stages       PlanStage[] // stages they're best at
+  location     String
+  priceNote    String? // "Fixed-fee formation from €900". Services only.
+  website      String?
+  /// The firm's intro address. Revealed to a builder only after an intro is accepted.
+  contactEmail String
+  featured     Boolean           @default(false)
+  /// The PARTNER user who manages this profile and answers intros. Unclaimed
+  /// partners are handled by SELF's concierge (an admin), who makes the intro.
+  claimedById  String?           @unique
+  claimedBy    User?             @relation(fields: [claimedById], references: [id], onDelete: SetNull)
+  signals      Signal[]
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@index([featured])
 }

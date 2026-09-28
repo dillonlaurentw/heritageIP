@@ -1,6 +1,7 @@
 import "server-only";
 import { db } from "./db";
 import { sendEmail } from "./email";
+import { sendIntroEmails } from "./partners";
 import { nextStatus, revealsContact, type SignalAction } from "./signal-rules";
 
 export type Contact = { email: string | null; link: string | null };
@@ -99,7 +100,9 @@ export async function actOnSignal(signalId: string, actorId: string, action: Sig
     }
   });
 
-  if (next.status === "ACCEPTED") {
+  if (next.status === "ACCEPTED" && signal.kind === "PARTNER_INTRO") {
+    await sendIntroEmails(signal.id);
+  } else if (next.status === "ACCEPTED") {
     const about = signal.roleOpening ? `"${signal.roleOpening.title}" on ${signal.hub?.name}` : (signal.hub?.name ?? "SELF");
     const card = (u: typeof signal.fromUser) =>
       [u.name, u.profile?.contactEmail, u.profile?.contactLink].filter(Boolean).join("\n");

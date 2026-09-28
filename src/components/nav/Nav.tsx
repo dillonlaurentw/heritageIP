@@ -29,6 +29,9 @@ export async function Nav() {
               <Link href="/roles" className={linkClass}>
                 Roles
               </Link>
+              <Link href="/partners" className={linkClass}>
+                Partners
+              </Link>
               <Link href="/connections" className={`${linkClass} inline-flex items-center gap-2`}>
                 Connections
                 {waiting > 0 && (

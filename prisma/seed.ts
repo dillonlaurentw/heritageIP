@@ -394,6 +394,49 @@ const plans: Record<string, SeedStep[]> = {
   ],
 };
 
+
+type SeedPartner = {
+  slug: string;
+  name: string;
+  tagline: string;
+  description: string;
+  categories: ("SUPPLIER" | "LEGAL" | "WEBSITE" | "MARKETING" | "GTM" | "DESIGN" | "FINANCE" | "OTHER")[];
+  services: string[];
+  stages: ("VALIDATE" | "SETUP" | "BUILD" | "LAUNCH")[];
+  location: string;
+  priceNote?: string;
+  featured?: boolean;
+  claimedBy?: string;
+};
+
+// Fictional firms. None of these are real companies.
+const partners: SeedPartner[] = [
+  { slug: "northloop-sourcing", name: "Northloop Sourcing", tagline: "Contract manufacturing without the 10,000-unit minimum.", description: "We broker first production runs between early brands and vetted factories across the EU and Asia. We negotiate small minimums, run samples, and stay on the factory floor until the first order ships.", categories: ["SUPPLIER"], services: ["Factory matching", "Sample runs", "Small first orders", "Quality inspections"], stages: ["BUILD"], location: "Rotterdam", priceNote: "Success fee on first order, no retainer", featured: true, claimedBy: "northloop" },
+  { slug: "iberia-fibre-works", name: "Iberia Fibre Works", tagline: "Moulded fibre and bio-based packaging, made in Portugal.", description: "A packaging mill that runs short batches of trays, clamshells and inserts from plant fibre and seaweed blends. Food-contact certified lines.", categories: ["SUPPLIER"], services: ["Moulded fibre trays", "Food-contact lines", "Custom tooling", "Batches from 5,000"], stages: ["BUILD", "LAUNCH"], location: "Porto" },
+  { slug: "oaxaca-forge-collective", name: "Oaxaca Forge Collective", tagline: "Small-batch metalwork by a cooperative of smiths.", description: "Forged and machined parts for tools, hardware and home goods. We'll make fifty before we make five thousand.", categories: ["SUPPLIER"], services: ["Forging", "CNC machining", "Heat treatment", "Spare-part runs"], stages: ["BUILD"], location: "Mexico City" },
+  { slug: "brightline-kitchens", name: "Brightline Contract Kitchens", tagline: "Licensed kitchen space by the shift, including nights.", description: "Commercial kitchens rented by the shift across Chicago, with night hours, cold storage and delivery bays.", categories: ["SUPPLIER"], services: ["Night shifts", "Cold storage", "Licensed prep space", "Delivery bays"], stages: ["BUILD", "LAUNCH"], location: "Chicago", priceNote: "From $180 per shift" },
+  { slug: "pearl-delta-prototyping", name: "Pearl Delta Prototyping", tagline: "From CAD to a working prototype in two weeks.", description: "Rapid prototyping for hardware: 3D print, soft tooling, electronics bring-up and a clear path to production.", categories: ["SUPPLIER", "DESIGN"], services: ["3D printing", "Soft tooling", "Electronics bring-up", "DFM reviews"], stages: ["VALIDATE", "BUILD"], location: "Shenzhen" },
+  { slug: "harbor-and-vine-legal", name: "Harbor & Vine Legal", tagline: "Formation, equity and first contracts for early builders.", description: "A small firm for founders who haven't raised yet. We set up companies properly, write founder agreements people actually understand, and review your first customer and supplier contracts.", categories: ["LEGAL"], services: ["Company formation", "Founder agreements & vesting", "Customer contracts", "IP assignment"], stages: ["SETUP"], location: "New York", priceNote: "Fixed-fee formation from $1,200", featured: true, claimedBy: "harbor" },
+  { slug: "lakeshore-counsel", name: "Lakeshore Counsel", tagline: "Licences, leases and food law for small operators.", description: "We help restaurants, kitchens and food startups get licensed, sign sane leases and stay on the right side of food regulations.", categories: ["LEGAL"], services: ["Food business licences", "Commercial leases", "Insurance review", "Employment basics"], stages: ["SETUP", "LAUNCH"], location: "Chicago", priceNote: "Fixed-fee licence packages" },
+  { slug: "tejo-legal", name: "Tejo Legal", tagline: "Portuguese and EU company law, in plain English.", description: "Company formation in Portugal, EU grant compliance, and product regulation for startups selling into Europe.", categories: ["LEGAL"], services: ["Lda formation", "EU grant compliance", "Food-contact regulation", "Supplier contracts"], stages: ["SETUP", "BUILD"], location: "Lisbon", priceNote: "Formation from €900" },
+  { slug: "kestrel-ip", name: "Kestrel IP", tagline: "Trademarks and patents before you tell the world.", description: "Patent and trademark attorneys who help early teams decide what's worth protecting, and file only that.", categories: ["LEGAL"], services: ["Trademark filing", "Patent searches", "Design registration", "IP strategy calls"], stages: ["SETUP", "LAUNCH"], location: "London" },
+  { slug: "adwoa-mensah-partners", name: "Adwoa Mensah & Partners", tagline: "Company, lending and agri-finance law in Ghana.", description: "We work with agri and fintech founders on registration, lending licences and partnerships with rural banks.", categories: ["LEGAL"], services: ["Company registration", "Lending licences", "Bank partnerships", "Data protection"], stages: ["SETUP"], location: "Accra" },
+  { slug: "quarterlight-studio", name: "Quarterlight Studio", tagline: "The first real version of your product, in eight weeks.", description: "A small product studio that designs and builds v1 web and mobile products for non-technical founders, then hands over cleanly.", categories: ["WEBSITE", "DESIGN"], services: ["MVP build", "Product design", "Integrations", "Clean handover"], stages: ["BUILD"], location: "Berlin", priceNote: "Fixed-scope sprints from €18k", featured: true },
+  { slug: "shipyard-dev", name: "Shipyard Dev", tagline: "Websites and ordering pages that launch this month.", description: "Fast, accessible websites and simple ordering flows for small businesses and first launches.", categories: ["WEBSITE"], services: ["Launch websites", "Ordering pages", "Payments setup", "Analytics"], stages: ["BUILD", "LAUNCH"], location: "London", priceNote: "Launch sites from £2,500" },
+  { slug: "nine-lives-web", name: "Nine Lives Web", tagline: "Shops that sell spare parts as proudly as products.", description: "E-commerce builds for makers and craft brands, including parts catalogues and repair guides.", categories: ["WEBSITE"], services: ["E-commerce", "Parts catalogues", "Repair guides", "Bilingual sites"], stages: ["BUILD", "LAUNCH"], location: "Mexico City" },
+  { slug: "fieldwork-software", name: "Fieldwork Software", tagline: "Offline-first apps for people who work outdoors.", description: "Mobile apps that work without signal, in bright sun, in several languages. Agriculture, logistics and field service.", categories: ["WEBSITE"], services: ["Offline-first mobile", "Low-literacy UX", "SMS and WhatsApp flows", "Field testing"], stages: ["BUILD"], location: "Nairobi" },
+  { slug: "loud-quiet", name: "Loud Quiet", tagline: "Brand identities for products with a conscience and a margin.", description: "A brand studio for sustainable consumer and B2B products: naming, identity, packaging and the pitch story.", categories: ["MARKETING", "DESIGN"], services: ["Naming", "Identity", "Packaging design", "Pitch narrative"], stages: ["BUILD", "LAUNCH"], location: "Lisbon", featured: true },
+  { slug: "paper-tiger-content", name: "Paper Tiger Content", tagline: "Launch stories that press and buyers actually read.", description: "Content, PR and launch campaigns for early products, built around one clear story.", categories: ["MARKETING"], services: ["Launch PR", "Founder content", "Case studies", "Media training"], stages: ["LAUNCH"], location: "New York" },
+  { slug: "common-tongue", name: "Common Tongue", tagline: "Marketing across languages and markets in Southeast Asia.", description: "Localisation and growth marketing for brands entering Singapore, Indonesia and the Philippines.", categories: ["MARKETING", "GTM"], services: ["Localisation", "Paid social", "Community launches", "Market entry research"], stages: ["LAUNCH"], location: "Singapore" },
+  { slug: "first-twenty", name: "First Twenty", tagline: "We help you close your first twenty customers yourself.", description: "A sales sprint for founders: target list, scripts, pipeline and weekly coaching until twenty customers say yes.", categories: ["GTM"], services: ["Target lists", "Outreach scripts", "Pipeline setup", "Weekly coaching"], stages: ["VALIDATE", "LAUNCH"], location: "London", priceNote: "Six-week sprint, fixed fee" },
+  { slug: "aisle-access", name: "Aisle Access", tagline: "Get your product in front of grocery buyers.", description: "Former supermarket buyers who prepare founders for category reviews and make warm intros to buyers.", categories: ["GTM"], services: ["Buyer intros", "Category review prep", "Pricing and margins", "Retail readiness"], stages: ["LAUNCH"], location: "Chicago" },
+  { slug: "route-nine-distribution", name: "Route Nine Distribution", tagline: "EU distribution for small food and packaging brands.", description: "Warehousing, distribution and wholesale relationships across the Benelux and Iberia.", categories: ["GTM", "SUPPLIER"], services: ["Warehousing", "Wholesale intros", "EU logistics", "Pallet-level fulfilment"], stages: ["LAUNCH"], location: "Rotterdam" },
+  { slug: "studio-mare", name: "Studio Maré", tagline: "Packaging design that ships well and sells better.", description: "Structural and graphic packaging design, tested for transport before it's printed.", categories: ["DESIGN"], services: ["Structural packaging", "Transport testing", "Print-ready artwork", "Sustainable materials"], stages: ["BUILD"], location: "Porto" },
+  { slug: "plain-sight-design", name: "Plain Sight Design", tagline: "Product design for tools people use on hard days.", description: "UX research and interface design for healthcare, field work and operations software.", categories: ["DESIGN"], services: ["UX research", "Interface design", "Accessibility audits", "Usability testing"], stages: ["VALIDATE", "BUILD"], location: "Berlin" },
+  { slug: "ledger-and-lamp", name: "Ledger & Lamp", tagline: "Bookkeeping and a monthly finance call for early teams.", description: "Bookkeeping, payroll, and a founder-friendly monthly look at burn and runway.", categories: ["FINANCE"], services: ["Bookkeeping", "Payroll", "Runway reports", "Year-end accounts"], stages: ["SETUP", "BUILD", "LAUNCH"], location: "London", priceNote: "From £250 a month" },
+  { slug: "grantwise", name: "Grantwise", tagline: "Grant applications written with you, not for you.", description: "We find the non-dilutive grants you qualify for and help you write applications that win.", categories: ["FINANCE", "OTHER"], services: ["Grant search", "Application writing", "Budget narratives", "Reporting"], stages: ["SETUP"], location: "Dublin" },
+];
+
 async function main() {
   for (const p of people) {
     const { key, name, onboarded = true, ...rest } = p;
@@ -627,6 +670,43 @@ async function main() {
       }
     }
   }
+
+  // ── Partners: reset and recreate, then a few intro requests. ──
+  await db.partner.deleteMany({ where: { slug: { in: partners.map((p) => p.slug) } } });
+  for (const p of partners) {
+    const { claimedBy, ...data } = p;
+    await db.partner.create({
+      data: { ...data, contactEmail: `intros@${p.slug}.example`, website: `https://${p.slug}.example`, claimedById: claimedBy ? idByKey.get(claimedBy) : null },
+    });
+  }
+  const concierge = idByKey.get("admin")!;
+  const intros: { from: string; hub: string; partner: string; step: string; status: "PENDING" | "ACCEPTED"; note: string; daysAgo: number }[] = [
+    { from: "maya", hub: "tidewater-kelp", partner: "harbor-and-vine-legal", step: "Form the company in Portugal", status: "PENDING", daysAgo: 1, note: "We need to form in Portugal with founder vesting and an IP assignment for the tray design. Two co-founders, one more joining. Hoping to file this month." },
+    { from: "maya", hub: "tidewater-kelp", partner: "northloop-sourcing", step: "Contract a local kelp press", status: "ACCEPTED", daysAgo: 6, note: "Looking for a press in Iberia for a 5,000-tray sample run of kelp trays, then 30,000 a week for a pilot." },
+    { from: "ana", hub: "night-shift-bakery", partner: "lakeshore-counsel", step: "Food business licence and insurance", status: "PENDING", daysAgo: 2, note: "I need a food licence for a shared ghost kitchen running 10pm to 6am, and insurance for deliveries into hospitals." },
+    { from: "dev", hub: "field-notes", partner: "quarterlight-studio", step: "Integrate with one job-management system", status: "ACCEPTED", daysAgo: 5, note: "Need help integrating with one job-management system our first customers use. Small, fixed scope." },
+  ];
+  for (const it of intros) {
+    const hub = await db.hub.findUniqueOrThrow({ where: { slug: it.hub } });
+    const partner = await db.partner.findUniqueOrThrow({ where: { slug: it.partner } });
+    const step = await db.planStep.findFirst({ where: { hubId: hub.id, title: it.step } });
+    const at = new Date(Date.now() - it.daysAgo * DAY);
+    await db.signal.create({
+      data: {
+        kind: "PARTNER_INTRO",
+        status: it.status,
+        fromUserId: idByKey.get(it.from)!,
+        toUserId: partner.claimedById ?? concierge,
+        hubId: hub.id,
+        partnerId: partner.id,
+        planStepId: step?.id ?? null,
+        note: it.note,
+        createdAt: at,
+        respondedAt: it.status === "ACCEPTED" ? new Date(at.getTime() + DAY / 2) : null,
+      },
+    });
+  }
+  console.log(`Seeded ${partners.length} partners.`);
 
   // Keep the auto-number counter ahead of the seeded numbers.
   await db.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"Hub"', 'number'), (SELECT MAX(number) FROM "Hub"))`);

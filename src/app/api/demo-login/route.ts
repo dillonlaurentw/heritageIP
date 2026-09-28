@@ -12,7 +12,11 @@ export async function POST(req: Request) {
   if (!demoLoginEnabled() || !email.endsWith(DEMO_EMAIL_DOMAIN)) {
     return NextResponse.json({ error: "Demo login is off." }, { status: 403 });
   }
-  await auth.api.signInMagicLink({ body: { email, callbackURL: "/welcome" }, headers: req.headers });
+  try {
+    await auth.api.signInMagicLink({ body: { email, callbackURL: "/welcome" }, headers: req.headers });
+  } catch {
+    return NextResponse.json({ error: "Too many switches in a minute. Wait a moment and try again." }, { status: 429 });
+  }
   const link = takeDevMagicLink(email);
   if (!link) return NextResponse.json({ error: "Email is configured; use the real link." }, { status: 409 });
   return NextResponse.redirect(link, 303);

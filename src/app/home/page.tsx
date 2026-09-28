@@ -7,6 +7,8 @@ import { ArrowLink } from "@/components/ui/ArrowLink";
 import { Label } from "@/components/ui/Label";
 import { HubMosaic } from "@/components/mosaic/HubMosaic";
 import { listHubs } from "@/lib/hubs";
+import { db } from "@/lib/db";
+import type { Route } from "next";
 import { pendingIncoming } from "@/lib/signals";
 import { rolesLine } from "@/lib/roles";
 import { requireOnboarded } from "@/lib/session";
@@ -17,7 +19,11 @@ export default async function Home() {
   const { user, profile } = await requireOnboarded();
   const first = user.name.split(" ")[0];
   const has = (r: string) => profile.roles.includes(r as never);
-  const [hubs, waiting] = await Promise.all([listHubs(user.id), pendingIncoming(user.id)]);
+  const [hubs, waiting, partner] = await Promise.all([
+    listHubs(user.id),
+    pendingIncoming(user.id),
+    db.partner.findUnique({ where: { claimedById: user.id }, select: { name: true, slug: true } }),
+  ]);
 
   return (
     <PageWipe>
@@ -57,7 +63,10 @@ export default async function Home() {
           {has("BUILDER") && <Tile span="square" tone="field" label="Open roles" title="Join a team" href="/roles" index={2} />}
           {has("BACKER") && <Tile span="square" tone="field" label="Backer · Phase 6" title="Discover hubs" index={2} />}
           {has("MENTOR") && <Tile span="square" tone="field" label="Mentor · Phase 7" title="Mentorship requests" index={3} />}
-          {has("PARTNER") && <Tile span="square" tone="field" label="Partner · Phase 5" title="Intro requests" index={4} />}
+          {has("PARTNER") && partner && (
+            <Tile span="square" tone="raised" label="Your firm" title={partner.name} href={`/partners/${partner.slug}` as Route} index={4} />
+          )}
+          <Tile span="square" tone="field" label="Legal, supply, build, marketing" title="Find partners" href="/partners" index={3} />
           {has("BUILDER") && <Tile span="square" tone="field" label="Builder · Phase 9" title="Your personal agent" index={5} />}
         </Mosaic>
       </div>

@@ -4,6 +4,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
 import { magicLink } from "better-auth/plugins/magic-link";
 import { db } from "./db";
+import { demoLoginEnabled } from "./demo";
 import { emailConfigured, sendEmail } from "./email";
 
 /*
@@ -37,6 +38,9 @@ export const auth = betterAuth({
   plugins: [
     magicLink({
       expiresIn: 60 * 15,
+      // 5 links a minute per visitor stops inbox spam. Demo mode switches
+      // users often and never sends email, so it gets more room.
+      rateLimit: demoLoginEnabled() ? { window: 60, max: 60 } : { window: 60, max: 5 },
       async sendMagicLink({ email, url }) {
         if (!emailConfigured()) {
           devLinks.set(email.toLowerCase(), url);

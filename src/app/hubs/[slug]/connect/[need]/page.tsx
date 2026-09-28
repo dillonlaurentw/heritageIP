@@ -1,21 +1,27 @@
 import type { Metadata } from "next";
 import type { Route } from "next";
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { MaskedLines } from "@/components/motion/MaskedLines";
 import { PageWipe } from "@/components/motion/PageWipe";
+import { CoverArt, coverTileTone } from "@/components/mosaic/CoverArt";
+import { Mosaic } from "@/components/mosaic/Mosaic";
+import { Tile } from "@/components/mosaic/Tile";
 import { ArrowLink } from "@/components/ui/ArrowLink";
-import { Label } from "@/components/ui/Label";
+import { Label, Tag } from "@/components/ui/Label";
 import { db } from "@/lib/db";
 import { getOwnedHub, hubNumber } from "@/lib/hubs";
-import { LIVE_PHASE, needFromSlug, NEEDS } from "@/lib/needs";
+import { LIVE_PHASE, NEED_TO_CATEGORY, needFromSlug, NEEDS } from "@/lib/needs";
+import { CATEGORY_COPY } from "@/lib/partner-categories";
 import { sortSteps, STAGE_COPY } from "@/lib/plan-order";
+import { STATUS_LABEL } from "@/lib/signal-rules";
 import { requireOnboarded } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Connect · SELF" };
 
 /**
- * A hub's connection area for one need (co-founder, legal, supplier…).
- * Shows which plan steps need it. The matching directory lands in its phase.
+ * A hub's connection area for one need (legal, supplier, website…): the plan
+ * steps that need it, intros already requested, and matching partners.
  */
 export default async function ConnectPage({ params }: { params: Promise<{ slug: string; need: string }> }) {
   const { slug, need: needSlug } = await params;
@@ -25,7 +31,22 @@ export default async function ConnectPage({ params }: { params: Promise<{ slug: 
   const viewer = await requireOnboarded();
   const hub = await getOwnedHub(slug, viewer);
   const area = NEEDS[need];
-  const steps = sortSteps(await db.planStep.findMany({ where: { hubId: hub.id, needs: { has: need } } }));
+  const category = NEED_TO_CATEGORY[need] ?? null;
+
+  const [steps, partners, intros] = await Promise.all([
+    db.planStep.findMany({ where: { hubId: hub.id, needs: { has: need } } }).then(sortSteps),
+    category
+      ? db.partner.findMany({ where: { categories: { has: category } }, orderBy: [{ featured: "desc" }, { name: "asc" }], take: 5 })
+      : [],
+    category
+      ? db.signal.findMany({
+          where: { kind: "PARTNER_INTRO", hubId: hub.id, partner: { categories: { has: category } } },
+          orderBy: { createdAt: "desc" },
+          include: { partner: { select: { name: true, slug: true } }, planStep: { select: { title: true } } },
+        })
+      : [],
+  ]);
+  const directory = category ? `/partners?c=${CATEGORY_COPY[category].slug}&hub=${hub.slug}` : "/partners";
 
   return (
     <PageWipe>
@@ -49,25 +70,82 @@ export default async function ConnectPage({ params }: { params: Promise<{ slug: 
             <p className="text-body text-smoke">No steps in your game plan are tagged {area.label} yet.</p>
           ) : (
             steps.map((s) => (
-              <div key={s.id} className="border-b border-line py-4 last:border-b-0">
-                <Label>{STAGE_COPY[s.stage].label}</Label>
-                <p className={`mt-1 text-lead font-semibold ${s.doneAt ? "text-smoke line-through" : ""}`}>{s.title}</p>
+              <div key={s.id} className="flex flex-wrap items-center justify-between gap-4 border-b border-line py-4 last:border-b-0">
+                <div>
+                  <Label>{STAGE_COPY[s.stage].label}</Label>
+                  <p className={`mt-1 text-lead font-semibold ${s.doneAt ? "text-smoke line-through" : ""}`}>{s.title}</p>
+                </div>
+                {category && !s.doneAt && (
+                  <Link
+                    href={`${directory}&step=${s.id}` as Route}
+                    className="group text-body font-semibold text-signal"
+                  >
+                    Find a partner for this <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
+                  </Link>
+                )}
               </div>
             ))
           )}
         </div>
       </section>
 
-      <section className="border-t border-line px-edge py-[12vh]">
-        {area.phase <= LIVE_PHASE ? null : (
-          <>
+      {intros.length > 0 && (
+        <section className="grid grid-cols-1 gap-6 border-t border-line px-edge py-10 md:grid-cols-[16rem_1fr]">
+          <Label className="self-start">Intros requested</Label>
+          <div className="flex flex-col">
+            {intros.map((r) => (
+              <div key={r.id} className="border-b border-line py-4 last:border-b-0">
+                <Label tone={r.status === "PENDING" || r.status === "ACCEPTED" ? "signal" : "smoke"} live={r.status === "PENDING"}>
+                  {STATUS_LABEL[r.status]}
+                </Label>
+                <p className="mt-1 text-lead font-semibold">
+                  <Link href={`/partners/${r.partner?.slug}` as Route} className="hover:underline">
+                    {r.partner?.name}
+                  </Link>
+                  {r.planStep && <span className="font-normal text-smoke"> · {r.planStep.title}</span>}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {category ? (
+        <section className="border-t border-line pt-10 pb-24">
+          <div className="flex flex-wrap items-baseline justify-between gap-4 px-edge pb-6">
+            <Label>{CATEGORY_COPY[category].label} partners</Label>
+            <ArrowLink href={directory as Route} size="inline" className="text-smoke">
+              See all
+            </ArrowLink>
+          </div>
+          <div className="px-gutter">
+            <Mosaic>
+              {partners.map((p, i) => (
+                <Tile
+                  key={p.id}
+                  index={i}
+                  span={i === 0 ? "wide" : "square"}
+                  tone={coverTileTone(p)}
+                  href={`/partners/${p.slug}?hub=${hub.slug}` as Route}
+                  label={`${p.location}`}
+                  title={p.name}
+                  meta={p.featured ? <Tag>Featured</Tag> : undefined}
+                  media={<CoverArt name={p.name} />}
+                />
+              ))}
+            </Mosaic>
+          </div>
+        </section>
+      ) : (
+        area.phase > LIVE_PHASE && (
+          <section className="border-t border-line px-edge py-[12vh]">
             <Label tone="signal">Opens in Phase {area.phase}</Label>
             <p className="type-display mt-4 max-w-[20ch] text-headline">
               The people for this land here soon. Your steps will link straight to them.
             </p>
-          </>
-        )}
-      </section>
+          </section>
+        )
+      )}
     </PageWipe>
   );
 }
