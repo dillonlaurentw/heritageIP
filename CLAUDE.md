@@ -1,10 +1,14 @@
 # SELF: for the builders of the future
 
-SELF is one place where a person takes an idea all the way to a real company.
-Every idea lives in a **Project Hub**. The hub walks a builder from idea → core
-thesis → game plan, then connects them to what they need to execute:
-co-founders, partners and suppliers, legal help, funding interest, mentorship,
-marketing/GTM, and website/build partners. AI agents run through all of it.
+SELF is one workspace for building a company, from the first idea through
+running the business and the team. Think Notion, built for founders: pages,
+docs and databases, with the path from idea → thesis → game plan built in,
+AI agents on every page, and a network for finding co-founders, mentors,
+partners (manufacturing, legal, marketing) and backers.
+
+**This is Self2**, a rebuild of Self1 (the "Project Hub" version, saved on the
+`self1` branch). Self2 keeps everything Self1 does and reorganises it around
+workspaces, pages and databases, with a calm, Notion-like design.
 
 SELF does **not** build every service itself. It connects builders to the right
 people and partner platforms. Long-term vision: funds inside SELF where people
@@ -15,23 +19,27 @@ approval before starting the next.
 
 ---
 
-## Core object: the Project Hub
-
-A Project Hub is the home for one idea. A user can own many hubs.
+## Core objects
 
 ```
-Hub
- ├─ Thesis           problem · who it's for · why now · why them · contrarian belief
- ├─ Game plan        staged steps, each tagged with needs (COFOUNDER, LEGAL, FUNDING…)
- ├─ Team             owner + accepted members
- ├─ Role openings    roles the builder is looking for
- ├─ Signals          every request/interest in or out of the hub (see below)
- ├─ GTM workspace    positioning · target customers · channels · launch plan
- ├─ Agents           business-specific agents (strategy, GTM, ops, fundraising, legal-explainer)
- └─ Cover            generated type-art or uploaded image
+User ── personal space (private pages, persona, simulations)
+Workspace            one company or idea. Replaces Self1's Hub. A user can be in many.
+ ├─ Members          OWNER · ADMIN · MEMBER · GUEST
+ ├─ Pages            nested tree; each page is a block document (BlockNote JSON)
+ │   └─ templates    Thesis, Game plan, Go-to-market, Meeting notes, Hiring…
+ ├─ Databases        a page whose rows are pages with typed properties
+ │   └─ views        table · board · list · calendar, with filters and sorts
+ │   └─ built-ins    Game plan (stage, need tags), Tasks, Roles, Meetings,
+ │                   Goals, Customers & suppliers
+ ├─ Signals          network requests in or out (see below)
+ └─ Agents           AI on any page + named workspace agents
 ```
 
-Everything else either lives inside a hub or feeds into one.
+- A database row **is** a page: it has properties and can be opened and written in.
+- Need tags on game-plan rows (COFOUNDER, LEGAL, SUPPLIER, MARKETING, FUNDING…)
+  still lead to the matching part of the network.
+- Page content is stored as JSON blocks, so live co-editing (Yjs) can be added
+  later without changing how pages are stored.
 
 ### The Signal pattern (important)
 
@@ -41,13 +49,14 @@ We model all of these with **one `Signal` table** instead of five lookalike tabl
 
 | Signal kind       | From          | To                  | Accept means                           |
 |-------------------|---------------|---------------------|----------------------------------------|
-| `ROLE_INTEREST`   | builder       | hub (role opening)  | contacts revealed, added to hub team   |
-| `BACKER_INTEREST` | backer        | hub                 | contacts revealed (no money, ever)     |
-| `MENTOR_REQUEST`  | hub owner     | mentor              | contacts revealed                      |
-| `PARTNER_INTRO`   | hub owner     | partner             | intro email to both sides              |
+| `ROLE_INTEREST`   | builder       | workspace (role)    | contacts revealed, added to workspace  |
+| `BACKER_INTEREST` | backer        | workspace           | contacts revealed (no money, ever)     |
+| `MENTOR_REQUEST`  | workspace owner | mentor            | contacts revealed                      |
+| `PARTNER_INTRO`   | workspace owner | partner           | intro email to both sides              |
 
 Status is `PENDING → ACCEPTED | DECLINED | WITHDRAWN`. Signals can point at a
-game-plan step (`planStepId`) so "find a supplier" links to the intro it produced.
+page or database row (e.g. a game-plan step) so "find a supplier" links to the
+intro it produced.
 Contact info is **only** readable through an `ACCEPTED` signal. Enforce this on
 the server, never in the UI alone.
 
@@ -60,26 +69,6 @@ Builder onboarding is a short, reflective flow (beliefs, how they work, what
 they're building toward, strengths, gaps). It should feel like a conversation,
 not a form. Those answers power the user's **personal agent**. The user can
 always see and edit the persona summary their agent is built from.
-
----
-
-## Features (build order)
-
-0. Design foundation: tokens, type scale, motion primitives, tile mosaic, style guide
-1. Auth + onboarding (multi-role; reflective builder flow)
-2. Idea generation → core thesis (AI-guided; also "generate ideas from my profile")
-3. Game plan: staged steps, need tags, editable, mark done, tags link to connection areas
-4. Co-founders + team: role openings, interest signals, accept → reveal + join team
-5. Partner directory: categories, profiles, intro requests tied to plan steps; seeded
-6. Funding: backers browse opted-in hubs, send interest; accept → reveal. Nothing else.
-7. Mentorship: profiles, request, accept, reveal
-8. Marketing + GTM workspace per hub, agent-assisted
-9. Personal agents + team simulations (opt-in, transcript + fit report)
-10. Business-specific hub agents
-11. Admin view: users, hubs, partners, signals; feature hubs/partners
-
-Out of scope: payments, investing, full messaging beyond intro reveals, feeds,
-native mobile apps, notifications other than email.
 
 ---
 
@@ -98,21 +87,24 @@ native mobile apps, notifications other than email.
 - **Legal agent is not a lawyer.** It explains concepts and preps questions, says
   plainly that it is not legal advice, and points to a legal partner.
 - **Contact info** is revealed only through accepted signals, checked server-side.
+- **Running a business is fine; investing is not.** Workspaces may track budgets,
+  customers and suppliers as data. Nothing in SELF moves money, takes payments,
+  or offers securities.
 
 ---
 
 ## Stack
 
 - **Next.js (App Router) + TypeScript**, deployed on Vercel
-- **Postgres + Prisma** (Neon in production; local Postgres via Docker for dev)
-- **Better Auth** for auth (email magic link + Google). Chosen over Auth.js: it is
-  now the actively developed successor (the Auth.js maintainers joined it), has
-  first-class Prisma support, typed sessions, and simpler role/extra-field handling.
+- **Postgres + Prisma** (Neon in production and for local dev; Docker optional)
+- **Better Auth** for auth (email magic link + Google)
+- **BlockNote** (`@blocknote/*`, MPL-2.0) for the page editor, on Tiptap/ProseMirror.
+  Do not use `@blocknote/xl-*` packages (GPL or paid); SELF has its own agents.
 - **Tailwind CSS v4** (CSS-first `@theme` tokens)
-- **Motion** (`motion/react`, the renamed Framer Motion)
 - **Anthropic SDK** (`@anthropic-ai/sdk`), server-side only
 - **Zod** for input validation, **Resend** for email
 - **Vitest** for logic tests; Playwright smoke tests where a flow matters
+- Later (own phase): **Yjs** for live co-editing and presence
 
 Keep dependencies minimal. Adding a new runtime dependency needs a reason in the
 commit message.
@@ -123,29 +115,24 @@ commit message.
 
 ```
 src/
-  app/                  routes (App Router). Server components by default.
-    (marketing)/        landing, style guide
-    (app)/              signed-in app: hubs, directory, backers, mentors, sims
-    admin/              admin view
+  app/
+    (marketing)/        landing, sign-in
+    (app)/              signed-in shell: sidebar + pages
+      w/[workspace]/    a workspace: pages, databases, settings, members
+      me/               personal space, persona, simulations
+      network/          people, roles, mentors, partners, backers, connections
+    admin/
     api/                only where server actions don't fit (auth, streaming)
   components/
-    ui/                 primitives: Button, Label, Hairline, Arrow, Field
-    motion/             Reveal, MaskedLines, Wipe, TileHover (all reduced-motion aware)
-    mosaic/             Mosaic + Tile
-  design/
-    tokens.css          THE tokens file (colors, type, spacing, radii, motion)
-    motion.ts           shared easings/durations mirrored from tokens
-  lib/
-    db.ts               Prisma client
-    auth.ts             Better Auth config + session helpers
-    signals.ts          signal state machine + contact reveal (server-only)
-    email.ts
+    ui/                 primitives: Button, Input, Menu, Dialog, Tooltip, Tag…
+    shell/              Sidebar, PageTree, Breadcrumbs, CommandPalette
+    editor/             BlockNote setup, custom blocks (need tag, AI, embeds)
+    database/           Table, Board, List, Calendar views, property editors
+  design/tokens.css     THE tokens file
+  lib/                  server logic (db, auth, session, signals, pages, databases…)
   agents/               ALL AI prompts and logic live here (see below)
-prisma/
-  schema.prisma
-  seed.ts
-docs/
-  PLAN.md
+prisma/  schema.prisma · seed.ts
+docs/    PLAN.md
 ```
 
 ### Agents module (`src/agents/`)
@@ -170,61 +157,45 @@ agents/
 
 ---
 
-## Design system (strict)
+## Design system: calm workspace
 
-Direction: bold, cinematic brand-studio energy (think DixonBaxi). Confident,
-culture-forward, motion-led. A creative studio's site, **not** a SaaS dashboard,
-**not** a luxury perfume ad. Attitude: "brave brands change the world."
+Direction: calm, clear and fast, like Notion or Linear. People work in SELF all
+day, so the interface gets out of the way. Content leads; chrome is quiet. This
+applies everywhere, including the landing page.
 
 ### Typography
-- **Display + UI:** Archivo (variable, wght 100–900, wdth 62–125). Display at
-  800–900, letter-spacing -0.03 to -0.05em, line-height ~0.9, hero lines up to
-  `clamp(…, 14vw)`. The width axis lets type "shift" on hover without swapping fonts.
-- **Body/UI:** same family at 400–500. Short lines (max ~60ch), generous leading.
-- **Mono:** IBM Plex Mono, small, UPPERCASE, wide tracking (0.08–0.12em) for labels,
-  tags, metadata, counters: `NEW`, `HUB 03`, `STEP 2/9`, `SIMULATION`, `LIVE`.
-- Copy is short, human, bold: "What are you building?", "Start with a thought."
-  Never corporate.
+- **Inter** (variable) for everything: UI 13–14px, body text 15–16px with 1.6
+  line height, page titles 32–40px at 700. Max ~72ch for writing.
+- **IBM Plex Mono**, small, only for IDs, counts, code and metadata that should
+  line up (`HUB-03`, `12/40`). Not uppercase-shouting.
+- Copy stays short and human ("What are you building?"). Never corporate.
 
-### Color tokens (only in `src/design/tokens.css`; never hardcode a color)
-- `field`  deep green-black, main background (~#1F2620)
-- `bone`   warm off-white, primary text + inverted sections
-- `signal` ONE saturated accent, **hot orange #FF5B1F** (chosen), used sparingly:
-  live states, CTAs, `NEW`
-- `smoke`  mid grey-green, secondary text + hairlines
-Mostly dark. Full-bleed Bone sections occasionally, for rhythm.
+### Color (tokens only, in `src/design/tokens.css`; never hardcode)
+- Light and dark mode, following the system setting, with a manual toggle.
+- Neutrals do the work: background, a slightly tinted sidebar/surface, borders,
+  primary/secondary/tertiary text.
+- **One accent: SELF orange `#FF5B1F`**, used for the primary action, focus
+  rings, selection and "live"/unread states. Never large fills.
+- Semantic colors (success, warning, danger) muted, plus a small set of soft tag
+  colors for database select options.
 
 ### Layout
-- Hero = one giant statement + a single arrow CTA (→). Nothing competes.
-- Content lives in an edge-to-edge **tile mosaic** of mixed sizes, tight gutters.
-  Tiles are full-bleed media or type with a small mono label and a title.
-- Strong grid; break it deliberately for emphasis.
-- Hairline dividers. No drop shadows. Radius 0–4px max. No pill buttons.
-- Nav: wordmark, a few text links, one persistent "Ask SELF anything →".
+- App shell: left sidebar (workspace switcher, search, inbox, page tree,
+  personal space), top bar with breadcrumbs and page actions, content centered.
+- Pages: optional cover and icon, big title, then blocks. Full-width toggle.
+- Databases: dense tables, boards with simple cards. Hairline borders.
+- Radius 6px (inputs, buttons, cards), 8px for popovers. Shadows only on
+  floating things (menus, popovers, dialogs), soft and small.
+- Keyboard first: ⌘K command palette, `/` block menu, shortcuts everywhere.
 
 ### Motion
-- Tiles reveal on scroll: staggered slide + fade. Hover: slight scale, media plays
-  or type shifts (width axis).
-- Big type: line-by-line masked reveal.
-- Page transitions: quick, confident wipes.
-- 200–600ms, strong ease-out (`cubic-bezier(0.16, 1, 0.3, 1)`). Never floaty.
-- `prefers-reduced-motion`: every primitive falls back to an instant or opacity-only
-  state. Build this into the primitives, not per-page.
-- No heavy WebGL.
-
-### Applied to SELF
-- Each hub has a cover tile (generated type-art or uploaded image); the hub list
-  reads like a studio portfolio.
-- Agents and simulations look like a broadcast control room: mono labels, live
-  `signal`-colored states (`● LIVE`, `TURN 04/12`).
-- Empty states: one bold line + an arrow. Nothing else.
+- Quick and quiet: 120–200ms ease-out for menus, hovers and panels. No scroll
+  reveals, no page wipes, no big type animation.
+- `prefers-reduced-motion`: instant.
 
 ### Never
-Serif display fonts, gold/foil, film grain, glows, gradients, emoji, stock
-illustrations, pill buttons, drop shadows, rounded app cards, generic dashboard
-widgets (donut charts, KPI cards).
-
----
+Gradients, glows, emoji as decoration, stock illustrations, heavy shadows,
+generic dashboard widgets (donut charts, KPI cards), cinematic type inside the app.
 
 ## Conventions
 
@@ -246,13 +217,18 @@ widgets (donut charts, KPI cards).
 
 ```
 npm install                 # also generates the Prisma client
-cp .env.example .env        # then set BETTER_AUTH_SECRET (openssl rand -base64 32)
-docker compose up -d        # local Postgres (or any Postgres; set DATABASE_URL)
-npm run db:migrate          # create tables
-npm run db:seed             # demo people (re-runnable; resets demo data)
+cp .env.example .env        # set BETTER_AUTH_SECRET (openssl rand -base64 32) and DATABASE_URL
+npx prisma migrate deploy   # create tables (Neon or local Postgres)
+npm run db:seed             # demo data (re-runnable; resets demo data)
 npm run dev                 # http://localhost:3000
 npm run lint && npm run typecheck && npm test && npm run build   # before every commit
 ```
+
+## Carried over from Self1
+
+The rules below were written for Self1. The trust, privacy and AI rules still
+apply as each area is rebuilt; routes and component names change. Where a
+Self2 phase replaces an area, update its section here.
 
 ## Auth + data conventions (Phase 1)
 
@@ -441,17 +417,6 @@ npm run lint && npm run typecheck && npm test && npm run build   # before every 
   prices. Update `PRICES_PER_MTOK` when the model or prices change.
 - Admin screens may use tables (`components/admin/AdminShell`): hairlines, mono
   headers, no KPI cards or charts beyond the single-color day bars.
-
-## Design primitives (Phase 0)
-
-- `src/design/tokens.css`: colors, type scale, radii, motion. Tailwind's default
-  palette/shadows/radii are wiped, so off-token classes don't exist.
-- `components/motion`: `Reveal` (scroll stagger), `MaskedLines` (line-by-line
-  mask), `PageWipe` (wrap each page.tsx; React `<ViewTransition>`).
-- `components/mosaic`: `Mosaic`, `Tile` (spans: hero, wide, half, tall, square,
-  quarter, strip), `CoverArt` (deterministic type-art from a hub name).
-- `components/ui`: `Label`/`Tag`, `ArrowLink`/`Arrow`/`Button`, `Hairline`, `EmptyState`.
-- `.type-display` = heavy display face; `.label` = mono label; `--wdth` animates width.
 
 <!-- BEGIN:nextjs-agent-rules -->
 

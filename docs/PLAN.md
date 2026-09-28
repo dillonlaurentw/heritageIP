@@ -1,161 +1,127 @@
-# SELF: build plan
+# SELF 2: build plan
 
-Each phase ends in something you can click through locally at
-`http://localhost:3000`. I stop after each phase, tell you how to run it and what
-to test, commit, and wait for your go-ahead.
+Self2 turns SELF into one workspace for building a company, from the first
+idea to running the business and the team. It works like Notion (pages, docs,
+databases), with SELF's idea → thesis → game plan path, AI agents and network
+built in. Self1 (the Project Hub version) is saved on the `self1` branch.
 
-Status: Phases 0–11 done. Next: the deploy walkthrough (Vercel + Neon).
-Decisions made: Signal = hot orange #FF5B1F · Better Auth · Archivo + IBM Plex Mono.
+Each phase ends in something you can click through at `http://localhost:3000`.
+I stop after each phase, tell you what to test, commit, and wait for your go-ahead.
+
+Status: Plan written. Awaiting go-ahead for Phase 0.
+Decisions made: calm design everywhere · first usable version covers everything
+Self1 did and more · live co-editing comes later, as its own phase.
 
 ---
 
-## Phase 0: Design foundation
-**Build:** Next.js + TypeScript + Tailwind v4 scaffold. `src/design/tokens.css`
-(color, type scale, spacing, radii, motion). Archivo + IBM Plex Mono via
-`next/font`. Motion primitives: `Reveal` (staggered slide/fade on scroll),
-`MaskedLines` (line-by-line masked type), `Wipe` (page transition),
-`TileHover` (scale + width-axis type shift). `Mosaic` + `Tile` components with
-mixed spans and deliberate grid breaks. Nav shell with wordmark, links, and a
-placeholder "Ask SELF anything →". All of it respects reduced motion.
-**Click through:** `/style-guide`. Colors, type scale, mono labels, buttons/arrows,
-hero statement, a full mosaic with fake hubs, a Bone section, an empty state,
-and a control-room agent strip. A toggle previews all 3 Signal color options.
-**No database yet.**
+## How Self2 is built
 
-## Phase 1: Auth + onboarding
-**Build:** Postgres (Docker locally), Prisma, Better Auth (email magic link;
-Google optional). `User`, `Profile`, role multi-select. Builder onboarding: one
-question per screen, big type, masked reveals, "Back / Continue →". Roughly 6
-prompts: what you believe, how you work, what you're building toward, strengths,
-gaps, how you like to decide. Partner/Mentor/Backer get a short profile step.
-**Click through:** sign up → pick roles → reflective flow → land on an empty
-"What are you building? →" home. Edit profile later.
-**Seed:** ~12 users across all roles.
+- **Same foundations, new structure.** Sign-in, the database, email, AI agents
+  (caps, cost logging, demo mode), the Signal network and all the trust rules
+  carry over from Self1. The screens and the data model around hubs are rebuilt.
+- **Workspaces replace hubs.** A workspace is one company or idea, with members.
+- **Everything is a page.** Pages nest, hold blocks (text, headings, to-dos,
+  images, embeds), and can be databases. A database row is itself a page.
+- **Self1's features become pages and databases.** Thesis and go-to-market are
+  page templates; the game plan, tasks, roles, meetings and goals are databases.
+- **Fresh start for data.** Self2 has a new database structure and new demo
+  data. Nothing real is lost: Self1 only ever held demo data.
 
-## Phase 2: Hubs, idea → core thesis
-**Build:** `Hub` + `Thesis`. Create a hub from a raw idea, or "Start from nothing"
-(agent generates 3–5 ideas from your profile). The thesis flow is a guided dialogue:
-the agent asks sharpening questions, then drafts problem / who / why now /
-why you / contrarian belief. Every field is editable; saves are versioned lightly.
-Generated type-art covers (deterministic from hub name) + optional image upload
-(Vercel Blob). First `src/agents/` module: config, `runAgent()`, `AgentRun` logging,
-per-user daily caps.
-**Click through:** hub list as a portfolio mosaic → new hub → thesis dialogue →
-saved thesis page → edit.
-**Seed:** 6–8 hubs with covers and finished theses.
+---
 
-## Phase 3: Game plan
-**Build:** `PlanStep` with stage (Validate / Build / Launch …), order, done, and
-`needs[]` tags. "Generate game plan" from the thesis; add/edit/reorder/delete steps;
-mark done (`STEP 4/11` counters). Each need tag links to its area
-(`/hubs/[id]/connect/legal`, etc.). Areas are empty-state stubs until their phase lands.
-**Click through:** thesis → generate plan → edit a step → mark done → click a
-`LEGAL` tag.
+## Phase 0: Design foundation and app shell
+**Build:** new calm design system (Inter, light + dark mode, neutral palette,
+SELF orange accent, 6px radius). Core UI primitives: buttons, inputs, menus,
+dialogs, tooltips, tags, toasts. The app shell: left sidebar with workspace
+switcher, search, inbox and page tree; top bar with breadcrumbs; ⌘K command
+palette. A new landing page and a style guide.
+**Click through:** `/style-guide` in light and dark, the empty shell, ⌘K.
 
-## Phase 4: Co-founders + team
-**Build:** `RoleOpening`, `HubMember`, and the shared `Signal` table + state machine
-in `src/lib/signals.ts` (the core of Phases 4–7). Builders browse open roles,
-send interest with a short note, owner accepts/declines, and acceptance reveals
-contacts both ways and adds them to the team. Email on new signal / acceptance.
-**Click through:** as user A post a role → as user B signal interest → as A accept
-→ both see contacts; B appears on the team. (Seed includes a dev-only
-"switch user" menu so you can test both sides without two inboxes.)
+## Phase 1: Accounts, onboarding, workspaces
+**Build:** sign-in restyled; the reflective onboarding carried over in the calm
+style; create a workspace (from an idea, or blank); invite people by email;
+member roles (Owner, Admin, Member, Guest) enforced on the server; personal
+space for private pages.
+**Click through:** sign up → onboarding → create "Tidewater Kelp" → invite a teammate.
+**Seed:** demo people and 4 to 6 workspaces.
 
-## Phase 5: Partner directory
-**Build:** `Partner` (org profile; optionally claimed by a Partner user),
-categories: Suppliers/Manufacturing, Legal, Website/Build, Marketing, Go-to-Market,
-Design, Finance/Accounting, Other. Directory mosaic with category filters, partner
-profile pages, "Request intro" from inside a hub tied to a plan step
-(`PARTNER_INTRO` signal). Partner users see and answer requests.
-**Click through:** plan step `SUPPLIER` → filtered directory → partner → request
-intro → as partner, accept → intro revealed on the step.
-**Seed:** ~24 realistic but clearly fictional partners.
+## Phase 2: Pages and the editor
+**Build:** nested pages in the sidebar (create, rename, drag to reorder or move,
+duplicate, delete to trash, restore). BlockNote editor with `/` menu: text,
+headings, lists, to-dos, quotes, callouts, dividers, images, links to other
+pages. Page icons and covers, full-width toggle, autosave, version history,
+search across pages.
+**Click through:** build a small wiki; move pages around; restore from trash.
 
-## Phase 6: Funding (interest only)
-**Build:** hub setting "Open to backer discovery" (off by default). Backer view:
-browse/filter discoverable hubs by stage, category, and needs; hub teaser page
-(thesis + team, **no raise amounts or terms**); "Interested" signal; builder
-accepts/declines; contacts revealed. Persistent "Not an offer of securities.
-SELF facilitates introductions only." footer on backer surfaces.
-**Click through:** as builder enable discovery → as backer filter and signal →
-as builder accept → contacts revealed.
+## Phase 3: Databases
+**Build:** databases with typed properties (text, number, select, multi-select,
+status, person, date, checkbox, URL, relation). Views: table, board, list and
+calendar, each with its own filters, sorts and grouping. Rows open as pages.
+Inline databases inside any page.
+**Click through:** a Tasks database: add rows, switch to board, filter to
+"mine", open a task and write notes in it.
 
-## Phase 7: Mentorship
-**Build:** mentor profiles with focus areas, mentor directory, "Request mentorship"
-from a hub (`MENTOR_REQUEST`), accept → reveal. Reuses Phase 4–6 plumbing, so this
-is small.
+## Phase 4: Idea → thesis → game plan
+**Build:** "Start from an idea": the thesis dialogue from Self1, now producing a
+Thesis page. The game plan becomes a database (stage, need tags, owner, due
+date) generated by the agent, fully editable. Need tags link to the right part
+of the network. Go-to-market template. A template gallery.
+**Click through:** idea → thesis → generated game plan board → click a LEGAL tag.
 
-## Phase 8: Marketing + GTM workspace
-**Build:** `GtmWorkspace` per hub: positioning, target customers, channels,
-launch plan. Each section is editable, with "Draft with GTM agent" / "Sharpen"
-actions that propose a draft you accept or discard (never silent overwrites).
-**Click through:** hub → GTM → draft positioning → edit → accept.
+## Phase 5: AI on every page
+**Build:** "Ask AI" on any page or selection (draft, rewrite, summarise, turn
+into tasks), always as a proposal you accept or discard. The workspace agents
+from Self1 (strategy, go-to-market, operations, fundraising prep, legal
+explainer) with the full workspace as context. ⌘K "Ask SELF anything".
+Daily caps and cost logging as in Self1.
+**Click through:** select a paragraph → "turn into tasks" → accept → rows appear.
 
-## Phase 9: Personal agents + team simulations
-**Build:** persona summary generated from onboarding + profile, visible and editable
-by the user ("This is how your agent sees you"). Setting: "Let my agent join
-simulations" (off by default, revocable). Simulation builder: pick 2–4 opted-in
-people (always including you), pick a preset scenario (cut MVP scope, respond to
-an investor pass, split equity, handle a missed deadline, pivot or persevere) or
-write your own. Runs turn by turn with a hard turn cap, streaming into a
-control-room view (`● LIVE · SIMULATION · TURN 05/12`). Output: transcript +
-fit report with three sections: Aligned / Clashed / Talk about this. No scores.
-"My agent's simulations" page for every participant.
-**Click through:** opt in two seed users → run "split equity" → watch turns →
-read the report → as the other participant see it listed.
-**Seed:** one finished simulation with transcript and report.
+## Phase 6: Team and company operations
+**Build:** member directory with roles and focus areas; hiring (role openings,
+posted to the network board, candidates as a database); meeting notes template
+whose action items become tasks; goals (company goals with progress from linked
+tasks); customers and suppliers database (a simple CRM); a weekly "what
+changed" summary page.
+**Click through:** run a meeting note → action items land in Tasks → goal progress moves.
 
-## Phase 10: Business-specific hub agents
-**Build:** per-hub agent roster: Strategy, GTM, Operations/Suppliers,
-Fundraising prep (pitch narrative, investor Q&A drill), Legal explainer (with a
-fixed not-legal-advice banner and a link to Legal partners). Each agent is given the
-hub's thesis, plan, team, and GTM as context. Chat-style panel per agent; outputs
-can be saved into the hub (e.g. "save as plan step"). "Ask SELF anything →"
-becomes real here: it routes to the right hub agent.
-**Click through:** hub → Agents → ask Fundraising for an investor Q&A drill →
-Legal agent refuses to give advice and points to partners.
+## Phase 7: The network
+**Build:** everything Self1 connected you to, rebuilt in the new design:
+co-founder and teammate roles, mentors, the partner directory (manufacturing,
+legal, marketing, website/build, design, finance), backer discovery (interest
+only, never amounts or terms), and the connections inbox. Requests can be tied
+to a game-plan row so an intro shows up on the step that needed it. Contact
+details only after an accepted signal, checked on the server.
+**Click through:** a SUPPLIER step → partner → request intro → partner accepts →
+the intro appears on the step.
 
-## Phase 11: Admin
-**Build:** `/admin` (ADMIN role only): users, hubs, partners, signals, agent runs
-(tokens and cost per user/day). Feature/unfeature hubs and partners (featured
-items lead the public mosaics). Basic search and filters. Tables are allowed here
-but still use tokens, hairlines, and mono labels.
+## Phase 8: Personal agents and simulations
+**Build:** persona page ("how your agent sees you", editable), opt-in, team
+simulations with transcript and conversation-starter report, all labelled
+SIMULATION. Same consent rules as Self1.
+
+## Phase 9: Comments, mentions and notifications
+**Build:** comments on pages and blocks, @mentions of people and pages, an inbox
+in the sidebar, email for the important ones (mentions, requests, accepted intros).
+
+## Phase 10: Admin
+**Build:** the Self1 admin rebuilt in the calm design: people, workspaces,
+partners, signals, AI usage and cost, featuring and partner linking.
+
+## Phase 11: Live co-editing
+**Build:** two or more people editing the same page at once, with cursors and
+"who's here" presence (Yjs plus a hosted sync service). Its own phase because it
+adds a real-time service to run and pay for.
 
 ## After Phase 11
-Vercel + Neon deploy walkthrough, env var checklist, Playwright smoke run over
-the main flows.
+Vercel + Neon deploy walkthrough, environment checklist, and a smoke test of
+every main flow.
 
 ---
 
-## Data model (plain-language version)
-
-- **User / Profile**: one person, one account. Roles are a list, so one person
-  can be a builder and a mentor. Profile holds onboarding answers and the
-  persona summary their agent uses. Contact details sit in their own fields and
-  are only released through an accepted Signal.
-- **Hub**: one idea. Owned by one user; team members join through `HubMember`.
-- **Thesis / PlanStep / GtmWorkspace**: the hub's thinking, in order.
-- **RoleOpening**: "we need a technical co-founder".
-- **Partner / MentorProfile**: the people and firms builders connect to.
-- **Signal**: the one table for every "can we connect?" request (see CLAUDE.md).
-  One table means one accept/decline flow, one contact-reveal rule, and one admin
-  view.
-- **Agent / AgentThread / AgentMessage**: hub agents and their conversations.
-- **Simulation / SimulationParticipant / SimulationTurn / FitReport**: the
-  simulation run, who was in it (with consent recorded), what was said, and the
-  report.
-- **AgentRun**: one row per AI call: who, what for, model, tokens, time. This
-  drives cost caps and the admin cost view.
-- **Investing seam**: `Hub.discoverable`, `Signal(BACKER_INTEREST)`, and a
-  commented-out placeholder in the schema for future `Offering` / `Commitment`
-  models that would sit behind a licensed funding-portal or broker-dealer partner.
-  Nothing is built, and there are no amount fields.
-
-## AI cost controls
-- `src/agents/config.ts`: model per agent (a strong model for thesis, simulations,
-  and reports; a fast, cheap model for idea lists and small rewrites),
-  `maxTokens` per call, `SIM_MAX_TURNS` (default 12), `SIM_MAX_PARTICIPANTS` (4),
-  `DAILY_RUNS_PER_USER` (e.g. 40 calls, 3 simulations).
-- Prompt caching on the long, stable parts (hub context, persona) to cut cost.
-- Every call is logged to `AgentRun`. Over the cap you get a clear message, not a
-  failure.
+## What carries over from Self1 unchanged
+- The hard rules in CLAUDE.md (no money moves or investing, simulations
+  labelled, consent for personal agents, legal agent isn't a lawyer, contacts
+  only through accepted signals).
+- `src/agents/` structure: `runAgent()`, caps, `AgentRun` cost logging, demo mode.
+- The Signal state machine and `contactsFor()` contact reveal.
+- The no-terms guard on every backer-facing text field.
