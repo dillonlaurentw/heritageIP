@@ -795,6 +795,28 @@ async function main() {
     });
   }
 
+  // ── GTM workspaces (some sections left empty to try the agent). ──
+  const gtm: Record<string, { positioning?: string; customers?: string; channels?: string; launchPlan?: string }> = {
+    "tidewater-kelp": {
+      positioning:
+        "For seafood processors on the Iberian coast who are being pushed off plastic by buyers and EU rules, Tidewater Kelp is packaging made from kelp grown on their own coast. Unlike imported bio-packaging, it costs less once you count the freight.\nTagline: Packaging from the same sea as the catch.\n- Made within 50km of the processors who use it\n- Food-contact certified trays that survive 48 hours chilled\n- Priced against PET on total landed cost, not unit cost",
+      customers:
+        "Mid-size processors in Peniche and Nazaré\n- Who: sardine and mackerel processors shipping 20,000+ trays a week\n- Where to find them: the producers' association and the Monday auction\n- Trigger: a supermarket buyer asking for plastic-free packaging\n- First 20: the 15 processors already interviewed, then their referrals\n\nSupermarket seafood buyers\n- Who: category buyers for chilled seafood at Iberian chains\n- Where to find them: category reviews and sustainability teams\n- Trigger: 2027 plastic targets in their annual plan\n- First 20: intros through Aisle Access and the pilot processor",
+      channels:
+        "1. Direct to processors · Maya knows them from cold-chain work · 20 site visits, target 5 pilots\n2. Buyer pull · buyers make processors switch · 2 buyer meetings with pilot data\n3. Producers' association · one talk reaches 40 processors · a 15-minute slot at the spring meeting\n4. Trade press · short, local, credible · one story in the regional seafood trade press",
+    },
+    "night-shift-bakery": {
+      positioning:
+        "For night-shift nurses and warehouse crews who eat from vending machines at 3am, Night Shift Bakery is a bakery that runs on their clock and delivers to the break room. Unlike delivery apps, it's there when they're hungry.\nTagline: Real food on the night shift's clock.",
+      customers:
+        "Hospital night staff\n- Who: nurses and orderlies on 7pm to 7am shifts\n- Where to find them: ward break rooms and staff WhatsApp groups\n- Trigger: the 3am slump\n- First 20: Ana's own ward, then two neighbouring wards",
+    },
+  };
+  for (const [slug, data] of Object.entries(gtm)) {
+    const hub = await db.hub.findUniqueOrThrow({ where: { slug } });
+    await db.gtmWorkspace.create({ data: { hubId: hub.id, ...data } });
+  }
+
   // Keep the auto-number counter ahead of the seeded numbers.
   await db.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"Hub"', 'number'), (SELECT MAX(number) FROM "Hub"))`);
 

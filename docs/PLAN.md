@@ -4,7 +4,7 @@ Each phase ends in something you can click through locally at
 `http://localhost:3000`. I stop after each phase, tell you how to run it and what
 to test, commit, and wait for your go-ahead.
 
-Status: Phases 0–7 done. Awaiting go-ahead for Phase 8.
+Status: Phases 0–8 done. Awaiting go-ahead for Phase 9.
 Decisions made: Signal = hot orange #FF5B1F · Better Auth · Archivo + IBM Plex Mono.
 
 ---

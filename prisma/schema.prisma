@@ -177,6 +177,7 @@ model Hub {
   members         HubMember[]
   roleOpenings    RoleOpening[]
   signals         Signal[]
+  gtmWorkspace    GtmWorkspace?
 
   @@index([ownerId])
 }
@@ -453,6 +454,22 @@ model Partner {
   updatedAt    DateTime          @updatedAt
 
   @@index([featured])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Marketing + GTM workspace (Phase 8). One per hub. Agents propose
+// drafts; only the builder's explicit "use this" or save writes here.
+// ─────────────────────────────────────────────────────────────
+
+model GtmWorkspace {
+  id          String   @id @default(cuid())
+  hubId       String   @unique
+  hub         Hub      @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  positioning String?
+  customers   String? // target customers
+  channels    String?
+  launchPlan  String?
+  updatedAt   DateTime @updatedAt
 }
 
 // ─────────────────────────────────────────────────────────────

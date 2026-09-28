@@ -80,6 +80,11 @@ export default async function ConnectPage({ params }: { params: Promise<{ slug: 
         </div>
         <MaskedLines lines={[area.title]} className="type-display text-display" />
         <p className="measure text-lead text-smoke">{area.line}</p>
+        {(need === "MARKETING" || need === "GTM") && (
+          <ArrowLink href={`/hubs/${hub.slug}/gtm` as Route} size="lead" tone="signal">
+            Open the go-to-market workspace
+          </ArrowLink>
+        )}
       </section>
 
       <section className="grid grid-cols-1 gap-6 border-t border-line px-edge py-10 md:grid-cols-[16rem_1fr]">

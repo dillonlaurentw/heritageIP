@@ -28,7 +28,7 @@ const NEXT: { title: string; label: string; span: TileSpan; path: string }[] = [
   { title: "Partners", label: "Legal, supply, build · Phase 5", span: "square", path: "connect/legal" },
   { title: "Backers", label: "Interest only", span: "square", path: "backers" },
   { title: "Mentors", label: "People who have done it", span: "square", path: "connect/mentor" },
-  { title: "Go-to-market", label: "Phase 8", span: "square", path: "connect/gtm" },
+  { title: "Go-to-market", label: "Positioning, customers, launch", span: "square", path: "gtm" },
   { title: "Agents", label: "Phase 10", span: "square", path: "" },
 ];
 
@@ -40,6 +40,8 @@ export default async function HubPage({ params }: { params: Promise<{ slug: stri
     db.roleOpening.count({ where: { hubId: hub.id, status: "OPEN" } }),
     isOwner ? db.signal.count({ where: { hubId: hub.id, toUserId: viewer.user.id, status: "PENDING" } }) : 0,
   ]);
+  const gtm = await db.gtmWorkspace.findUnique({ where: { hubId: hub.id } });
+  const gtmWritten = (["positioning", "customers", "channels", "launchPlan"] as const).filter((k) => gtm?.[k]?.trim()).length;
   const t = hub.thesis;
   const steps = await listSteps(hub.id);
   const plan = { done: steps.filter((st) => st.done).length, total: steps.length };
@@ -177,14 +179,16 @@ export default async function HubPage({ params }: { params: Promise<{ slug: stri
               label={
                 n.path === "team"
                   ? `${teamSize + 1} ${teamSize ? "people" : "person"} · ${openRoles} open ${openRoles === 1 ? "role" : "roles"}${waiting ? ` · ${waiting} waiting` : ""}`
-                  : n.path === "backers"
+                  : n.path === "gtm"
+                    ? `${gtmWritten}/4 written · Positioning to launch`
+                    : n.path === "backers"
                     ? hub.discoverable
                       ? "Open to backers · Interest only"
                       : "Not discoverable · Interest only"
                     : n.label
               }
               title={n.title}
-              href={n.path && (isOwner || n.path === "team") ? (`/hubs/${hub.slug}/${n.path}` as Route) : undefined}
+              href={n.path && (isOwner || n.path === "team" || n.path === "gtm") ? (`/hubs/${hub.slug}/${n.path}` as Route) : undefined}
             />
           ))}
         </Mosaic>

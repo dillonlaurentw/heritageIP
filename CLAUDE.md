@@ -371,6 +371,19 @@ npm run lint && npm run typecheck && npm test && npm run build   # before every 
   `hubOptionsFor()` builds its options.
 - The nav has no "Home" link; the wordmark goes home.
 
+## GTM workspace conventions (Phase 8)
+
+- `GtmWorkspace` (one per hub): positioning, customers, channels, launchPlan.
+  Section labels, hints and the agent's format guide live in
+  `src/lib/gtm-sections.ts`.
+- **Agents propose, builders dispose.** `proposeSection()` returns a draft and
+  saves nothing. Only `saveSection()` writes, triggered by the builder's Save or
+  "Use this". Follow this pattern for every future agent that edits hub content.
+- The GTM agent sees the thesis, the builder, open MARKETING/GTM plan steps,
+  and the other sections (for consistency). Draft vs sharpen depends on whether
+  the section already has saved text.
+- Team members see the workspace read-only.
+
 ## Design primitives (Phase 0)
 
 - `src/design/tokens.css`: colors, type scale, radii, motion. Tailwind's default
