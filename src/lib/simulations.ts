@@ -180,6 +180,9 @@ export async function runNextTurn(simId: string, viewer: Viewer) {
   }
   if (sim.turnCount >= sim.maxTurns) return { ok: true as const, done: true, turn: null };
 
+  // Demo agents answer instantly; a short beat keeps the live view readable.
+  if (sim.demo) await new Promise((r) => setTimeout(r, 900));
+
   const people = sim.participants.map((p) => ({ name: p.user.name, persona: p.personaSnapshot }));
   const index = sim.turnCount;
   const si = speakerIndex(index, people.length);
