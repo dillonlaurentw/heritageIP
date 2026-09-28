@@ -8,3 +8,5 @@ export { gamePlanAgent, type GamePlanCtx } from "./prompts/gamePlan";
 export { gtmAgent, type GtmCtx } from "./prompts/gtm";
 export { defaultPersona, personaAgent } from "./prompts/persona";
 export { fitReportAgent, simulationTurnAgent, type SimPerson, type SimTurnCtx } from "./prompts/simulation";
+export { hubChatAgent, routeByKeywords, routerAgent, type HubChatCtx } from "./prompts/hubAgents";
+export { hubBriefing } from "./hubContext";

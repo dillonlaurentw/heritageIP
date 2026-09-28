@@ -59,6 +59,18 @@ export async function getHubAccess(slug: string, viewer: Viewer) {
   return { hub, isOwner, membership };
 }
 
+/** Owner or team member, by id, for server actions. */
+export async function requireHubAccessById(hubId: string, viewer: Viewer) {
+  const hub = await db.hub.findUnique({ where: { id: hubId } });
+  if (!hub) throw new Error("No such hub.");
+  const isOwner = hub.ownerId === viewer.user.id;
+  if (!isOwner) {
+    const m = await db.hubMember.findUnique({ where: { hubId_userId: { hubId, userId: viewer.user.id } } });
+    if (!m) throw new Error("Not your hub.");
+  }
+  return { hub, isOwner };
+}
+
 /** Same check for server actions, which receive an id rather than a slug. */
 export async function requireOwnedHubId(hubId: string, viewer: Viewer) {
   const hub = await db.hub.findUnique({ where: { id: hubId }, include: { thesis: true } });

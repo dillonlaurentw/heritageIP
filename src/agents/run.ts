@@ -70,7 +70,9 @@ export async function runAgent<Ctx, Out extends z.ZodType>(
       betas: ["server-side-fallback-2026-07-01"],
       fallbacks: "default",
       output_config: { effort: agent.effort, format: betaZodOutputFormat(agent.schema) },
-      system: agent.system(ctx),
+      system: agent.cacheSystem
+        ? [{ type: "text", text: agent.system(ctx), cache_control: { type: "ephemeral" } }]
+        : agent.system(ctx),
       messages: [{ role: "user", content: agent.prompt(ctx) }],
     });
 

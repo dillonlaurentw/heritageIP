@@ -910,6 +910,36 @@ async function main() {
     });
   }
 
+  // ── Hub agent conversations. ──
+  const chats: { key: string; msgs: [("USER" | "AGENT"), string, unknown?][] }[] = [
+    {
+      key: "fundraising",
+      msgs: [
+        ["USER", "Drill me with investor questions, one at a time."],
+        ["AGENT", "First question, the way a sceptical backer would ask it:\n\n\"Kelp packaging has been 'two years away' for a decade. Why does it work now, and why on the Iberian coast?\"\n\nAnswer in three sentences or fewer."],
+        ["USER", "EU plastic rules land in 2027 and supermarket buyers already ask for plastic-free seafood. Kelp farming capacity near Peniche doubled in three years, so the raw material is finally local. And we're pricing on landed cost, where freight kills imported bio-packaging."],
+        ["AGENT", "Strong on timing, and the landed-cost point is your best line: lead with it. The weak spot is proof: you've told me why it could work, not that anyone has paid.\n\nNext question: \"What does your pilot need to show for a processor to sign a volume contract, and what happens if it doesn't?\"", { suggestedStep: { title: "Define the pilot's pass/fail numbers", detail: "Written targets for leaks, breakage and cost per kilo that a processor agrees to.", stage: "BUILD", needs: [] } }],
+      ],
+    },
+    {
+      key: "legal",
+      msgs: [
+        ["USER", "What does an IP assignment actually do?"],
+        ["AGENT", "In plain English: it moves ownership of the things people create (designs, code, brand work) from the person to the company. Without one, a co-founder or contractor can still own what they made, even if the company paid for it or depends on it.\n\nFor Tidewater Kelp that matters for the tray design and Dev's software.\n\nQuestions worth taking to a lawyer:\n- Should the assignment cover work done before the company existed?\n- How does Portuguese law treat IP made by founders before formation?\n\nThis isn't legal advice. Confirm with a lawyer; SELF's Legal partners can help."],
+      ],
+    },
+  ];
+  for (const c of chats) {
+    const thread = await db.agentThread.create({
+      data: { userId: idByKey.get("maya")!, hubId: tideHub.id, kind: `hub:${c.key}`, createdAt: new Date(Date.now() - 2 * DAY) },
+    });
+    for (const [i, [role, text, data]] of c.msgs.entries()) {
+      await db.agentMessage.create({
+        data: { threadId: thread.id, role, text, data: (data ?? undefined) as never, createdAt: new Date(Date.now() - 2 * DAY + i * 60_000) },
+      });
+    }
+  }
+
   // Keep the auto-number counter ahead of the seeded numbers.
   await db.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"Hub"', 'number'), (SELECT MAX(number) FROM "Hub"))`);
 

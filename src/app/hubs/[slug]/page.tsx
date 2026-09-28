@@ -29,7 +29,7 @@ const NEXT: { title: string; label: string; span: TileSpan; path: string }[] = [
   { title: "Backers", label: "Interest only", span: "square", path: "backers" },
   { title: "Mentors", label: "People who have done it", span: "square", path: "connect/mentor" },
   { title: "Go-to-market", label: "Positioning, customers, launch", span: "square", path: "gtm" },
-  { title: "Agents", label: "Phase 10", span: "square", path: "" },
+  { title: "Agents", label: "Strategy, GTM, ops, fundraising, legal", span: "square", path: "agents" },
 ];
 
 export default async function HubPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -188,7 +188,7 @@ export default async function HubPage({ params }: { params: Promise<{ slug: stri
                     : n.label
               }
               title={n.title}
-              href={n.path && (isOwner || n.path === "team" || n.path === "gtm") ? (`/hubs/${hub.slug}/${n.path}` as Route) : undefined}
+              href={n.path && (isOwner || n.path === "team" || n.path === "gtm" || n.path === "agents") ? (`/hubs/${hub.slug}/${n.path}` as Route) : undefined}
             />
           ))}
         </Mosaic>

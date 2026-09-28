@@ -404,6 +404,25 @@ npm run lint && npm run typecheck && npm test && npm run build   # before every 
   finishes. Every surface says SIMULATION; the report is aligned / pulled apart /
   talk about this, with no scores, ranks or verdicts (enforced in the prompt).
 
+## Hub agents conventions (Phase 10)
+
+- Roster and copy: `src/lib/hub-agents.ts`. Role briefs and the shared chat
+  shape: `src/agents/prompts/hubAgents.ts`. The hub briefing (thesis, plan,
+  team, roles, intros, GTM workspace) is built by `hubBriefing()`.
+- The briefing lives in the system prompt with `cacheSystem: true`, so it's
+  cached across a conversation; the recent history (last 12 messages) and the
+  new message go in the user turn.
+- Threads are per user, per hub, per agent (`AgentThread.kind = "hub:<key>"`);
+  owners and team members can chat, only owners can add a suggested step to the
+  game plan (`addSuggestedStep`, which is the explicit "use this" moment).
+- The legal explainer is told it isn't a lawyer, shows a fixed "not legal
+  advice" banner linking to Legal partners, and the server appends the
+  disclaimer if a reply ever lacks it.
+- Fundraising prep practises and prepares; it never drafts offering documents
+  or solicitations.
+- "Ask SELF anything" (`/ask`) routes with `routerAgent` (keyword routing in
+  demo mode) and opens the chosen agent with the question.
+
 ## Design primitives (Phase 0)
 
 - `src/design/tokens.css`: colors, type scale, radii, motion. Tailwind's default

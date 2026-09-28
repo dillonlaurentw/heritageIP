@@ -9,6 +9,11 @@ export type Effort = "low" | "medium" | "high" | "xhigh" | "max";
 export type AgentDef<Ctx, Out extends z.ZodType> = {
   purpose: string;
   effort: Effort;
+  /**
+   * Cache the system prompt across calls (prompt caching). Use when the
+   * system prompt is long and stable across a conversation, e.g. a hub briefing.
+   */
+  cacheSystem?: boolean;
   schema: Out;
   system: (ctx: Ctx) => string;
   prompt: (ctx: Ctx) => string;
