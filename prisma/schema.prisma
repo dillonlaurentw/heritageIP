@@ -15,23 +15,25 @@ datasource db {
 // ─────────────────────────────────────────────────────────────
 
 model User {
-  id              String        @id @default(cuid())
-  name            String
-  email           String        @unique
-  emailVerified   Boolean       @default(false)
-  image           String?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  sessions        Session[]
-  accounts        Account[]
-  profile         Profile?
-  hubs            Hub[]
-  agentThreads    AgentThread[]
-  agentRuns       AgentRun[]
-  memberships     HubMember[]
-  signalsSent     Signal[]      @relation("SignalFrom")
-  signalsReceived Signal[]      @relation("SignalTo")
-  partner         Partner?
+  id                 String                  @id @default(cuid())
+  name               String
+  email              String                  @unique
+  emailVerified      Boolean                 @default(false)
+  image              String?
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+  sessions           Session[]
+  accounts           Account[]
+  profile            Profile?
+  hubs               Hub[]
+  agentThreads       AgentThread[]
+  agentRuns          AgentRun[]
+  memberships        HubMember[]
+  signalsSent        Signal[]                @relation("SignalFrom")
+  signalsReceived    Signal[]                @relation("SignalTo")
+  partner            Partner?
+  simulationsStarted Simulation[]            @relation("SimulationsStarted")
+  simulationSeats    SimulationParticipant[]
 
   @@map("user")
 }
@@ -114,11 +116,18 @@ model Profile {
   decisionStyle  String? // how they make hard calls
 
   // Mentor / backer / partner specifics (short, optional).
-  focusAreas     String[] // mentor + backer focus, e.g. ["Climate", "Hardware"]
-  mentorNote     String?
-  mentorOpen     Boolean  @default(true) // mentor is taking new requests
-  backerNote     String? // what they back. Never amounts or terms.
-  partnerOrgName String? // linked to a Partner record in Phase 5
+  focusAreas String[] // mentor + backer focus, e.g. ["Climate", "Hardware"]
+  mentorNote String?
+  mentorOpen Boolean  @default(true) // mentor is taking new requests
+
+  // Personal agent (Phase 9). `persona` is exactly what the agent is given;
+  // the person can always read and edit it. Simulations need explicit opt-in.
+  persona          String?
+  personaUpdatedAt DateTime?
+  simOptIn         Boolean   @default(false)
+  simOptInAt       DateTime?
+  backerNote       String? // what they back. Never amounts or terms.
+  partnerOrgName   String? // linked to a Partner record in Phase 5
 
   // Contact details. Only ever revealed through an ACCEPTED Signal
   // (Phase 4+). Never select these fields for general UI.
@@ -178,6 +187,7 @@ model Hub {
   roleOpenings    RoleOpening[]
   signals         Signal[]
   gtmWorkspace    GtmWorkspace?
+  simulations     Simulation[]
 
   @@index([ownerId])
 }
@@ -470,6 +480,80 @@ model GtmWorkspace {
   channels    String?
   launchPlan  String?
   updatedAt   DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────────────────────
+// Team simulations (Phase 9). AI stand-ins built from each person's persona
+// talk through a scenario. Always labelled SIMULATION. The fit report is a
+// conversation starter: aligned / clashed / talk about this. No scores.
+// ─────────────────────────────────────────────────────────────
+
+enum SimulationStatus {
+  RUNNING
+  DONE
+  CANCELLED // stopped early, e.g. someone withdrew consent
+}
+
+model Simulation {
+  id            String                  @id @default(cuid())
+  createdById   String
+  createdBy     User                    @relation("SimulationsStarted", fields: [createdById], references: [id], onDelete: Cascade)
+  hubId         String? // optional context
+  hub           Hub?                    @relation(fields: [hubId], references: [id], onDelete: SetNull)
+  scenarioKey   String // preset key or "custom"
+  scenarioTitle String
+  scenarioBrief String
+  status        SimulationStatus        @default(RUNNING)
+  maxTurns      Int
+  turnCount     Int                     @default(0)
+  demo          Boolean                 @default(false) // ran on demo agents
+  cancelReason  String?
+  participants  SimulationParticipant[]
+  turns         SimulationTurn[]
+  report        FitReport?
+  createdAt     DateTime                @default(now())
+  finishedAt    DateTime?
+
+  @@index([createdById, createdAt])
+}
+
+model SimulationParticipant {
+  id              String           @id @default(cuid())
+  simulationId    String
+  simulation      Simulation       @relation(fields: [simulationId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order           Int // speaking order
+  personaSnapshot String // frozen at start: what this agent was given
+  consentAt       DateTime // the opt-in in force when the simulation started
+  turns           SimulationTurn[]
+
+  @@unique([simulationId, userId])
+  @@index([userId])
+}
+
+model SimulationTurn {
+  id            String                @id @default(cuid())
+  simulationId  String
+  simulation    Simulation            @relation(fields: [simulationId], references: [id], onDelete: Cascade)
+  index         Int
+  participantId String
+  participant   SimulationParticipant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  text          String
+  createdAt     DateTime              @default(now())
+
+  @@unique([simulationId, index]) // one turn per slot, even if two tabs race
+}
+
+/// A conversation starter, never a score or verdict on a real person.
+model FitReport {
+  id           String     @id @default(cuid())
+  simulationId String     @unique
+  simulation   Simulation @relation(fields: [simulationId], references: [id], onDelete: Cascade)
+  aligned      String[]
+  clashed      String[]
+  talkAbout    String[] // questions for the real people
+  createdAt    DateTime   @default(now())
 }
 
 // ─────────────────────────────────────────────────────────────

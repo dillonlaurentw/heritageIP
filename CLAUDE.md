@@ -384,6 +384,26 @@ npm run lint && npm run typecheck && npm test && npm run build   # before every 
   the section already has saved text.
 - Team members see the workspace read-only.
 
+## Personal agents + simulations conventions (Phase 9)
+
+- A personal agent is given exactly `personaText(name, profile)`: the saved
+  `Profile.persona`, or a plain restatement of the person's own answers
+  (`defaultPersona`, no AI). `/me/agent` shows and edits exactly that text.
+  "Rebuild" is a proposal; only Save or "Use this" writes.
+- Opt-in (`Profile.simOptIn`) is off by default. Participant rules are pure and
+  tested (`src/lib/simulation-rules.ts`): initiator always in and opted in,
+  2-4 people, everyone opted in, everyone connected (teammates, candidates,
+  accepted connections: `eligiblePeople()`).
+- Each simulation freezes `personaSnapshot` + `consentAt` per participant.
+- The initiator's browser drives one turn per request (`runNextTurn`). Consent
+  is re-checked every turn; any opt-out stops the run (CANCELLED, no report).
+  `@@unique([simulationId, index])` makes double-driving harmless.
+- Caps: turns 6/9/12, max 4 people, 3 simulations per user per day (plus the
+  global daily agent-call cap).
+- Only participants can open a simulation. Non-initiators get an email when it
+  finishes. Every surface says SIMULATION; the report is aligned / pulled apart /
+  talk about this, with no scores, ranks or verdicts (enforced in the prompt).
+
 ## Design primitives (Phase 0)
 
 - `src/design/tokens.css`: colors, type scale, radii, motion. Tailwind's default

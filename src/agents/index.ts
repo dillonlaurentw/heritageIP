@@ -6,3 +6,5 @@ export { ideasAgent } from "./prompts/ideas";
 export { thesisDraftAgent, thesisQuestionsAgent, type ThesisCtx } from "./prompts/thesis";
 export { gamePlanAgent, type GamePlanCtx } from "./prompts/gamePlan";
 export { gtmAgent, type GtmCtx } from "./prompts/gtm";
+export { defaultPersona, personaAgent } from "./prompts/persona";
+export { fitReportAgent, simulationTurnAgent, type SimPerson, type SimTurnCtx } from "./prompts/simulation";

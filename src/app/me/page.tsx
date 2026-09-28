@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { MaskedLines } from "@/components/motion/MaskedLines";
 import { PageWipe } from "@/components/motion/PageWipe";
+import { ArrowLink } from "@/components/ui/ArrowLink";
 import { Label } from "@/components/ui/Label";
 import { rolesLine } from "@/lib/roles";
 import { requireOnboarded } from "@/lib/session";
@@ -21,8 +22,16 @@ export default async function MePage() {
         </div>
         <MaskedLines lines={["This is how", "SELF sees you."]} className="type-display mt-16 text-display" />
         <p className="measure mt-6 text-lead text-smoke">
-          Change anything. Your reflection answers will shape your personal agent, so the more honest, the more useful.
+          Change anything. Your reflection answers shape your personal agent, so the more honest, the more useful.
         </p>
+        <div className="mt-8 flex flex-wrap gap-8">
+          <ArrowLink href="/me/agent" size="lead" tone="signal">
+            Your personal agent
+          </ArrowLink>
+          <ArrowLink href="/simulations" size="lead">
+            Simulations
+          </ArrowLink>
+        </div>
       </section>
       <ProfileEditor
         initial={{

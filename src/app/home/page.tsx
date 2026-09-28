@@ -68,7 +68,14 @@ export default async function Home() {
           )}
           <Tile span="square" tone="field" label="Legal, supply, build, marketing" title="Find partners" href="/partners" index={3} />
           {has("BUILDER") && <Tile span="square" tone="field" label="People who have done it" title="Find a mentor" href="/mentors" index={4} />}
-          {has("BUILDER") && <Tile span="square" tone="field" label="Builder · Phase 9" title="Your personal agent" index={5} />}
+          <Tile
+            span="square"
+            tone="field"
+            label={profile.simOptIn ? "Personal agent · Opted in" : "Personal agent · Off"}
+            title="Rehearse with your team"
+            href="/simulations"
+            index={5}
+          />
         </Mosaic>
       </div>
     </PageWipe>
