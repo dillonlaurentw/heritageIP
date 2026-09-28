@@ -19,7 +19,9 @@ function hash(s: string) {
   return h >>> 0;
 }
 
-const layouts: CoverLayout[] = ["initial", "stack", "repeat", "index"];
+export const COVER_LAYOUTS: CoverLayout[] = ["initial", "stack", "repeat", "index"];
+export const COVER_TONES: CoverTone[] = ["raised", "bone", "signal"];
+const layouts = COVER_LAYOUTS;
 // Signal appears roughly 1 in 7 so it stays rare in any list.
 const tones: CoverTone[] = ["raised", "raised", "raised", "bone", "bone", "raised", "signal"];
 
@@ -47,13 +49,14 @@ export function CoverArt({
 }) {
   const { layout, tone } = { ...coverFor(name), ...spec };
   const words = name.toUpperCase().split(/\s+/).filter(Boolean);
+  const longest = Math.max(...words.slice(0, 3).map((w) => w.length), 1);
   const shift = "transition-transform duration-(--duration-slow) ease-out-strong";
 
   return (
     <div aria-hidden className={`relative size-full [container-type:size] overflow-hidden select-none ${toneClass[tone]}`}>
       {layout === "initial" && (
         <span
-          className={`type-display absolute -right-[4cqw] -bottom-[14cqw] text-[min(78cqw,120cqh)] leading-[0.8] ${shift} motion-safe:group-hover:-translate-x-[3cqw]`}
+          className={`type-display absolute -right-[0.05em] -bottom-[0.2em] text-[min(78cqw,135cqh)] leading-[0.8] ${shift} motion-safe:group-hover:-translate-x-[3cqw]`}
         >
           {words[0]?.[0]}
         </span>
@@ -62,7 +65,12 @@ export function CoverArt({
       {layout === "stack" && (
         <div className={`absolute top-[3cqh] -left-[1.5cqw] ${shift} motion-safe:group-hover:translate-x-[2cqw]`}>
           {words.slice(0, 3).map((w, i) => (
-            <span key={i} className="type-display block text-[min(22cqw,30cqh)] leading-[0.82] whitespace-nowrap">
+            <span
+              key={i}
+              // Size to the longest word so single long names aren't clipped.
+              style={{ fontSize: `min(22cqw, ${Math.floor(140 / longest)}cqw, 30cqh)` }}
+              className="type-display block leading-[0.82] whitespace-nowrap"
+            >
               {w}
             </span>
           ))}
@@ -88,7 +96,7 @@ export function CoverArt({
       {layout === "index" && (
         <>
           <span
-            className={`type-display absolute -top-[6cqw] -left-[2cqw] text-[min(56cqw,80cqh)] leading-none ${shift} motion-safe:group-hover:translate-y-[3cqw]`}
+            className={`type-display absolute -top-[0.1em] -left-[0.03em] text-[min(56cqw,80cqh)] leading-none ${shift} motion-safe:group-hover:translate-y-[3cqw]`}
           >
             {String(number ?? (hash(name) % 90) + 10).padStart(2, "0")}
           </span>
@@ -97,4 +105,10 @@ export function CoverArt({
       )}
     </div>
   );
+}
+
+/** The tile tone that matches a hub's cover, so caption and art read as one plate. */
+export function coverTileTone(hub: { name: string; coverTone?: string | null; coverImageUrl?: string | null }): CoverTone {
+  if (hub.coverImageUrl) return "raised";
+  return (hub.coverTone as CoverTone | null) ?? coverFor(hub.name).tone;
 }

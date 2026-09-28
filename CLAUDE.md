@@ -272,6 +272,28 @@ npm run lint && npm run typecheck && npm run build   # before every commit
   `src/lib/profile-schema.ts` is shared with the client).
 - Onboarding copy lives in `src/app/onboarding/steps.ts`.
 
+## Hubs + agents conventions (Phase 2)
+
+- Hub access: `getOwnedHub(slug)` in pages, `requireOwnedHubId(id)` in actions
+  (`src/lib/hubs.ts`). Non-owners get a 404, never a "forbidden".
+- Every model call goes through `runAgent(agent, ctx, { userId, hubId })`
+  (`src/agents/run.ts`). It never throws: it returns `{ ok, output, demo }` or
+  `{ ok: false, message }` with copy that is safe to show.
+- Agents are defined with `defineAgent()`: purpose, effort, Zod output schema,
+  `system`/`prompt` template functions, and a `demo()` answer. Structured output
+  is enforced by the API (`betaZodOutputFormat`), so no JSON parsing by hand.
+- Model is `claude-opus-5` for every agent (`src/agents/config.ts`). Tune cost
+  with per-agent `effort` first. Calls opt into the API's server-side fallback
+  (`fallbacks: "default"`) so a safety decline is retried on a fallback model.
+- No `ANTHROPIC_API_KEY` = demo mode: `demo()` output, logged as `DEMO`, labelled
+  "Demo agent" in the UI. Demo runs don't count toward the daily cap.
+- Agent conversations are stored as `AgentThread` + `AgentMessage` (with a
+  structured `data.type`). Saving a thesis opens a fresh thread.
+- Thesis history: every save writes a `ThesisRevision` snapshot.
+- Covers: `HubCover` renders the uploaded image or generated `CoverArt`; use
+  `coverTileTone(hub)` for the matching tile tone. Uploads go through
+  `storeImage()` (`src/lib/storage.ts`).
+
 ## Design primitives (Phase 0)
 
 - `src/design/tokens.css`: colors, type scale, radii, motion. Tailwind's default
@@ -282,3 +304,13 @@ npm run lint && npm run typecheck && npm run build   # before every commit
   quarter, strip), `CoverArt` (deterministic type-art from a hub name).
 - `components/ui`: `Label`/`Tag`, `ArrowLink`/`Arrow`/`Button`, `Hairline`, `EmptyState`.
 - `.type-display` = heavy display face; `.label` = mono label; `--wdth` animates width.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

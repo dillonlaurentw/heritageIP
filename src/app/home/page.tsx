@@ -3,7 +3,10 @@ import { MaskedLines } from "@/components/motion/MaskedLines";
 import { PageWipe } from "@/components/motion/PageWipe";
 import { Mosaic } from "@/components/mosaic/Mosaic";
 import { Tile } from "@/components/mosaic/Tile";
+import { ArrowLink } from "@/components/ui/ArrowLink";
 import { Label } from "@/components/ui/Label";
+import { HubMosaic } from "@/components/mosaic/HubMosaic";
+import { listHubs } from "@/lib/hubs";
 import { rolesLine } from "@/lib/roles";
 import { requireOnboarded } from "@/lib/session";
 
@@ -13,23 +16,28 @@ export default async function Home() {
   const { user, profile } = await requireOnboarded();
   const first = user.name.split(" ")[0];
   const has = (r: string) => profile.roles.includes(r as never);
+  const hubs = await listHubs(user.id);
 
   return (
     <PageWipe>
       <section className="flex min-h-[70dvh] flex-col justify-between gap-12 px-edge pt-10 pb-12">
         <div className="flex justify-between">
           <Label>Home · {rolesLine(profile.roles)}</Label>
-          <Label>Hubs · 00</Label>
+          <Label>Hubs · {String(hubs.length).padStart(2, "0")}</Label>
         </div>
         <div>
           <MaskedLines lines={[`${first},`, "what are you", "building?"]} className="type-display text-hero" />
-          <div className="mt-10 flex flex-wrap items-baseline gap-x-6 gap-y-2">
-            <span className="type-display text-headline text-signal">Start a hub →</span>
-            <Label>Arrives in Phase 2</Label>
-          </div>
+          <ArrowLink href="/hubs/new" size="hero" tone="signal" className="mt-10">
+            {hubs.length ? "Start another hub" : "Start a hub"}
+          </ArrowLink>
         </div>
       </section>
 
+      {hubs.length > 0 && (
+        <div className="px-gutter pb-gutter">
+          <HubMosaic hubs={hubs} />
+        </div>
+      )}
       <div className="px-gutter pb-24">
         <Mosaic>
           <Tile span="wide" tone="bone" label="You" title="How SELF sees you" href="/me" index={0}>

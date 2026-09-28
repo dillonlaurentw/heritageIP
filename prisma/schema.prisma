@@ -15,16 +15,19 @@ datasource db {
 // ─────────────────────────────────────────────────────────────
 
 model User {
-  id            String    @id @default(cuid())
+  id            String        @id @default(cuid())
   name          String
-  email         String    @unique
-  emailVerified Boolean   @default(false)
+  email         String        @unique
+  emailVerified Boolean       @default(false)
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
   sessions      Session[]
   accounts      Account[]
   profile       Profile?
+  hubs          Hub[]
+  agentThreads  AgentThread[]
+  agentRuns     AgentRun[]
 
   @@map("user")
 }
@@ -121,4 +124,137 @@ model Profile {
   onboardedAt    DateTime?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
+}
+
+// ─────────────────────────────────────────────────────────────
+// Project Hubs: one idea each.
+// ─────────────────────────────────────────────────────────────
+
+enum HubStage {
+  IDEA // raw idea, no thesis yet
+  THESIS // thesis saved
+  PLAN // game plan exists (Phase 3)
+  BUILDING
+  LAUNCHED
+}
+
+model Hub {
+  id       String   @id @default(cuid())
+  number   Int      @unique @default(autoincrement()) // shown as "HUB 03"
+  slug     String   @unique
+  ownerId  String
+  owner    User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  name     String
+  oneLiner String?
+  rawIdea  String // the thought it started from, kept for reference
+  stage    HubStage @default(IDEA)
+
+  // Cover: generated type-art (layout/tone override the name-based default)
+  // or an uploaded image.
+  coverLayout   String? // "initial" | "stack" | "repeat" | "index"
+  coverTone     String? // "raised" | "bone" | "signal"
+  coverImageUrl String?
+
+  thesis          Thesis?
+  thesisRevisions ThesisRevision[]
+  agentThreads    AgentThread[]
+  agentRuns       AgentRun[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([ownerId])
+}
+
+/// The current core thesis. Revisions keep history.
+model Thesis {
+  id            String   @id @default(cuid())
+  hubId         String   @unique
+  hub           Hub      @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  statement     String // one or two sentences: the whole bet
+  problem       String
+  audience      String // who it's for
+  whyNow        String
+  whyUs         String // why this builder
+  contrarian    String // what they believe that others don't
+  openQuestions String[] // what's still weak, from the last agent pass
+  updatedAt     DateTime @updatedAt
+}
+
+enum RevisionSource {
+  AGENT // drafted in the thesis dialogue
+  EDIT // edited by hand
+}
+
+model ThesisRevision {
+  id        String         @id @default(cuid())
+  hubId     String
+  hub       Hub            @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  source    RevisionSource
+  snapshot  Json // the Thesis fields at that moment
+  createdAt DateTime       @default(now())
+
+  @@index([hubId, createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Agents: conversations and usage. Prompts live in src/agents/.
+// ─────────────────────────────────────────────────────────────
+
+model AgentThread {
+  id        String         @id @default(cuid())
+  kind      String // "thesis" now; hub agents in Phase 10
+  userId    String
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hubId     String?
+  hub       Hub?           @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  messages  AgentMessage[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@index([hubId, kind])
+}
+
+enum MessageRole {
+  USER
+  AGENT
+}
+
+model AgentMessage {
+  id        String      @id @default(cuid())
+  threadId  String
+  thread    AgentThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  role      MessageRole
+  text      String // human-readable version
+  data      Json? // structured output, when the agent returned some
+  createdAt DateTime    @default(now())
+
+  @@index([threadId, createdAt])
+}
+
+enum RunStatus {
+  OK
+  DEMO // no API key: canned output, no cost
+  CAPPED // refused before calling: over the daily cap
+  REFUSED // model declined
+  ERROR
+}
+
+/// One row per agent call. Drives cost caps and the admin cost view.
+model AgentRun {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hubId           String?
+  hub             Hub?      @relation(fields: [hubId], references: [id], onDelete: SetNull)
+  purpose         String // e.g. "thesis.questions"
+  model           String
+  status          RunStatus
+  inputTokens     Int       @default(0)
+  outputTokens    Int       @default(0)
+  cacheReadTokens Int       @default(0)
+  durationMs      Int       @default(0)
+  error           String?
+  createdAt       DateTime  @default(now())
+
+  @@index([userId, createdAt])
 }

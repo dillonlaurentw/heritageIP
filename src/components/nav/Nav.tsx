@@ -21,6 +21,9 @@ export async function Nav() {
               <Link href="/home" className={linkClass}>
                 Home
               </Link>
+              <Link href="/hubs" className={linkClass}>
+                Hubs
+              </Link>
               <Link href="/me" className={linkClass}>
                 You
               </Link>

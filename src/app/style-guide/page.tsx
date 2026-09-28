@@ -51,6 +51,7 @@ const typeScale = [
   { token: "text-display", spec: "clamp → 8vw · 850 · -0.045em · 0.88", cls: "type-display text-display", sample: "Start with a thought." },
   { token: "text-prompt", spec: "clamp → 5.4vw · 850 · -0.045em · 0.9", cls: "type-display text-prompt", sample: "How do you make hard calls?" },
   { token: "text-headline", spec: "clamp → 4.6vw · 850 · -0.04em · 0.92", cls: "type-display text-headline", sample: "Who are you building with?" },
+  { token: "text-statement", spec: "clamp → 3.1vw · 850 · -0.035em · 1", cls: "type-display text-statement measure", sample: "Coastal food producers will switch to kelp packaging made on their own coast." },
   { token: "text-title", spec: "clamp → 2.1vw · 850 · -0.03em · 1", cls: "type-display text-title", sample: "Tidewater Kelp" },
   { token: "text-lead", spec: "clamp → 1.375rem · 400 · 1.5", cls: "text-lead measure", sample: "A hub holds one idea: the thesis, the game plan, the team, and every connection it takes to launch." },
   { token: "text-body", spec: "1rem · 400 · 1.6", cls: "text-body measure", sample: "Short lines, generous leading. Body copy stays under sixty characters a line so it reads like a statement, not a manual." },

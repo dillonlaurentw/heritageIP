@@ -181,6 +181,177 @@ const people: Person[] = [
   },
 ];
 
+
+type SeedHub = {
+  number: number;
+  owner: string;
+  slug: string;
+  name: string;
+  oneLiner: string;
+  rawIdea: string;
+  cover?: { layout?: string; tone?: string };
+  thesis?: {
+    statement: string;
+    problem: string;
+    audience: string;
+    whyNow: string;
+    whyUs: string;
+    contrarian: string;
+    openQuestions: string[];
+  };
+};
+
+const hubs: SeedHub[] = [
+  {
+    number: 1,
+    owner: "maya",
+    slug: "tidewater-kelp",
+    name: "Tidewater Kelp",
+    oneLiner: "Seaweed packaging for coastal food producers, made where it's used.",
+    rawIdea:
+      "Plastic packaging for seafood is absurd: it's used for two days and lasts four hundred years. Kelp grows fast right next to where the fish is landed. What if the packaging came from the same coast?",
+    thesis: {
+      statement:
+        "Coastal food producers will switch to kelp packaging made on their own coast, because local production beats plastic on total cost once logistics are counted.",
+      problem:
+        "Seafood producers ship in plastic trays and film that cost more every year and that their buyers increasingly refuse. Existing bio-packaging is shipped in from far away and priced like a luxury.",
+      audience:
+        "Small and mid-size seafood processors on the Atlantic coast of Portugal and Spain, starting with the 40 in the Peniche and Nazaré area.",
+      whyNow:
+        "EU single-use plastic rules tighten in 2027, supermarket buyers already demand plastic-free seafood, and kelp farming capacity on the Iberian coast doubled in three years.",
+      whyUs:
+        "Maya ran shipping operations for a cold-chain logistics firm for eight years and knows these processors' supply chains, costs and buyers personally.",
+      contrarian:
+        "Sustainable packaging isn't expensive because of the material. It's expensive because of the logistics, and nobody has redesigned those.",
+      openQuestions: [
+        "Can kelp trays hold up to 48 hours of wet, chilled transport?",
+        "Will processors sign volume commitments before a pilot proves it?",
+      ],
+    },
+  },
+  {
+    number: 2,
+    owner: "ana",
+    slug: "night-shift-bakery",
+    name: "Night Shift Bakery",
+    oneLiner: "Real food, baked on the night shift's clock.",
+    rawIdea:
+      "I work nights. At 3am the only food is a vending machine. A bakery that opens at 10pm and delivers to hospitals, depots and call centres before the break.",
+    cover: { layout: "index", tone: "raised" },
+    thesis: {
+      statement:
+        "Night-shift workers are a large, loyal market nobody cooks for; a bakery that runs on their hours and delivers to their workplaces can own it.",
+      problem:
+        "Millions of people work nights and eat from vending machines or not at all. Kitchens close before their shift starts, and delivery apps are thin after midnight.",
+      audience:
+        "Nurses, warehouse and transit workers on night shifts in Chicago, reached through their employers: three hospitals and two logistics depots to start.",
+      whyNow:
+        "Employers are competing hard to retain night staff and are looking for perks that aren't pay rises. Ghost-kitchen space is cheap after 9pm.",
+      whyUs: "Ana has worked night shifts as a nurse for nine years. She is the customer, and she knows the break-room politics.",
+      contrarian: "Night workers don't want cheap food. They want food that feels like someone thought about them.",
+      openQuestions: ["Will employers pay, or will workers pay?", "What's the smallest menu that keeps people coming back?"],
+    },
+  },
+  {
+    number: 3,
+    owner: "kwame",
+    slug: "ground-truth",
+    name: "Ground Truth",
+    oneLiner: "Soil maps from phone photos, so smallholders can borrow on their land's real value.",
+    rawIdea:
+      "Farmers in Ghana can't get credit because banks can't assess their land. But every farmer has a phone. Photos of soil plus a few simple tests could give lenders a real picture.",
+    thesis: {
+      statement:
+        "Lenders will extend credit to smallholder farmers if they can see soil quality cheaply, and a phone photo plus a field kit is enough to show it.",
+      problem:
+        "Smallholders are refused loans because lenders have no reliable, cheap way to assess what their land can produce, so they price all farmers as high risk.",
+      audience:
+        "Rural banks and microfinance lenders in Ghana's Ashanti and Bono regions, and the cocoa and maize smallholders they lend to.",
+      whyNow:
+        "Phone cameras and on-device models are finally good enough for field use, and Ghana's central bank is pushing lenders to grow agricultural lending.",
+      whyUs: "Kwame is a soil scientist with ten years of field research in these regions, fluent in three local languages and trusted by farmer cooperatives.",
+      contrarian: "Smallholders have better data than anyone thinks. It's in their heads and their phones, not in databases.",
+      openQuestions: ["Will a lender change a loan decision based on this in a pilot?", "Who pays for the field kit?"],
+    },
+  },
+  {
+    number: 4,
+    owner: "lena",
+    slug: "parallel-clinic",
+    name: "Parallel Clinic",
+    oneLiner: "Clinic software that staff choose, not just buyers.",
+    rawIdea:
+      "Community clinics run on ugly, slow software that nurses hate. If the software was actually good, staff would push to switch.",
+    cover: { layout: "repeat", tone: "bone" },
+    thesis: {
+      statement:
+        "In small community clinics, the staff who use the software can drive the purchase, so software designed for them first will win against incumbents built for buyers.",
+      problem:
+        "Community clinics use records and scheduling software built for hospital procurement. It's slow, confusing and adds an hour of admin to every shift.",
+      audience: "Independent community clinics with 5 to 30 staff in Germany, starting with Berlin's 60 migrant-health and family clinics.",
+      whyNow: "Germany's e-health mandates force clinics to replace legacy systems by 2027, opening a once-in-a-decade switching window.",
+      whyUs: "Lena spent six years designing tools with clinic staff and has run research in twenty of these clinics.",
+      contrarian: "Healthcare software is ugly because nobody who buys it has to use it. Fix that and staff will sell it for you.",
+      openQuestions: ["Which compliance certifications are needed before the first sale?", "Who signs the contract in a 10-person clinic?"],
+    },
+  },
+  {
+    number: 5,
+    owner: "tomas",
+    slug: "open-hand-tools",
+    name: "Open Hand Tools",
+    oneLiner: "Hand tools built to be repaired at home, for three generations.",
+    rawIdea: "Tools used to last a lifetime. Now they're glued shut. A workshop brand that sells spare parts proudly.",
+    cover: { layout: "stack", tone: "bone" },
+    thesis: {
+      statement:
+        "A growing group of buyers wants fewer, better things, and a tool brand that makes repair easy will earn their loyalty for decades.",
+      problem: "Modern hand tools are designed to be replaced, not repaired. Parts aren't sold, and repair guides don't exist.",
+      audience: "Serious home woodworkers and small workshops in Mexico and the US southwest who already buy premium tools.",
+      whyNow: "Right-to-repair laws are spreading and buyers are actively searching for repairable products.",
+      whyUs: "Tomás is a carpenter with twenty years at the bench and a network of small metal and wood suppliers in Mexico City.",
+      contrarian: "Selling spare parts isn't lost revenue. It's the marketing.",
+      openQuestions: ["Can he sell online without becoming a marketer?", "Which three tools prove the brand?"],
+    },
+  },
+  {
+    number: 6,
+    owner: "dev",
+    slug: "field-notes",
+    name: "Field Notes",
+    oneLiner: "Voice-first job notes for field technicians.",
+    rawIdea:
+      "Field technicians write up jobs in their vans, badly, at the end of the day. What if they just talked while working and the report wrote itself?",
+    thesis: {
+      statement:
+        "Field service companies will pay for reports written from voice notes, because better job records cut repeat visits and disputes.",
+      problem: "Technicians hate paperwork, so job reports are late and thin. That causes repeat visits, billing disputes and lost warranty claims.",
+      audience: "HVAC and elevator maintenance companies with 20 to 200 technicians in the UK.",
+      whyNow: "Speech models now handle noisy sites and technical vocabulary, and customers expect digital job records.",
+      whyUs: "Dev has shipped two B2B products to field teams and knows how to build fast without overbuilding.",
+      contrarian: "The best MVP here has no app. Technicians just send a voice note to a number.",
+      openQuestions: ["Will companies pay per technician or per job?", "How do reports plug into their existing job systems?"],
+    },
+  },
+  {
+    number: 7,
+    owner: "maya",
+    slug: "loam",
+    name: "Loam",
+    oneLiner: "Restaurant food waste, collected and composted within five miles.",
+    rawIdea:
+      "Restaurants throw out tonnes of food waste that gets trucked hours away. Urban farms on the edge of the city need compost. Connect them with small electric vans.",
+  },
+  {
+    number: 8,
+    owner: "admin",
+    slug: "common-thread",
+    name: "Common Thread",
+    oneLiner: "Neighbourhood textile repair and recycling points.",
+    rawIdea: "Clothes get binned because fixing them is a hassle. Repair and drop-off points in libraries and community centres.",
+  },
+];
+
 async function main() {
   for (const p of people) {
     const { key, name, onboarded = true, ...rest } = p;
@@ -208,6 +379,86 @@ async function main() {
     await db.profile.upsert({ where: { userId: user.id }, create: { userId: user.id, ...data }, update: data });
   }
   console.log(`Seeded ${people.length} people.`);
+  // ── Hubs: reset every demo-owned hub, then recreate. ──
+  const demoUsers = await db.user.findMany({ where: { email: { endsWith: "@self.demo" } } });
+  const idByKey = new Map(demoUsers.map((u) => [u.email.split("@")[0], u.id]));
+  await db.hub.deleteMany({ where: { ownerId: { in: demoUsers.map((u) => u.id) } } });
+  await db.agentRun.deleteMany({ where: { userId: { in: demoUsers.map((u) => u.id) } } });
+
+  const DAY = 86_400_000;
+  for (const [i, h] of hubs.entries()) {
+    const ownerId = idByKey.get(h.owner)!;
+    const created = new Date(Date.now() - (hubs.length - i) * 9 * DAY);
+    const hub = await db.hub.create({
+      data: {
+        number: h.number,
+        slug: h.slug,
+        ownerId,
+        name: h.name,
+        oneLiner: h.oneLiner,
+        rawIdea: h.rawIdea,
+        stage: h.thesis ? "THESIS" : "IDEA",
+        coverLayout: h.cover?.layout ?? null,
+        coverTone: h.cover?.tone ?? null,
+        createdAt: created,
+      },
+    });
+    if (h.thesis) {
+      await db.thesis.create({ data: { hubId: hub.id, ...h.thesis } });
+      await db.thesisRevision.create({ data: { hubId: hub.id, source: "AGENT", snapshot: h.thesis, createdAt: created } });
+    }
+  }
+  // Keep the auto-number counter ahead of the seeded numbers.
+  await db.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"Hub"', 'number'), (SELECT MAX(number) FROM "Hub"))`);
+
+  // One finished thesis dialogue, so the history reads real.
+  const tide = await db.hub.findUniqueOrThrow({ where: { slug: "tidewater-kelp" }, include: { thesis: true } });
+  const maya = idByKey.get("maya")!;
+  const q1 = [
+    "Who is the first processor who would pay for this, and what do they use today?",
+    "What changed recently that makes kelp packaging possible or urgent now?",
+    "What do you know about seafood logistics that someone new to it wouldn't?",
+  ];
+  const a1 = [
+    "A mid-size sardine processor in Peniche. They use PET trays and film, about 30,000 a week.",
+    "EU plastic rules in 2027, and supermarket buyers already asking for plastic-free seafood.",
+    "Packaging is 20% of their logistics cost, mostly because it's shipped in from Asia.",
+  ];
+  await db.agentThread.create({
+    data: {
+      userId: maya,
+      hubId: tide.id,
+      kind: "thesis",
+      createdAt: new Date(Date.now() - 20 * DAY),
+      messages: {
+        create: [
+          {
+            role: "AGENT",
+            text: q1.join("\n"),
+            data: { type: "questions", round: 1, reflection: "Packaging made from the same coast as the catch. The real bet is on cost, not virtue.", questions: q1 },
+          },
+          { role: "USER", text: a1.join("\n"), data: { type: "answers", answers: q1.map((q, i) => ({ question: q, answer: a1[i] })) } },
+          { role: "AGENT", text: tide.thesis!.statement, data: { type: "draft", ...tide.thesis! } as never },
+        ],
+      },
+    },
+  });
+  // A fresh thread, as saving a thesis leaves behind.
+  await db.agentThread.create({ data: { userId: maya, hubId: tide.id, kind: "thesis" } });
+
+  // Usage log rows so the (Phase 11) cost view has history.
+  const runs = [
+    ["thesis.questions", 2140, 410],
+    ["thesis.draft", 3380, 1260],
+    ["ideas.fromProfile", 1650, 980],
+  ] as const;
+  for (const [i, [purpose, inputTokens, outputTokens]] of runs.entries()) {
+    await db.agentRun.create({
+      data: { userId: maya, hubId: tide.id, purpose, model: "claude-opus-5", status: "OK", inputTokens, outputTokens, durationMs: 9000 + i * 4000, createdAt: new Date(Date.now() - (20 - i) * DAY) },
+    });
+  }
+  console.log(`Seeded ${hubs.length} hubs.`);
+
 }
 
 main()
