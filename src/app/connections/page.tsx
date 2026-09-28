@@ -6,7 +6,6 @@ import { MaskedLines } from "@/components/motion/MaskedLines";
 import { PageWipe } from "@/components/motion/PageWipe";
 import { ContactLine, PersonBlurb } from "@/components/people/PersonBlurb";
 import { SignalButtons } from "@/components/people/SignalButtons";
-import { EmptyState } from "@/components/ui/EmptyState";
 import { Label } from "@/components/ui/Label";
 import { db } from "@/lib/db";
 import { STATUS_LABEL } from "@/lib/signal-rules";
@@ -33,9 +32,43 @@ const person = {
  * Every signal you've sent or received, in one place: what's waiting on you,
  * what you're waiting on, and who you're connected to (with contacts).
  */
+/**
+ * Where to find the people a hub needs: team, mentors, partners, backers.
+ * Funding goes to the builder's own hub: backers find hubs that open
+ * themselves to discovery (interest only), not the other way round.
+ */
+function FindPeople({ hubSlug }: { hubSlug: string | null }) {
+  const FIND = [
+    { label: "Team", title: "Co-founders & teammates", href: "/roles" },
+    { label: "Mentors", title: "Someone who's done it", href: "/mentors" },
+    { label: "Funding · Interest only", title: "Open your hub to backers", href: hubSlug ? `/hubs/${hubSlug}/backers` : "/hubs/new" },
+    { label: "Partners", title: "Manufacturing", href: "/partners?c=suppliers" },
+    { label: "Partners", title: "Legal", href: "/partners?c=legal" },
+    { label: "Partners", title: "Marketing", href: "/partners?c=marketing" },
+  ];
+  return (
+    <section className="border-t border-line px-edge py-12">
+      <Label>Find your people</Label>
+      <ul className="mt-6 grid grid-cols-1 border-t border-line sm:grid-cols-2 lg:grid-cols-3">
+        {FIND.map((f) => (
+          <li key={f.title} className="border-b border-line lg:border-r lg:pl-6 lg:nth-[3n]:border-r-0 lg:nth-[3n+1]:pl-0">
+            <Link href={f.href as Route} className="group flex h-full flex-col justify-between gap-6 py-6 pr-6">
+              <Label>{f.label}</Label>
+              <span className="type-display text-title">
+                {f.title} <span className="inline-block text-signal transition-transform group-hover:translate-x-1">→</span>
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 export default async function ConnectionsPage() {
   const viewer = await requireOnboarded();
   const me = viewer.user.id;
+  const firstHub = await db.hub.findFirst({ where: { ownerId: me }, orderBy: { number: "asc" }, select: { slug: true } });
   const signals = await db.signal.findMany({
     where: { OR: [{ fromUserId: me }, { toUserId: me }] },
     orderBy: { updatedAt: "desc" },
@@ -81,9 +114,12 @@ export default async function ConnectionsPage() {
       </section>
 
       {signals.length === 0 ? (
-        <div className="border-t border-line">
-          <EmptyState line="No connections yet. Find a team to join." href="/roles" />
-        </div>
+        <>
+          <section className="border-t border-line px-edge py-[8vh]">
+            <p className="type-display max-w-[20ch] text-headline">No connections yet. Find your people.</p>
+          </section>
+          <FindPeople hubSlug={firstHub?.slug ?? null} />
+        </>
       ) : (
         <div className="pb-32">
           {/* Waiting on you */}
@@ -177,6 +213,7 @@ export default async function ConnectionsPage() {
               ))}
             </div>
           </section>
+          <FindPeople hubSlug={firstHub?.slug ?? null} />
           {signals.some((s) => s.kind === "BACKER_INTEREST") && <NotAnOffer />}
         </div>
       )}
