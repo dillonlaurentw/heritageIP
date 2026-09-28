@@ -49,6 +49,7 @@ const colors = [
 const typeScale = [
   { token: "text-hero", spec: "clamp → 13.5vw · 850 · -0.05em · 0.86", cls: "type-display text-hero", sample: "Build it." },
   { token: "text-display", spec: "clamp → 8vw · 850 · -0.045em · 0.88", cls: "type-display text-display", sample: "Start with a thought." },
+  { token: "text-prompt", spec: "clamp → 5.4vw · 850 · -0.045em · 0.9", cls: "type-display text-prompt", sample: "How do you make hard calls?" },
   { token: "text-headline", spec: "clamp → 4.6vw · 850 · -0.04em · 0.92", cls: "type-display text-headline", sample: "Who are you building with?" },
   { token: "text-title", spec: "clamp → 2.1vw · 850 · -0.03em · 1", cls: "type-display text-title", sample: "Tidewater Kelp" },
   { token: "text-lead", spec: "clamp → 1.375rem · 400 · 1.5", cls: "text-lead measure", sample: "A hub holds one idea: the thesis, the game plan, the team, and every connection it takes to launch." },

@@ -245,17 +245,32 @@ widgets (donut charts, KPI cards).
 ## Running locally
 
 ```
-npm install
-npm run dev                 # http://localhost:3000  (style guide: /style-guide)
+npm install                 # also generates the Prisma client
+cp .env.example .env        # then set BETTER_AUTH_SECRET (openssl rand -base64 32)
+docker compose up -d        # local Postgres (or any Postgres; set DATABASE_URL)
+npm run db:migrate          # create tables
+npm run db:seed             # demo people (re-runnable; resets demo data)
+npm run dev                 # http://localhost:3000
 npm run lint && npm run typecheck && npm run build   # before every commit
 ```
-From Phase 1 on, also:
-```
-cp .env.example .env        # fill DATABASE_URL, BETTER_AUTH_SECRET, ANTHROPIC_API_KEY
-docker compose up -d        # local Postgres
-npx prisma migrate dev
-npx prisma db seed
-```
+
+## Auth + data conventions (Phase 1)
+
+- Better Auth tables (`user`, `session`, `account`, `verification`) are about
+  login only. Everything about the person lives on `Profile`.
+- Prisma 7: client is generated to `src/generated/prisma` (git-ignored) and uses
+  the `pg` driver adapter. Import the client only via `src/lib/db.ts`.
+- Auth checks happen in pages and actions (`requireViewer`, `requireOnboarded`,
+  `requireRole` in `src/lib/session.ts`). There is no middleware.
+- Magic-link email goes through Resend when `RESEND_API_KEY` is set; otherwise the
+  link is printed to the console and shown on the sign-in page.
+- Demo login ("sign in as" seed users, emails `@self.demo`) is always on in dev and
+  controlled by `DEMO_LOGIN` elsewhere. It is a plain form POST to
+  `/api/demo-login`, not a server action, so the auth redirect is a full navigation.
+- `ADMIN_EMAILS` grants the ADMIN role on sign-in. ADMIN is never user-settable.
+- Profile writes go through `saveProfileFields()` (Zod-validated,
+  `src/lib/profile-schema.ts` is shared with the client).
+- Onboarding copy lives in `src/app/onboarding/steps.ts`.
 
 ## Design primitives (Phase 0)
 

@@ -1,30 +1,45 @@
 import Link from "next/link";
+import { signOut } from "@/app/actions/auth";
 import { Arrow } from "@/components/ui/ArrowLink";
+import { getViewer } from "@/lib/session";
 
-const links = [
-  { href: "/style-guide", label: "Hubs" },
-  { href: "/style-guide", label: "Partners" },
-  { href: "/style-guide", label: "Backers" },
-] as const;
+const linkClass = "text-small font-medium text-smoke transition-colors duration-(--duration-fast) hover:text-bone";
 
 /** Wordmark, a few text links, one persistent "Ask SELF anything →". */
-export function Nav() {
+export async function Nav() {
+  const viewer = await getViewer();
+
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-field">
       <nav className="flex h-14 items-center justify-between gap-6 px-edge">
-        <Link href="/" className="type-display text-[1.375rem] leading-none tracking-[-0.04em]">
+        <Link href={viewer ? "/home" : "/"} className="type-display text-[1.375rem] leading-none tracking-[-0.04em]">
           SELF
         </Link>
         <div className="hidden items-center gap-7 md:flex">
-          {links.map((l) => (
-            <Link
-              key={l.label}
-              href={l.href}
-              className="text-small font-medium text-smoke transition-colors duration-(--duration-fast) hover:text-bone"
-            >
-              {l.label}
-            </Link>
-          ))}
+          {viewer ? (
+            <>
+              <Link href="/home" className={linkClass}>
+                Home
+              </Link>
+              <Link href="/me" className={linkClass}>
+                You
+              </Link>
+              <form action={signOut}>
+                <button type="submit" className={linkClass}>
+                  Sign out
+                </button>
+              </form>
+            </>
+          ) : (
+            <>
+              <Link href="/style-guide" className={linkClass}>
+                Style guide
+              </Link>
+              <Link href="/sign-in" className={linkClass}>
+                Sign in
+              </Link>
+            </>
+          )}
         </div>
         <Link
           href="/ask"

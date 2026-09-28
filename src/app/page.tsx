@@ -10,7 +10,7 @@ export default function Home() {
         <Label>For the builders of the future</Label>
         <div>
           <MaskedLines lines={["What are", "you building?"]} className="type-display text-hero" />
-          <ArrowLink href="/style-guide" size="hero" tone="signal" className="mt-10">
+          <ArrowLink href="/sign-in" size="hero" tone="signal" className="mt-10">
             Start with a thought
           </ArrowLink>
         </div>

@@ -1,0 +1,124 @@
+// SELF data model.
+// Plain-language guide: docs/PLAN.md → "Data model". Each phase adds models here.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────────────────────
+// Identity (owned by Better Auth: keep these field names as-is)
+// ─────────────────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+  profile       Profile?
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+// ─────────────────────────────────────────────────────────────
+// The SELF person. One per user. Auth tables stay about login;
+// everything about who someone is lives here.
+// ─────────────────────────────────────────────────────────────
+
+enum Role {
+  BUILDER
+  BACKER
+  PARTNER
+  MENTOR
+  ADMIN
+}
+
+model Profile {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  roles    Role[]
+  headline String? // one line: "Ex-supply-chain lead building in food waste"
+  location String?
+
+  // Builder reflection. Powers the personal agent (Phase 9).
+  beliefs        String? // what they believe that most people don't
+  workStyle      String? // how they work when it's going well
+  buildingToward String? // the long arc, not the product
+  strengths      String?
+  gaps           String? // where they need other people
+  decisionStyle  String? // how they make hard calls
+
+  // Mentor / backer / partner specifics (short, optional).
+  focusAreas     String[] // mentor + backer focus, e.g. ["Climate", "Hardware"]
+  mentorNote     String?
+  backerNote     String? // what they back. Never amounts or terms.
+  partnerOrgName String? // linked to a Partner record in Phase 5
+
+  // Contact details. Only ever revealed through an ACCEPTED Signal
+  // (Phase 4+). Never select these fields for general UI.
+  contactEmail String?
+  contactLink  String?
+
+  onboardingStep Int       @default(0) // resume point for the flow
+  onboardedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
