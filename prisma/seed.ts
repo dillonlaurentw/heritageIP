@@ -352,6 +352,48 @@ const hubs: SeedHub[] = [
   },
 ];
 
+
+type SeedStep = [stage: "VALIDATE" | "SETUP" | "BUILD" | "LAUNCH", title: string, detail: string, needs: string[], done?: boolean];
+
+const plans: Record<string, SeedStep[]> = {
+  "tidewater-kelp": [
+    ["VALIDATE", "Interview 15 seafood processors", "Peniche and Nazaré first. Done when you can name their packaging cost per kilo.", [], true],
+    ["VALIDATE", "Wet-transport test for kelp trays", "Ship 200 trays chilled for 48 hours with a partner processor. Measure leaks and breakage.", ["SUPPLIER"], true],
+    ["VALIDATE", "Get three letters of intent", "Three processors commit to a paid pilot if the trays pass the transport test.", [], true],
+    ["SETUP", "Find a co-founder for brand and software", "Maya's gaps: storytelling, the software side, and fundraising.", ["COFOUNDER"], true],
+    ["SETUP", "Form the company in Portugal", "Lda structure, founder vesting, and an IP assignment for the tray design.", ["LEGAL"]],
+    ["SETUP", "Apply for the Blue Economy grant", "EU and Portuguese grants for coastal circular-economy pilots. Deadline in March.", ["FUNDING"]],
+    ["BUILD", "Contract a local kelp press", "Two quotes from Iberian processors, one sample run of 5,000 trays.", ["SUPPLIER"]],
+    ["BUILD", "Food-contact certification", "EU food-contact material testing before any trays touch fish.", ["LEGAL", "MENTOR"]],
+    ["BUILD", "Paid pilot with the sardine processor", "30,000 trays a week for four weeks. Track cost per kilo against PET.", []],
+    ["LAUNCH", "Brand and a one-page site for buyers", "Supermarket buyers need to see it before processors will switch.", ["MARKETING", "WEBSITE"]],
+    ["LAUNCH", "Pitch the plastic-free story to two supermarket buyers", "Buyers pull processors. Get one buyer to name kelp trays as preferred.", ["GTM"]],
+    ["LAUNCH", "Open to backers for a seed round", "After the pilot numbers, not before.", ["FUNDING", "MENTOR"]],
+  ],
+  "night-shift-bakery": [
+    ["VALIDATE", "Survey 50 night-shift workers", "Break times, what they eat now, what they'd pay. At two hospitals and a depot.", [], true],
+    ["VALIDATE", "Run a pop-up break-room table", "Three nights, one ward. Sell out or learn why not.", [], true],
+    ["VALIDATE", "Pitch one employer on a staff-perk pilot", "HR at one hospital agrees to subsidise a month of deliveries.", ["MENTOR"]],
+    ["SETUP", "Find a co-founder who runs kitchens", "Ana needs someone who knows food costs, leases and suppliers.", ["COFOUNDER"]],
+    ["SETUP", "Food business licence and insurance", "City of Chicago food licence for a shared ghost kitchen.", ["LEGAL"]],
+    ["BUILD", "Rent night hours in a ghost kitchen", "10pm to 6am, three nights a week to start.", ["SUPPLIER"]],
+    ["BUILD", "A six-item menu that travels", "Built for 3am: warm, one-handed, holds for 40 minutes.", []],
+    ["BUILD", "Simple ordering page for wards", "Order by 9pm, delivered to the break room by midnight.", ["WEBSITE"]],
+    ["LAUNCH", "Launch at one hospital", "One ward, then the whole night shift. Every order gets a handwritten note.", ["MARKETING"]],
+    ["LAUNCH", "Sign the second employer", "Use pilot numbers: retention, sick days, staff survey.", ["GTM"]],
+  ],
+  "field-notes": [
+    ["VALIDATE", "Ride along with six technicians", "HVAC and elevator. Time how long write-ups take and where they break.", []],
+    ["VALIDATE", "Voice-note-to-report by hand", "Dev writes reports from voice notes manually for ten jobs. Would managers pay for this?", []],
+    ["SETUP", "Find a co-founder who sells to facilities managers", "Dev can build; he needs someone who can open doors.", ["COFOUNDER"]],
+    ["SETUP", "Data processing agreement template", "Job sites include customer premises. Get GDPR right from day one.", ["LEGAL"]],
+    ["BUILD", "WhatsApp number that returns a report", "No app. Send a voice note, get a structured PDF back in two minutes.", []],
+    ["BUILD", "Integrate with one job-management system", "Pick the one most of the first ten customers use.", ["WEBSITE"]],
+    ["LAUNCH", "Paid pilot with a 40-technician firm", "Per-technician pricing, one month.", ["GTM"]],
+    ["LAUNCH", "Case study and a trade-show demo", "Numbers from the pilot: repeat visits, disputes, time saved.", ["MARKETING"]],
+  ],
+};
+
 async function main() {
   for (const p of people) {
     const { key, name, onboarded = true, ...rest } = p;
@@ -408,6 +450,29 @@ async function main() {
       await db.thesisRevision.create({ data: { hubId: hub.id, source: "AGENT", snapshot: h.thesis, createdAt: created } });
     }
   }
+  // Game plans for a few hubs; the rest are left for you to generate.
+  for (const [slug, steps] of Object.entries(plans)) {
+    const hub = await db.hub.findUniqueOrThrow({ where: { slug } });
+    const pos = new Map<string, number>();
+    await db.planStep.createMany({
+      data: steps.map(([stage, title, detail, needs, done]) => {
+        const position = pos.get(stage) ?? 0;
+        pos.set(stage, position + 1);
+        return {
+          hubId: hub.id,
+          stage,
+          position,
+          title,
+          detail,
+          needs: needs as never,
+          source: "AGENT" as const,
+          doneAt: done ? new Date(Date.now() - 5 * DAY) : null,
+        };
+      }),
+    });
+    await db.hub.update({ where: { id: hub.id }, data: { stage: "PLAN" } });
+  }
+
   // Keep the auto-number counter ahead of the seeded numbers.
   await db.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"Hub"', 'number'), (SELECT MAX(number) FROM "Hub"))`);
 

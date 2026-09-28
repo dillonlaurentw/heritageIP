@@ -11,25 +11,33 @@ import { Label } from "@/components/ui/Label";
 import { getOwnedHub, hubNumber, STAGE_LABEL } from "@/lib/hubs";
 import { requireOnboarded } from "@/lib/session";
 import { THESIS_FIELDS } from "@/lib/thesis-schema";
+import { NeedTag } from "@/components/plan/NeedTag";
+import { listSteps } from "@/lib/plan";
+import { STAGE_COPY } from "@/lib/plan-order";
+import type { Route } from "next";
+
+const pad = (n: number) => String(n).padStart(2, "0");
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   return { title: `${(await params).slug.replace(/-/g, " ")} · SELF` };
 }
 
-const NEXT: { title: string; label: string; span: TileSpan }[] = [
-  { title: "Game plan", label: "Phase 3 · Steps to launch", span: "square" },
-  { title: "Team", label: "Phase 4 · Co-founders", span: "square" },
-  { title: "Partners", label: "Phase 5 · Legal, supply, build", span: "square" },
-  { title: "Backers", label: "Phase 6 · Interest only", span: "quarter" },
-  { title: "Mentors", label: "Phase 7", span: "quarter" },
-  { title: "Go-to-market", label: "Phase 8", span: "quarter" },
-  { title: "Agents", label: "Phase 10", span: "quarter" },
+const NEXT: { title: string; label: string; span: TileSpan; path: string }[] = [
+  { title: "Team", label: "Co-founders · Phase 4", span: "square", path: "connect/cofounder" },
+  { title: "Partners", label: "Legal, supply, build · Phase 5", span: "square", path: "connect/legal" },
+  { title: "Backers", label: "Interest only · Phase 6", span: "square", path: "connect/funding" },
+  { title: "Mentors", label: "Phase 7", span: "square", path: "connect/mentor" },
+  { title: "Go-to-market", label: "Phase 8", span: "square", path: "connect/gtm" },
+  { title: "Agents", label: "Phase 10", span: "square", path: "" },
 ];
 
 export default async function HubPage({ params }: { params: Promise<{ slug: string }> }) {
   const viewer = await requireOnboarded();
   const hub = await getOwnedHub((await params).slug, viewer);
   const t = hub.thesis;
+  const steps = await listSteps(hub.id);
+  const plan = { done: steps.filter((st) => st.done).length, total: steps.length };
+  const nextSteps = steps.filter((st) => !st.done).slice(0, 3);
 
   return (
     <PageWipe>
@@ -91,13 +99,71 @@ export default async function HubPage({ params }: { params: Promise<{ slug: stri
         </section>
       )}
 
+      {t && (
+        <section className="border-b border-line px-edge py-16">
+          <div className="flex flex-wrap items-baseline justify-between gap-4">
+            <Label>
+              02 · Game plan{plan.total > 0 && ` · Step ${pad(plan.done)}/${pad(plan.total)} done`}
+            </Label>
+            {plan.total > 0 && (
+              <ArrowLink href={`/hubs/${hub.slug}/plan`} size="inline" className="text-smoke">
+                Open the game plan
+              </ArrowLink>
+            )}
+          </div>
+          {plan.total === 0 ? (
+            <div className="pt-10">
+              <ArrowLink href={`/hubs/${hub.slug}/plan`} size="hero" className="max-w-[18ch]">
+                No plan yet. Turn the thesis into steps.
+              </ArrowLink>
+            </div>
+          ) : (
+            <>
+              <div className="mt-6 h-px bg-line">
+                <div className="h-px bg-signal" style={{ width: `${(plan.done / plan.total) * 100}%` }} />
+              </div>
+              <div className="mt-8 grid grid-cols-1 gap-gutter md:grid-cols-3">
+                {nextSteps.map((st, i) => (
+                  <div key={st.id} className="flex min-h-48 flex-col justify-between gap-6 rounded-xs bg-field-raised p-5">
+                    <Label tone={i === 0 ? "signal" : "smoke"}>
+                      {i === 0 ? "Next up" : "Then"} · {STAGE_COPY[st.stage].label}
+                    </Label>
+                    <div>
+                      <p className="type-display text-title">{st.title}</p>
+                      {st.needs.length > 0 && (
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          {st.needs.map((n) => (
+                            <NeedTag key={n} need={n} hubSlug={hub.slug} />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {nextSteps.length === 0 && (
+                  <p className="type-display text-headline md:col-span-3">Every step done. Time to launch.</p>
+                )}
+              </div>
+            </>
+          )}
+        </section>
+      )}
+
       <section className="px-gutter pt-16 pb-24">
         <div className="px-[calc(var(--spacing-edge)-var(--spacing-gutter))] pb-6">
-          <Label>02 · What comes next</Label>
+          <Label>03 · What comes next</Label>
         </div>
         <Mosaic>
           {NEXT.map((n, i) => (
-            <Tile key={n.title} index={i} span={n.span} tone="field" label={n.label} title={n.title} />
+            <Tile
+              key={n.title}
+              index={i}
+              span={n.span}
+              tone="field"
+              label={n.label}
+              title={n.title}
+              href={n.path ? (`/hubs/${hub.slug}/${n.path}` as Route) : undefined}
+            />
           ))}
         </Mosaic>
       </section>

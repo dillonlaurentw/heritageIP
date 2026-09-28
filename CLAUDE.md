@@ -251,7 +251,7 @@ docker compose up -d        # local Postgres (or any Postgres; set DATABASE_URL)
 npm run db:migrate          # create tables
 npm run db:seed             # demo people (re-runnable; resets demo data)
 npm run dev                 # http://localhost:3000
-npm run lint && npm run typecheck && npm run build   # before every commit
+npm run lint && npm run typecheck && npm test && npm run build   # before every commit
 ```
 
 ## Auth + data conventions (Phase 1)
@@ -293,6 +293,20 @@ npm run lint && npm run typecheck && npm run build   # before every commit
 - Covers: `HubCover` renders the uploaded image or generated `CoverArt`; use
   `coverTileTone(hub)` for the matching tile tone. Uploads go through
   `storeImage()` (`src/lib/storage.ts`).
+
+## Game plan conventions (Phase 3)
+
+- `PlanStep` has a `stage` (VALIDATE, SETUP, BUILD, LAUNCH), a `position`
+  within the stage, and `needs: NeedTag[]`.
+- Need tags and where they lead live in `src/lib/needs.ts` (`NEEDS`, and
+  `LIVE_PHASE`, which marks which connection areas are live). Every tag renders
+  through `NeedTag` and links to `/hubs/[slug]/connect/[need]`.
+- Ordering is pure logic in `src/lib/plan-order.ts` (sort, normalize, move
+  across stages) with unit tests in `src/lib/__tests__`. Server actions write
+  only the rows whose stage/position changed.
+- Regenerating a plan keeps done steps and replaces everything else.
+- Plan actions return the full step list; the client replaces its state with it.
+- `npm test` runs Vitest. Add tests for pure logic like this.
 
 ## Design primitives (Phase 0)
 

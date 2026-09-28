@@ -161,6 +161,7 @@ model Hub {
   agentRuns       AgentRun[]
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
+  planSteps       PlanStep[]
 
   @@index([ownerId])
 }
@@ -257,4 +258,51 @@ model AgentRun {
   createdAt       DateTime  @default(now())
 
   @@index([userId, createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Game plan: staged steps from idea to launch (Phase 3).
+// ─────────────────────────────────────────────────────────────
+
+enum PlanStage {
+  VALIDATE // prove the problem and the customer
+  SETUP // company, team, money, paperwork
+  BUILD // make the first real version
+  LAUNCH // get it in front of customers
+}
+
+/// What a step needs from outside the builder. Each maps to a connection
+/// area (src/lib/needs.ts): co-founders (Phase 4), partner directory
+/// categories (Phase 5), backers (Phase 6), mentors (Phase 7).
+enum NeedTag {
+  COFOUNDER
+  SUPPLIER
+  LEGAL
+  FUNDING
+  MARKETING
+  GTM
+  WEBSITE
+  MENTOR
+}
+
+enum StepSource {
+  AGENT
+  MANUAL
+}
+
+model PlanStep {
+  id        String     @id @default(cuid())
+  hubId     String
+  hub       Hub        @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  stage     PlanStage
+  position  Int // order within the stage, 0-based
+  title     String
+  detail    String?
+  needs     NeedTag[]
+  source    StepSource @default(MANUAL)
+  doneAt    DateTime?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([hubId, stage, position])
 }
