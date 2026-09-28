@@ -156,6 +156,16 @@ const people: Person[] = [
     partnerOrgName: "Northloop Sourcing",
   },
   {
+    // A partner who has signed up but isn't linked to a firm yet: the admin
+    // links them to Lakeshore Counsel in /admin/partners.
+    key: "lakeshore",
+    name: "Dana Whitfield",
+    roles: ["PARTNER"],
+    headline: "Food and hospitality lawyer",
+    location: "Chicago",
+    partnerOrgName: "Lakeshore Counsel",
+  },
+  {
     key: "ines",
     name: "Ines Okafor",
     roles: ["MENTOR"],
@@ -749,6 +759,10 @@ async function main() {
   for (const [slug, d] of Object.entries(discovery)) {
     await db.hub.update({ where: { slug }, data: { discoverable: true, discoverableAt: new Date(Date.now() - 4 * DAY), ...d } });
   }
+  // Admin curation (Phase 11): featured hubs lead roles and backer discovery.
+  for (const [i, slug] of ["parallel-clinic", "field-notes"].entries()) {
+    await db.hub.update({ where: { slug }, data: { featured: true, featuredAt: new Date(Date.now() - (i + 1) * DAY) } });
+  }
   const backerSignals: { from: string; hub: string; status: "PENDING" | "ACCEPTED"; note: string; daysAgo: number }[] = [
     { from: "priya", hub: "tidewater-kelp", status: "PENDING", daysAgo: 1, note: "I spent a decade in cold-chain for a Singapore seafood exporter. I'd love to understand your processor economics and help with buyer intros in Asia later." },
     { from: "marcus", hub: "night-shift-bakery", status: "ACCEPTED", daysAgo: 6, note: "Our community fund backs local food businesses with employer contracts. I'd like to hear how the hospital pilot is going." },
@@ -987,6 +1001,48 @@ async function main() {
   for (const [i, [purpose, inputTokens, outputTokens]] of runs.entries()) {
     await db.agentRun.create({
       data: { userId: maya, hubId: tide.id, purpose, model: "claude-opus-5", status: "OK", inputTokens, outputTokens, durationMs: 9000 + i * 4000, createdAt: new Date(Date.now() - (20 - i) * DAY) },
+    });
+  }
+
+  // A month of usage across people and agents, so the admin cost view reads
+  // like a real month: mostly fine, a cap hit, a decline and one error.
+  // Nothing lands today, so nobody starts the demo near their daily cap.
+  const usage: { who: string; purpose: string; input: number; output: number; cacheRead?: number; everyDays: number }[] = [
+    { who: "maya", purpose: "hub.chat", input: 5200, output: 640, cacheRead: 3900, everyDays: 2 },
+    { who: "maya", purpose: "gtm.section", input: 3100, output: 820, everyDays: 5 },
+    { who: "ana", purpose: "thesis.questions", input: 1900, output: 380, everyDays: 4 },
+    { who: "ana", purpose: "plan.generate", input: 4200, output: 2100, everyDays: 9 },
+    { who: "kwame", purpose: "hub.chat", input: 4800, output: 560, cacheRead: 3600, everyDays: 3 },
+    { who: "dev", purpose: "ideas.fromProfile", input: 1500, output: 940, everyDays: 6 },
+    { who: "lena", purpose: "persona.rebuild", input: 1300, output: 420, everyDays: 11 },
+    { who: "tomas", purpose: "sim.turn", input: 2300, output: 150, everyDays: 4 },
+  ];
+  for (const u of usage) {
+    for (let day = 1 + (u.input % 3); day < 30; day += u.everyDays) {
+      const wobble = 0.8 + ((day * 37 + u.input) % 40) / 100;
+      await db.agentRun.create({
+        data: {
+          userId: idByKey.get(u.who)!,
+          purpose: u.purpose,
+          model: "claude-opus-5",
+          status: "OK",
+          inputTokens: Math.round(u.input * wobble),
+          outputTokens: Math.round(u.output * wobble),
+          cacheReadTokens: Math.round((u.cacheRead ?? 0) * wobble),
+          durationMs: Math.round(6000 * wobble + u.output * 12),
+          createdAt: new Date(Date.now() - day * DAY - (u.input % 7) * 3600_000),
+        },
+      });
+    }
+  }
+  const trouble = [
+    { who: "kwame", purpose: "hub.chat", status: "CAPPED" as const, daysAgo: 4, error: null },
+    { who: "dev", purpose: "hub.chat", status: "REFUSED" as const, daysAgo: 8, error: null },
+    { who: "ana", purpose: "gtm.section", status: "ERROR" as const, daysAgo: 12, error: "Connection error." },
+  ];
+  for (const t of trouble) {
+    await db.agentRun.create({
+      data: { userId: idByKey.get(t.who)!, purpose: t.purpose, model: "claude-opus-5", status: t.status, error: t.error, createdAt: new Date(Date.now() - t.daysAgo * DAY) },
     });
   }
   console.log(`Seeded ${hubs.length} hubs.`);

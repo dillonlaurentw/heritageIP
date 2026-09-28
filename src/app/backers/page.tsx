@@ -68,9 +68,10 @@ export default async function DiscoverPage({ searchParams }: { searchParams: Pro
       ...(stage && { stage }),
       ...(need && { planSteps: { some: { needs: { has: need }, doneAt: null } } }),
     },
-    orderBy: { discoverableAt: "desc" },
+    // Featured hubs (set by admins) lead the mosaic.
+    orderBy: [{ featured: "desc" }, { discoverableAt: "desc" }],
     select: {
-      id: true, slug: true, name: true, number: true, sector: true, stage: true,
+      id: true, slug: true, name: true, number: true, sector: true, stage: true, featured: true,
       coverLayout: true, coverTone: true, coverImageUrl: true,
       signals: { where: { kind: "BACKER_INTEREST", fromUserId: viewer.user.id, status: { in: ["PENDING", "ACCEPTED"] } }, select: { status: true } },
     },
@@ -129,7 +130,13 @@ export default async function DiscoverPage({ searchParams }: { searchParams: Pro
                 href={`/backers/${h.slug}` as Route}
                 label={`${hubNumber(h.number)} · ${h.sector ?? ""} · ${STAGE_LABEL[h.stage]}`}
                 title={h.name}
-                meta={h.signals.length ? <Tag>{h.signals[0].status === "ACCEPTED" ? "Connected" : "Interested"}</Tag> : undefined}
+                meta={
+                  h.signals.length ? (
+                    <Tag>{h.signals[0].status === "ACCEPTED" ? "Connected" : "Interested"}</Tag>
+                  ) : h.featured ? (
+                    <Tag>Featured</Tag>
+                  ) : undefined
+                }
                 media={<HubCover hub={h} />}
               />
             ))}

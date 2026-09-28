@@ -423,6 +423,23 @@ npm run lint && npm run typecheck && npm test && npm run build   # before every 
 - "Ask SELF anything" (`/ask`) routes with `routerAgent` (keyword routing in
   demo mode) and opens the chosen agent with the question.
 
+## Admin conventions (Phase 11)
+
+- `/admin/*` is ADMIN only: `requireAdmin()` (`src/lib/admin.ts`) at the top of
+  every page and action. Non-admins get a 404. Admin writes live in
+  `src/lib/admin.ts`; `src/app/admin/actions.ts` only validates and revalidates.
+- Admins see login emails, names, roles and counts. They do **not** see
+  `contactEmail`/`contactLink`, signal notes, thesis text or plans.
+- `Hub.featured` (admin-set) puts a hub first on `/roles` and `/backers`, the only
+  public mosaics. Partners already sort by `featured` in the directory.
+- Linking a PARTNER user to a firm (`setPartnerManager`) moves that firm's
+  PENDING intros to them; unlinking moves them back to the concierge.
+- Cost: `AgentRun` logs input, output, cache-read and cache-write tokens.
+  `src/lib/agent-cost.ts` (unit tested) turns them into estimated USD from list
+  prices. Update `PRICES_PER_MTOK` when the model or prices change.
+- Admin screens may use tables (`components/admin/AdminShell`): hairlines, mono
+  headers, no KPI cards or charts beyond the single-color day bars.
+
 ## Design primitives (Phase 0)
 
 - `src/design/tokens.css`: colors, type scale, radii, motion. Tailwind's default

@@ -25,9 +25,10 @@ export default async function RolesPage({ searchParams }: { searchParams: Promis
 
   const roles = await db.roleOpening.findMany({
     where: { status: "OPEN", hub: { ownerId: { not: viewer.user.id } }, ...(commitment && { commitment }) },
-    orderBy: { createdAt: "desc" },
+    // Featured hubs (set by admins) lead the mosaic.
+    orderBy: [{ hub: { featured: "desc" } }, { createdAt: "desc" }],
     include: {
-      hub: { select: { name: true, number: true, coverLayout: true, coverTone: true, coverImageUrl: true } },
+      hub: { select: { name: true, number: true, featured: true, coverLayout: true, coverTone: true, coverImageUrl: true } },
       signals: { where: { fromUserId: viewer.user.id, status: { in: ["PENDING", "ACCEPTED"] } }, select: { status: true } },
     },
   });
@@ -79,7 +80,13 @@ export default async function RolesPage({ searchParams }: { searchParams: Promis
                 href={`/roles/${r.id}` as Route}
                 label={`${r.commitment} · ${hubNumber(r.hub.number)} ${r.hub.name}`}
                 title={r.title}
-                meta={r.signals.length ? <Tag>{r.signals[0].status === "ACCEPTED" ? "Joined" : "Sent"}</Tag> : undefined}
+                meta={
+                  r.signals.length ? (
+                    <Tag>{r.signals[0].status === "ACCEPTED" ? "Joined" : "Sent"}</Tag>
+                  ) : r.hub.featured ? (
+                    <Tag>Featured</Tag>
+                  ) : undefined
+                }
                 media={<HubCover hub={r.hub} />}
               />
             ))}

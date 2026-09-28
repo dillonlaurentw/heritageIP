@@ -176,6 +176,11 @@ model Hub {
   sector         String? // one of FOCUS_AREAS, for backer filters
   backerAsk      String? // what help they want from a backer. Never amounts or terms.
 
+  // Admin curation (Phase 11). Featured hubs lead the public mosaics
+  // (open roles, backer discovery). Only admins set it.
+  featured   Boolean   @default(false)
+  featuredAt DateTime?
+
   thesis          Thesis?
   thesisRevisions ThesisRevision[]
   agentThreads    AgentThread[]
@@ -190,6 +195,7 @@ model Hub {
   simulations     Simulation[]
 
   @@index([ownerId])
+  @@index([featured])
 }
 
 /// The current core thesis. Revisions keep history.
@@ -268,20 +274,21 @@ enum RunStatus {
 
 /// One row per agent call. Drives cost caps and the admin cost view.
 model AgentRun {
-  id              String    @id @default(cuid())
-  userId          String
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  hubId           String?
-  hub             Hub?      @relation(fields: [hubId], references: [id], onDelete: SetNull)
-  purpose         String // e.g. "thesis.questions"
-  model           String
-  status          RunStatus
-  inputTokens     Int       @default(0)
-  outputTokens    Int       @default(0)
-  cacheReadTokens Int       @default(0)
-  durationMs      Int       @default(0)
-  error           String?
-  createdAt       DateTime  @default(now())
+  id               String    @id @default(cuid())
+  userId           String
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hubId            String?
+  hub              Hub?      @relation(fields: [hubId], references: [id], onDelete: SetNull)
+  purpose          String // e.g. "thesis.questions"
+  model            String
+  status           RunStatus
+  inputTokens      Int       @default(0)
+  outputTokens     Int       @default(0)
+  cacheReadTokens  Int       @default(0)
+  cacheWriteTokens Int       @default(0)
+  durationMs       Int       @default(0)
+  error            String?
+  createdAt        DateTime  @default(now())
 
   @@index([userId, createdAt])
 }

@@ -45,6 +45,11 @@ export async function Nav() {
                   </span>
                 )}
               </Link>
+              {viewer.profile.roles.includes("ADMIN") && (
+                <Link href="/admin" className={linkClass}>
+                  Admin
+                </Link>
+              )}
               <Link href="/me" className={linkClass}>
                 You
               </Link>

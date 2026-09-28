@@ -81,6 +81,7 @@ export async function runAgent<Ctx, Out extends z.ZodType>(
       inputTokens: res.usage.input_tokens,
       outputTokens: res.usage.output_tokens,
       cacheReadTokens: res.usage.cache_read_input_tokens ?? 0,
+      cacheWriteTokens: res.usage.cache_creation_input_tokens ?? 0,
       durationMs: Date.now() - started,
     };
 
