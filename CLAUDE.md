@@ -189,7 +189,8 @@ culture-forward, motion-led. A creative studio's site, **not** a SaaS dashboard,
 ### Color tokens (only in `src/design/tokens.css`; never hardcode a color)
 - `field`  deep green-black, main background (~#1F2620)
 - `bone`   warm off-white, primary text + inverted sections
-- `signal` ONE saturated accent, used sparingly: live states, CTAs, `NEW`
+- `signal` ONE saturated accent, **hot orange #FF5B1F** (chosen), used sparingly:
+  live states, CTAs, `NEW`
 - `smoke`  mid grey-green, secondary text + hairlines
 Mostly dark. Full-bleed Bone sections occasionally, for rhythm.
 
@@ -244,11 +245,25 @@ widgets (donut charts, KPI cards).
 ## Running locally
 
 ```
+npm install
+npm run dev                 # http://localhost:3000  (style guide: /style-guide)
+npm run lint && npm run typecheck && npm run build   # before every commit
+```
+From Phase 1 on, also:
+```
 cp .env.example .env        # fill DATABASE_URL, BETTER_AUTH_SECRET, ANTHROPIC_API_KEY
 docker compose up -d        # local Postgres
-npm install
 npx prisma migrate dev
 npx prisma db seed
-npm run dev                 # http://localhost:3000
 ```
-(Commands become real as of Phase 0/1.)
+
+## Design primitives (Phase 0)
+
+- `src/design/tokens.css`: colors, type scale, radii, motion. Tailwind's default
+  palette/shadows/radii are wiped, so off-token classes don't exist.
+- `components/motion`: `Reveal` (scroll stagger), `MaskedLines` (line-by-line
+  mask), `PageWipe` (wrap each page.tsx; React `<ViewTransition>`).
+- `components/mosaic`: `Mosaic`, `Tile` (spans: hero, wide, half, tall, square,
+  quarter, strip), `CoverArt` (deterministic type-art from a hub name).
+- `components/ui`: `Label`/`Tag`, `ArrowLink`/`Arrow`/`Button`, `Hairline`, `EmptyState`.
+- `.type-display` = heavy display face; `.label` = mono label; `--wdth` animates width.

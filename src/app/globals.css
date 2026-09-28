@@ -1,0 +1,91 @@
+@import "tailwindcss";
+@import "../design/tokens.css";
+
+/* Display-width axis, animated for the "type shifts" hover. */
+@property --wdth {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 100;
+}
+
+@layer base {
+  html {
+    background: var(--color-field);
+    color: var(--color-bone);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+    min-height: 100dvh;
+  }
+  ::selection {
+    background: var(--color-signal);
+    color: var(--color-field);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-signal);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* Heavy, tight grotesk for anything expressive. */
+  .type-display {
+    font-weight: 850;
+    font-variation-settings: "wdth" var(--wdth);
+    font-kerning: normal;
+  }
+  /* Mono label: small, uppercase, wide tracking. */
+  .label {
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    line-height: var(--text-label--line-height);
+    letter-spacing: var(--text-label--letter-spacing);
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  .measure {
+    max-width: 60ch;
+  }
+}
+
+/* ── Page wipe (React <ViewTransition>, see components/motion/PageWipe) ── */
+::view-transition-old(.wipe-out) {
+  animation: var(--duration-fast) var(--ease-out-strong) both self-fade-out;
+}
+::view-transition-new(.wipe-in) {
+  animation: 520ms var(--ease-out-strong) both self-wipe-in;
+}
+@keyframes self-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes self-wipe-in {
+  from {
+    clip-path: inset(0 0 0 100%);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
