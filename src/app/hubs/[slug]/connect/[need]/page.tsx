@@ -28,6 +28,7 @@ export default async function ConnectPage({ params }: { params: Promise<{ slug: 
   const need = needFromSlug(needSlug);
   if (!need) notFound();
   if (need === "COFOUNDER") redirect(`/hubs/${slug}/team` as Route);
+  if (need === "FUNDING") redirect(`/hubs/${slug}/backers` as Route);
   const viewer = await requireOnboarded();
   const hub = await getOwnedHub(slug, viewer);
   const area = NEEDS[need];

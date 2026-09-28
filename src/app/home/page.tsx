@@ -61,7 +61,7 @@ export default async function Home() {
             index={1}
           />
           {has("BUILDER") && <Tile span="square" tone="field" label="Open roles" title="Join a team" href="/roles" index={2} />}
-          {has("BACKER") && <Tile span="square" tone="field" label="Backer · Phase 6" title="Discover hubs" index={2} />}
+          {has("BACKER") && <Tile span="square" tone="raised" label="Backers · Interest only" title="Discover hubs" href="/backers" index={2} />}
           {has("MENTOR") && <Tile span="square" tone="field" label="Mentor · Phase 7" title="Mentorship requests" index={3} />}
           {has("PARTNER") && partner && (
             <Tile span="square" tone="raised" label="Your firm" title={partner.name} href={`/partners/${partner.slug}` as Route} index={4} />

@@ -32,6 +32,11 @@ export async function Nav() {
               <Link href="/partners" className={linkClass}>
                 Partners
               </Link>
+              {(viewer.profile.roles.includes("BACKER") || viewer.profile.roles.includes("ADMIN")) && (
+                <Link href="/backers" className={linkClass}>
+                  Discover
+                </Link>
+              )}
               <Link href="/connections" className={`${linkClass} inline-flex items-center gap-2`}>
                 Connections
                 {waiting > 0 && (

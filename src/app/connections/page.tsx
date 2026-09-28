@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { Route } from "next";
 import Link from "next/link";
+import { NotAnOffer } from "@/components/backers/NotAnOffer";
 import { MaskedLines } from "@/components/motion/MaskedLines";
 import { PageWipe } from "@/components/motion/PageWipe";
 import { ContactLine, PersonBlurb } from "@/components/people/PersonBlurb";
@@ -17,7 +18,7 @@ export const metadata: Metadata = { title: "Connections · SELF" };
 
 const KIND_LABEL: Record<string, string> = {
   ROLE_INTEREST: "Role",
-  BACKER_INTEREST: "Backer interest",
+  BACKER_INTEREST: "Backer interest · Interest only",
   MENTOR_REQUEST: "Mentorship",
   PARTNER_INTRO: "Intro",
 };
@@ -176,6 +177,7 @@ export default async function ConnectionsPage() {
               ))}
             </div>
           </section>
+          {signals.some((s) => s.kind === "BACKER_INTEREST") && <NotAnOffer />}
         </div>
       )}
     </PageWipe>

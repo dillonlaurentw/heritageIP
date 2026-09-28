@@ -342,6 +342,24 @@ npm run lint && npm run typecheck && npm test && npm run build   # before every 
   profile at `/partners/[slug]/edit`.
 - Magic-link rate limit: 5/min per visitor normally, 60/min in demo mode.
 
+## Funding conventions (Phase 6): interest only
+
+- `Hub.discoverable` is off by default. Opening requires a saved thesis and a
+  sector. Only signed-in BACKER (or ADMIN) users can browse `/backers`; the
+  teaser at `/backers/[slug]` shows only name, cover, one-liner, stage, sector,
+  thesis, team names/roles, plan progress counts and the backer ask.
+- A backer with an ACCEPTED signal can still open the teaser after the hub
+  hides itself; nobody else can (`canSeeTeaser`).
+- `BACKER_INTEREST` signals go backer → hub owner. Accepting swaps contacts via
+  the normal `contactsFor()` gate. Nothing else happens.
+- `mentionsTerms()` (`src/lib/no-terms.ts`, unit tested) blocks amounts,
+  valuations and deal terms in the backer ask, backer notes and the profile's
+  backer note. Keep it on every new backer-facing free-text field.
+- `<NotAnOffer />` sits at the bottom of every backer surface. It is product
+  copy, not legal advice; counsel must review before launch.
+- The investing seam is documented at the bottom of `prisma/schema.prisma`.
+  Build none of it without a licensed partner.
+
 ## Design primitives (Phase 0)
 
 - `src/design/tokens.css`: colors, type scale, radii, motion. Tailwind's default

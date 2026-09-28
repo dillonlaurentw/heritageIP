@@ -159,6 +159,13 @@ model Hub {
   coverTone     String? // "raised" | "bone" | "signal"
   coverImageUrl String?
 
+  // Backer discovery (Phase 6). Off by default; the owner opts in.
+  // Only signed-in BACKERs see discoverable hubs, and only a teaser.
+  discoverable   Boolean   @default(false)
+  discoverableAt DateTime?
+  sector         String? // one of FOCUS_AREAS, for backer filters
+  backerAsk      String? // what help they want from a backer. Never amounts or terms.
+
   thesis          Thesis?
   thesisRevisions ThesisRevision[]
   agentThreads    AgentThread[]
@@ -446,3 +453,21 @@ model Partner {
 
   @@index([featured])
 }
+
+// ─────────────────────────────────────────────────────────────
+// INVESTING SEAM (not built, on purpose).
+//
+// SELF does not move money, take investments, or run offerings. Funding is
+// BACKER_INTEREST signals and introductions only. If SELF ever supports
+// investing, it must sit behind a licensed funding portal or broker-dealer
+// partner, and would add models roughly like:
+//
+//   Offering    hubId, partnerPlatform, externalOfferingId, status,
+//               regulatory exemption, disclosures (owned by the platform)
+//   Commitment  offeringId, backerId, externalCommitmentId, status
+//               (amounts live on the licensed platform, not here)
+//
+// linked from Hub and from the BACKER_INTEREST Signal that started the
+// relationship. Until then: no amount, valuation, terms or "commit" fields,
+// anywhere. See src/lib/no-terms.ts for the guard on free text.
+// ─────────────────────────────────────────────────────────────

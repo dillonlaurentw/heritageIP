@@ -708,6 +708,38 @@ async function main() {
   }
   console.log(`Seeded ${partners.length} partners.`);
 
+  // ── Backer discovery: a few hubs opt in; some interest signals. ──
+  const discovery: Record<string, { sector: string; backerAsk: string }> = {
+    "tidewater-kelp": { sector: "Climate", backerAsk: "Operators who know EU food retail, and intros to blue-economy grant funds." },
+    "night-shift-bakery": { sector: "Food", backerAsk: "Someone who has scaled a food business with hospital or employer contracts." },
+    "ground-truth": { sector: "Fintech", backerAsk: "Backers with rural lending or agri-finance networks in West Africa." },
+    "parallel-clinic": { sector: "Health", backerAsk: "Healthcare operators who know German clinic procurement." },
+  };
+  for (const [slug, d] of Object.entries(discovery)) {
+    await db.hub.update({ where: { slug }, data: { discoverable: true, discoverableAt: new Date(Date.now() - 4 * DAY), ...d } });
+  }
+  const backerSignals: { from: string; hub: string; status: "PENDING" | "ACCEPTED"; note: string; daysAgo: number }[] = [
+    { from: "priya", hub: "tidewater-kelp", status: "PENDING", daysAgo: 1, note: "I spent a decade in cold-chain for a Singapore seafood exporter. I'd love to understand your processor economics and help with buyer intros in Asia later." },
+    { from: "marcus", hub: "night-shift-bakery", status: "ACCEPTED", daysAgo: 6, note: "Our community fund backs local food businesses with employer contracts. I'd like to hear how the hospital pilot is going." },
+    { from: "marcus", hub: "parallel-clinic", status: "PENDING", daysAgo: 2, note: "Two of our portfolio founders run community clinics. Happy to open doors for your research visits." },
+  ];
+  for (const b of backerSignals) {
+    const hub = await db.hub.findUniqueOrThrow({ where: { slug: b.hub } });
+    const at = new Date(Date.now() - b.daysAgo * DAY);
+    await db.signal.create({
+      data: {
+        kind: "BACKER_INTEREST",
+        status: b.status,
+        fromUserId: idByKey.get(b.from)!,
+        toUserId: hub.ownerId,
+        hubId: hub.id,
+        note: b.note,
+        createdAt: at,
+        respondedAt: b.status === "ACCEPTED" ? new Date(at.getTime() + DAY) : null,
+      },
+    });
+  }
+
   // Keep the auto-number counter ahead of the seeded numbers.
   await db.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"Hub"', 'number'), (SELECT MAX(number) FROM "Hub"))`);
 

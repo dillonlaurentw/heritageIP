@@ -1,5 +1,6 @@
 import "server-only";
 import { db } from "./db";
+import { mentionsTerms, NO_TERMS_MESSAGE } from "./no-terms";
 import { profileFieldsPartial, type ProfileInput } from "./profile-schema";
 
 export type SaveResult = { ok: true } | { ok: false; errors: Record<string, string> };
@@ -17,6 +18,8 @@ export async function saveProfileFields(userId: string, input: Partial<ProfileIn
     return { ok: false, errors };
   }
   const { name, roles, ...fields } = parsed.data;
+  const terms = fields.backerNote ? mentionsTerms(fields.backerNote) : null;
+  if (terms) return { ok: false, errors: { backerNote: NO_TERMS_MESSAGE(terms) } };
 
   await db.$transaction(async (tx) => {
     if (name !== undefined) await tx.user.update({ where: { id: userId }, data: { name } });

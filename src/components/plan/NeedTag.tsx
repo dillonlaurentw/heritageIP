@@ -8,7 +8,9 @@ export function NeedTag({ need, hubSlug, stepId }: { need: Need; hubSlug: string
   const href =
     need === "COFOUNDER"
       ? `/hubs/${hubSlug}/team${stepId ? `?step=${stepId}` : ""}`
-      : `/hubs/${hubSlug}/connect/${NEEDS[need].slug}`;
+      : need === "FUNDING"
+        ? `/hubs/${hubSlug}/backers`
+        : `/hubs/${hubSlug}/connect/${NEEDS[need].slug}`;
   return (
     <Link
       href={href as Route}

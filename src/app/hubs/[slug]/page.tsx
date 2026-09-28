@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 const NEXT: { title: string; label: string; span: TileSpan; path: string }[] = [
   { title: "Team", label: "Co-founders", span: "square", path: "team" },
   { title: "Partners", label: "Legal, supply, build · Phase 5", span: "square", path: "connect/legal" },
-  { title: "Backers", label: "Interest only · Phase 6", span: "square", path: "connect/funding" },
+  { title: "Backers", label: "Interest only", span: "square", path: "backers" },
   { title: "Mentors", label: "Phase 7", span: "square", path: "connect/mentor" },
   { title: "Go-to-market", label: "Phase 8", span: "square", path: "connect/gtm" },
   { title: "Agents", label: "Phase 10", span: "square", path: "" },
@@ -177,7 +177,11 @@ export default async function HubPage({ params }: { params: Promise<{ slug: stri
               label={
                 n.path === "team"
                   ? `${teamSize + 1} ${teamSize ? "people" : "person"} · ${openRoles} open ${openRoles === 1 ? "role" : "roles"}${waiting ? ` · ${waiting} waiting` : ""}`
-                  : n.label
+                  : n.path === "backers"
+                    ? hub.discoverable
+                      ? "Open to backers · Interest only"
+                      : "Not discoverable · Interest only"
+                    : n.label
               }
               title={n.title}
               href={n.path && (isOwner || n.path === "team") ? (`/hubs/${hub.slug}/${n.path}` as Route) : undefined}
