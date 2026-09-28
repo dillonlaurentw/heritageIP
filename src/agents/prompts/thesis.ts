@@ -50,24 +50,36 @@ Play back the idea in one or two sharper sentences, then ask exactly 3
 questions that would most change the thesis if answered. Target the weakest
 parts first (usually: who exactly it's for, and why now). Don't repeat
 questions already answered.`,
-  demo: (ctx) => ({
-    reflection:
-      ctx.round === 1
-        ? `So: ${ctx.rawIdea.split(/[.!?]/)[0].trim()}. The interesting part is who feels this problem hardest, and why nobody has fixed it yet.`
-        : "The draft is closer. The weak spots are how you reach the first customers and what makes this hard to copy.",
-    questions:
-      ctx.round === 1
-        ? [
-            "Who is the first person who would pay for this, and what are they using today instead?",
-            "What changed in the last two years that makes this possible or urgent now?",
-            "What do you know about this problem that someone smart but new to it wouldn't?",
-          ]
-        : [
-            "How will your first twenty customers hear about you?",
-            "If a bigger company copied this next year, what would they still get wrong?",
-            "What would have to be true for this to be a bad idea?",
-          ],
-  }),
+  demo: (ctx) => {
+    // Demo mode has no model, so each round gets its own fixed set of questions.
+    const rounds = [
+      {
+        reflection: `So: ${ctx.rawIdea.split(/[.!?]/)[0].trim()}. The interesting part is who feels this problem hardest, and why nobody has fixed it yet.`,
+        questions: [
+          "Who is the first person who would pay for this, and what are they using today instead?",
+          "What changed in the last two years that makes this possible or urgent now?",
+          "What do you know about this problem that someone smart but new to it wouldn't?",
+        ],
+      },
+      {
+        reflection: "The draft is closer. The weak spots are how you reach the first customers and what makes this hard to copy.",
+        questions: [
+          "How will your first twenty customers hear about you?",
+          "If a bigger company copied this next year, what would they still get wrong?",
+          "What would have to be true for this to be a bad idea?",
+        ],
+      },
+      {
+        reflection: "You know who it's for and why now. What's left is proof: what someone will pay, and what you'd see first if it works.",
+        questions: [
+          "What would a first customer pay, and how would you find out this month?",
+          "What's the smallest version you could put in someone's hands in two weeks?",
+          "What result in the first ninety days would tell you to keep going?",
+        ],
+      },
+    ];
+    return rounds[Math.min(ctx.round, rounds.length) - 1];
+  },
 });
 
 const thesisShape = z.object({
