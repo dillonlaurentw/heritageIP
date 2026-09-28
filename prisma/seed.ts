@@ -473,6 +473,161 @@ async function main() {
     await db.hub.update({ where: { id: hub.id }, data: { stage: "PLAN" } });
   }
 
+  // ── Team: roles, interest signals, accepted members. ──
+  type SeedRole = {
+    hub: string;
+    title: string;
+    commitment: string;
+    description: string;
+    skills: string[];
+    step?: string; // plan step title to link
+    status?: "OPEN" | "FILLED" | "CLOSED";
+    signals?: { from: string; note: string; status: "PENDING" | "ACCEPTED" | "DECLINED"; daysAgo: number }[];
+  };
+  const roles: SeedRole[] = [
+    {
+      hub: "tidewater-kelp",
+      title: "Technical co-founder",
+      commitment: "Co-founder",
+      description:
+        "Own the software side: supplier ordering, traceability for every tray, and the tools processors use to reorder. Early, scrappy, and close to the factory floor.",
+      skills: ["Full-stack", "Ops tooling", "Hardware-adjacent"],
+      step: "Find a co-founder for brand and software",
+      status: "FILLED",
+      signals: [
+        {
+          from: "dev",
+          note: "I've built ordering and traceability tools for two field businesses. I like physical products with messy logistics, and I'd rather ship an ugly v1 in four weeks than plan for four months.",
+          status: "ACCEPTED",
+          daysAgo: 12,
+        },
+      ],
+    },
+    {
+      hub: "tidewater-kelp",
+      title: "Brand and storytelling co-founder",
+      commitment: "Co-founder",
+      description:
+        "Make supermarket buyers and processors fall for kelp packaging. Own the brand, the pitch deck and the story of the coast. You'll lead fundraising prep with Maya.",
+      skills: ["Brand", "Storytelling", "Fundraising"],
+      step: "Find a co-founder for brand and software",
+      signals: [
+        {
+          from: "lena",
+          note: "I've spent six years making complicated things feel simple for people who don't have time for them. Your buyers are that audience. I'd love to design how this looks and sounds.",
+          status: "PENDING",
+          daysAgo: 2,
+        },
+        {
+          from: "tomas",
+          note: "I make things people keep for a lifetime. I think the story of kelp from the same coast is a craft story, and I know how to tell those.",
+          status: "PENDING",
+          daysAgo: 1,
+        },
+      ],
+    },
+    {
+      hub: "night-shift-bakery",
+      title: "Kitchen operations co-founder",
+      commitment: "Co-founder",
+      description:
+        "Run the kitchen: suppliers, food costs, the ghost-kitchen lease and a night crew. Ana brings the customers and the story; you make it run at 3am.",
+      skills: ["Kitchen ops", "Food costing", "Suppliers"],
+      step: "Find a co-founder who runs kitchens",
+      signals: [
+        {
+          from: "maya",
+          note: "I ran cold-chain logistics for eight years. Getting warm food to a ward by midnight is a delivery-window problem, and those are my favourite kind.",
+          status: "PENDING",
+          daysAgo: 3,
+        },
+      ],
+    },
+    {
+      hub: "field-notes",
+      title: "Sales co-founder for facilities",
+      commitment: "Co-founder",
+      description: "Open doors at HVAC and elevator maintenance firms. You've sold to operations managers before and you like being in the van as much as the boardroom.",
+      skills: ["B2B sales", "Facilities", "UK"],
+      step: "Find a co-founder who sells to facilities managers",
+    },
+    {
+      hub: "parallel-clinic",
+      title: "Full-stack engineer",
+      commitment: "Part-time",
+      description: "Help build the first scheduling module with Lena. Ten hours a week to start, clinic visits included.",
+      skills: ["TypeScript", "Healthcare data", "Accessibility"],
+      signals: [
+        {
+          from: "dev",
+          note: "Happy to do ten hours a week. I've shipped to field teams who hate software, which sounds a lot like clinic staff.",
+          status: "PENDING",
+          daysAgo: 4,
+        },
+      ],
+    },
+    {
+      hub: "ground-truth",
+      title: "Product designer",
+      commitment: "Advisor",
+      description: "Shape the phone flow farmers use in the field. It has to work in bright sun, offline, in three languages.",
+      skills: ["Mobile", "Field research", "Low-literacy UX"],
+      status: "FILLED",
+      signals: [
+        {
+          from: "lena",
+          note: "Designing for people who don't have time for software is my whole career. Offline and in bright sun is a fun constraint.",
+          status: "ACCEPTED",
+          daysAgo: 8,
+        },
+        {
+          from: "ana",
+          note: "I'm not a designer, but I've used a lot of bad hospital software on tired shifts and I know what breaks.",
+          status: "DECLINED",
+          daysAgo: 9,
+        },
+      ],
+    },
+  ];
+
+  for (const r of roles) {
+    const hub = await db.hub.findUniqueOrThrow({ where: { slug: r.hub } });
+    const step = r.step ? await db.planStep.findFirst({ where: { hubId: hub.id, title: r.step } }) : null;
+    const role = await db.roleOpening.create({
+      data: {
+        hubId: hub.id,
+        planStepId: step?.id ?? null,
+        title: r.title,
+        commitment: r.commitment,
+        description: r.description,
+        skills: r.skills,
+        status: r.status ?? "OPEN",
+        createdAt: new Date(Date.now() - 14 * DAY),
+      },
+    });
+    for (const sig of r.signals ?? []) {
+      const at = new Date(Date.now() - sig.daysAgo * DAY);
+      const fromUserId = idByKey.get(sig.from)!;
+      await db.signal.create({
+        data: {
+          kind: "ROLE_INTEREST",
+          status: sig.status,
+          fromUserId,
+          toUserId: hub.ownerId,
+          hubId: hub.id,
+          roleOpeningId: role.id,
+          planStepId: step?.id ?? null,
+          note: sig.note,
+          createdAt: at,
+          respondedAt: sig.status === "PENDING" ? null : new Date(at.getTime() + DAY),
+        },
+      });
+      if (sig.status === "ACCEPTED") {
+        await db.hubMember.create({ data: { hubId: hub.id, userId: fromUserId, role: r.title, joinedAt: new Date(at.getTime() + DAY) } });
+      }
+    }
+  }
+
   // Keep the auto-number counter ahead of the seeded numbers.
   await db.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"Hub"', 'number'), (SELECT MAX(number) FROM "Hub"))`);
 

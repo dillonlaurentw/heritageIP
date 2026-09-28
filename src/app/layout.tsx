@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Archivo, IBM_Plex_Mono } from "next/font/google";
+import { DemoSwitcher } from "@/components/nav/DemoSwitcher";
 import { Nav } from "@/components/nav/Nav";
 import "./globals.css";
 
@@ -28,6 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg-field text-bone">
         <Nav />
         {children}
+        <DemoSwitcher />
       </body>
     </html>
   );

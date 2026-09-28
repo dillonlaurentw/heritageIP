@@ -68,4 +68,4 @@ export const needFromSlug = (slug: string) =>
   (Object.keys(NEEDS) as Need[]).find((k) => NEEDS[k].slug === slug) ?? null;
 
 /** Connection areas that are live. Grows as phases ship. */
-export const LIVE_PHASE = 3;
+export const LIVE_PHASE = 4;

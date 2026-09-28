@@ -20,13 +20,15 @@ type Props = {
   hub: { id: string; slug: string; name: string; hasThesis: boolean };
   initial: StepView[];
   live: boolean;
+  /** Team members see the plan but can't change it. */
+  readOnly?: boolean;
 };
 
 type Result = { ok: true; steps: StepView[]; demo?: boolean } | { ok: false; message: string };
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
-export function PlanBoard({ hub, initial, live }: Props) {
+export function PlanBoard({ hub, initial, live, readOnly = false }: Props) {
   const [steps, setSteps] = useState(initial);
   const [editing, setEditing] = useState<string | null>(null); // step id, or "new:STAGE"
   const [state, setState] = useState<AgentState>("idle");
@@ -75,7 +77,45 @@ export function PlanBoard({ hub, initial, live }: Props) {
     );
   }
 
-  let n = 0; // running step number across stages
+  // Step numbers run across stages; steps arrive sorted by stage then position.
+  const numberOf = new Map(steps.map((s, i) => [s.id, i + 1]));
+
+  if (readOnly) {
+    return (
+      <div className="flex flex-col gap-10">
+        <Label>
+          Read only · Step {pad(doneCount)}/{pad(steps.length)} done
+        </Label>
+        {steps.length === 0 && <p className="text-lead text-smoke">No plan yet.</p>}
+        {STAGES.map((stage, si) => {
+          const inStage = steps.filter((s) => s.stage === stage);
+          if (!inStage.length) return null;
+          return (
+            <section key={stage} className="grid grid-cols-1 gap-6 border-t border-line pt-8 md:grid-cols-[16rem_1fr]">
+              <div>
+                <Label>Stage {pad(si + 1)}</Label>
+                <h2 className="type-display mt-2 text-title">{STAGE_COPY[stage].label}</h2>
+              </div>
+              <div className="flex flex-col">
+                {inStage.map((step) => {
+                  return (
+                    <div key={step.id} className="border-b border-line py-5 last:border-b-0">
+                      <Label tone={step.done ? "signal" : "bone"}>
+                        Step {pad(numberOf.get(step.id)!)}
+                        {step.done && " · Done"}
+                      </Label>
+                      <p className={`mt-1 text-lead font-semibold ${step.done ? "text-smoke line-through" : ""}`}>{step.title}</p>
+                      {step.detail && <p className="measure mt-1 text-body text-smoke">{step.detail}</p>}
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          );
+        })}
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-10">
@@ -130,8 +170,7 @@ export function PlanBoard({ hub, initial, live }: Props) {
                   <p className="py-3 text-body text-smoke">Nothing here yet.</p>
                 )}
                 {inStage.map((step) => {
-                  n += 1;
-                  const num = n;
+                  const num = numberOf.get(step.id)!;
                   return (
                     <motion.div
                       key={step.id}
@@ -240,7 +279,7 @@ function StepRow({
         {step.needs.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-2">
             {step.needs.map((need) => (
-              <NeedTag key={need} need={need} hubSlug={hubSlug} />
+              <NeedTag key={need} need={need} hubSlug={hubSlug} stepId={step.id} />
             ))}
           </div>
         )}

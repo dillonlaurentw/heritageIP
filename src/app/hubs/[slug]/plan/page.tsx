@@ -4,7 +4,7 @@ import { MaskedLines } from "@/components/motion/MaskedLines";
 import { PageWipe } from "@/components/motion/PageWipe";
 import { ArrowLink } from "@/components/ui/ArrowLink";
 import { Label } from "@/components/ui/Label";
-import { getOwnedHub, hubNumber } from "@/lib/hubs";
+import { getHubAccess, hubNumber } from "@/lib/hubs";
 import { listSteps } from "@/lib/plan";
 import { requireOnboarded } from "@/lib/session";
 import { PlanBoard } from "./PlanBoard";
@@ -14,7 +14,7 @@ export const maxDuration = 120;
 
 export default async function PlanPage({ params }: { params: Promise<{ slug: string }> }) {
   const viewer = await requireOnboarded();
-  const hub = await getOwnedHub((await params).slug, viewer);
+  const { hub, isOwner } = await getHubAccess((await params).slug, viewer);
   const steps = await listSteps(hub.id);
 
   return (
@@ -37,6 +37,7 @@ export default async function PlanPage({ params }: { params: Promise<{ slug: str
           hub={{ id: hub.id, slug: hub.slug, name: hub.name, hasThesis: Boolean(hub.thesis) }}
           initial={steps}
           live={agentsLive()}
+          readOnly={!isOwner}
         />
       </section>
     </PageWipe>

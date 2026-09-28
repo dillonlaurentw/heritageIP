@@ -8,7 +8,8 @@ import { Tile, type TileSpan } from "@/components/mosaic/Tile";
 import { ArrowLink } from "@/components/ui/ArrowLink";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Label } from "@/components/ui/Label";
-import { getOwnedHub, hubNumber, STAGE_LABEL } from "@/lib/hubs";
+import { getHubAccess, hubNumber, STAGE_LABEL } from "@/lib/hubs";
+import { db } from "@/lib/db";
 import { requireOnboarded } from "@/lib/session";
 import { THESIS_FIELDS } from "@/lib/thesis-schema";
 import { NeedTag } from "@/components/plan/NeedTag";
@@ -23,7 +24,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 
 const NEXT: { title: string; label: string; span: TileSpan; path: string }[] = [
-  { title: "Team", label: "Co-founders · Phase 4", span: "square", path: "connect/cofounder" },
+  { title: "Team", label: "Co-founders", span: "square", path: "team" },
   { title: "Partners", label: "Legal, supply, build · Phase 5", span: "square", path: "connect/legal" },
   { title: "Backers", label: "Interest only · Phase 6", span: "square", path: "connect/funding" },
   { title: "Mentors", label: "Phase 7", span: "square", path: "connect/mentor" },
@@ -33,7 +34,12 @@ const NEXT: { title: string; label: string; span: TileSpan; path: string }[] = [
 
 export default async function HubPage({ params }: { params: Promise<{ slug: string }> }) {
   const viewer = await requireOnboarded();
-  const hub = await getOwnedHub((await params).slug, viewer);
+  const { hub, isOwner, membership } = await getHubAccess((await params).slug, viewer);
+  const [teamSize, openRoles, waiting] = await Promise.all([
+    db.hubMember.count({ where: { hubId: hub.id } }),
+    db.roleOpening.count({ where: { hubId: hub.id, status: "OPEN" } }),
+    isOwner ? db.signal.count({ where: { hubId: hub.id, toUserId: viewer.user.id, status: "PENDING" } }) : 0,
+  ]);
   const t = hub.thesis;
   const steps = await listSteps(hub.id);
   const plan = { done: steps.filter((st) => st.done).length, total: steps.length };
@@ -46,9 +52,13 @@ export default async function HubPage({ params }: { params: Promise<{ slug: stri
           <Label>
             {hubNumber(hub.number)} · {STAGE_LABEL[hub.stage]}
           </Label>
-          <ArrowLink href={`/hubs/${hub.slug}/edit`} size="inline" className="text-smoke">
-            Edit hub
-          </ArrowLink>
+          {isOwner ? (
+            <ArrowLink href={`/hubs/${hub.slug}/edit`} size="inline" className="text-smoke">
+              Edit hub
+            </ArrowLink>
+          ) : (
+            <Label tone="bone">You&apos;re on the team · {membership?.role}</Label>
+          )}
         </div>
         <MaskedLines lines={[hub.name]} className="type-display text-display" />
         {hub.oneLiner && <p className="measure text-lead text-smoke">{hub.oneLiner}</p>}
@@ -64,9 +74,11 @@ export default async function HubPage({ params }: { params: Promise<{ slug: stri
         <section className="mt-gutter bg-bone px-edge py-20 text-field">
           <div className="flex justify-between">
             <Label tone="field">01 · Core thesis</Label>
-            <ArrowLink href={`/hubs/${hub.slug}/thesis`} size="inline" tone="field">
-              Sharpen or edit
-            </ArrowLink>
+            {isOwner && (
+              <ArrowLink href={`/hubs/${hub.slug}/thesis`} size="inline" tone="field">
+                Sharpen or edit
+              </ArrowLink>
+            )}
           </div>
           <p className="type-display mt-10 max-w-[30ch] text-statement">{t.statement}</p>
           <div className="mt-16 grid grid-cols-1 gap-x-12 gap-y-10 border-t border-line-bone pt-10 md:grid-cols-2 xl:grid-cols-3">
@@ -111,7 +123,9 @@ export default async function HubPage({ params }: { params: Promise<{ slug: stri
               </ArrowLink>
             )}
           </div>
-          {plan.total === 0 ? (
+          {plan.total === 0 && !isOwner ? (
+            <p className="pt-8 text-lead text-smoke">No plan yet.</p>
+          ) : plan.total === 0 ? (
             <div className="pt-10">
               <ArrowLink href={`/hubs/${hub.slug}/plan`} size="hero" className="max-w-[18ch]">
                 No plan yet. Turn the thesis into steps.
@@ -133,7 +147,7 @@ export default async function HubPage({ params }: { params: Promise<{ slug: stri
                       {st.needs.length > 0 && (
                         <div className="mt-4 flex flex-wrap gap-2">
                           {st.needs.map((n) => (
-                            <NeedTag key={n} need={n} hubSlug={hub.slug} />
+                            <NeedTag key={n} need={n} hubSlug={hub.slug} stepId={st.id} />
                           ))}
                         </div>
                       )}
@@ -159,10 +173,14 @@ export default async function HubPage({ params }: { params: Promise<{ slug: stri
               key={n.title}
               index={i}
               span={n.span}
-              tone="field"
-              label={n.label}
+              tone={n.path === "team" && waiting > 0 ? "signal" : n.path === "team" ? "raised" : "field"}
+              label={
+                n.path === "team"
+                  ? `${teamSize + 1} ${teamSize ? "people" : "person"} · ${openRoles} open ${openRoles === 1 ? "role" : "roles"}${waiting ? ` · ${waiting} waiting` : ""}`
+                  : n.label
+              }
               title={n.title}
-              href={n.path ? (`/hubs/${hub.slug}/${n.path}` as Route) : undefined}
+              href={n.path && (isOwner || n.path === "team") ? (`/hubs/${hub.slug}/${n.path}` as Route) : undefined}
             />
           ))}
         </Mosaic>

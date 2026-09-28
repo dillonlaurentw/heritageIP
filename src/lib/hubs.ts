@@ -44,6 +44,21 @@ export async function getOwnedHub(slug: string, viewer: Viewer) {
   return hub;
 }
 
+/**
+ * Load a hub the viewer can SEE: its owner or a team member. Pages use
+ * `isOwner` to hide editing. Owner-only pages keep using getOwnedHub.
+ */
+export async function getHubAccess(slug: string, viewer: Viewer) {
+  const hub = await db.hub.findUnique({ where: { slug }, include: { thesis: true } });
+  if (!hub) notFound();
+  const isOwner = hub.ownerId === viewer.user.id;
+  const membership = isOwner
+    ? null
+    : await db.hubMember.findUnique({ where: { hubId_userId: { hubId: hub.id, userId: viewer.user.id } } });
+  if (!isOwner && !membership) notFound();
+  return { hub, isOwner, membership };
+}
+
 /** Same check for server actions, which receive an id rather than a slug. */
 export async function requireOwnedHubId(hubId: string, viewer: Viewer) {
   const hub = await db.hub.findUnique({ where: { id: hubId }, include: { thesis: true } });
@@ -53,25 +68,34 @@ export async function requireOwnedHubId(hubId: string, viewer: Viewer) {
 
 const NEW_FOR_MS = 3 * 24 * 60 * 60 * 1000;
 
+const hubCardSelect = {
+  id: true,
+  number: true,
+  slug: true,
+  name: true,
+  oneLiner: true,
+  stage: true,
+  coverLayout: true,
+  coverTone: true,
+  coverImageUrl: true,
+  createdAt: true,
+} as const;
+
+/** Hubs the user owns, then hubs they've joined as a team member. */
 export async function listHubs(userId: string) {
-  const hubs = await db.hub.findMany({
-    where: { ownerId: userId },
-    orderBy: { updatedAt: "desc" },
-    select: {
-      id: true,
-      number: true,
-      slug: true,
-      name: true,
-      oneLiner: true,
-      stage: true,
-      coverLayout: true,
-      coverTone: true,
-      coverImageUrl: true,
-      createdAt: true,
-    },
-  });
+  const [owned, joined] = await Promise.all([
+    db.hub.findMany({ where: { ownerId: userId }, orderBy: { updatedAt: "desc" }, select: hubCardSelect }),
+    db.hub.findMany({
+      where: { members: { some: { userId } } },
+      orderBy: { updatedAt: "desc" },
+      select: { ...hubCardSelect, members: { where: { userId }, select: { role: true } } },
+    }),
+  ]);
   const now = Date.now();
-  return hubs.map((h) => ({ ...h, isNew: now - h.createdAt.getTime() < NEW_FOR_MS }));
+  return [
+    ...owned.map((h) => ({ ...h, memberRole: null as string | null })),
+    ...joined.map(({ members, ...h }) => ({ ...h, memberRole: members[0]?.role ?? "Team" })),
+  ].map((h) => ({ ...h, isNew: now - h.createdAt.getTime() < NEW_FOR_MS }));
 }
 
 export type HubCard = Awaited<ReturnType<typeof listHubs>>[number];

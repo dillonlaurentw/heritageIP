@@ -7,6 +7,7 @@ import { ArrowLink } from "@/components/ui/ArrowLink";
 import { Label } from "@/components/ui/Label";
 import { HubMosaic } from "@/components/mosaic/HubMosaic";
 import { listHubs } from "@/lib/hubs";
+import { pendingIncoming } from "@/lib/signals";
 import { rolesLine } from "@/lib/roles";
 import { requireOnboarded } from "@/lib/session";
 
@@ -16,7 +17,7 @@ export default async function Home() {
   const { user, profile } = await requireOnboarded();
   const first = user.name.split(" ")[0];
   const has = (r: string) => profile.roles.includes(r as never);
-  const hubs = await listHubs(user.id);
+  const [hubs, waiting] = await Promise.all([listHubs(user.id), pendingIncoming(user.id)]);
 
   return (
     <PageWipe>
@@ -45,7 +46,15 @@ export default async function Home() {
               {profile.headline ?? "Your reflection answers, roles and contact details. All editable."}
             </p>
           </Tile>
-          <Tile span="square" tone="raised" label="Roles" title={rolesLine(profile.roles)} href="/me" index={1} />
+          <Tile
+            span="square"
+            tone={waiting ? "signal" : "raised"}
+            label={waiting ? `${waiting} waiting on you` : "Connections"}
+            title="Your people"
+            href="/connections"
+            index={1}
+          />
+          {has("BUILDER") && <Tile span="square" tone="field" label="Open roles" title="Join a team" href="/roles" index={2} />}
           {has("BACKER") && <Tile span="square" tone="field" label="Backer · Phase 6" title="Discover hubs" index={2} />}
           {has("MENTOR") && <Tile span="square" tone="field" label="Mentor · Phase 7" title="Mentorship requests" index={3} />}
           {has("PARTNER") && <Tile span="square" tone="field" label="Partner · Phase 5" title="Intro requests" index={4} />}

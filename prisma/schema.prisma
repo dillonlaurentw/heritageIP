@@ -15,19 +15,22 @@ datasource db {
 // ─────────────────────────────────────────────────────────────
 
 model User {
-  id            String        @id @default(cuid())
-  name          String
-  email         String        @unique
-  emailVerified Boolean       @default(false)
-  image         String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  sessions      Session[]
-  accounts      Account[]
-  profile       Profile?
-  hubs          Hub[]
-  agentThreads  AgentThread[]
-  agentRuns     AgentRun[]
+  id              String        @id @default(cuid())
+  name            String
+  email           String        @unique
+  emailVerified   Boolean       @default(false)
+  image           String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  sessions        Session[]
+  accounts        Account[]
+  profile         Profile?
+  hubs            Hub[]
+  agentThreads    AgentThread[]
+  agentRuns       AgentRun[]
+  memberships     HubMember[]
+  signalsSent     Signal[]      @relation("SignalFrom")
+  signalsReceived Signal[]      @relation("SignalTo")
 
   @@map("user")
 }
@@ -162,6 +165,9 @@ model Hub {
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   planSteps       PlanStep[]
+  members         HubMember[]
+  roleOpenings    RoleOpening[]
+  signals         Signal[]
 
   @@index([ownerId])
 }
@@ -291,18 +297,107 @@ enum StepSource {
 }
 
 model PlanStep {
-  id        String     @id @default(cuid())
-  hubId     String
-  hub       Hub        @relation(fields: [hubId], references: [id], onDelete: Cascade)
-  stage     PlanStage
-  position  Int // order within the stage, 0-based
-  title     String
-  detail    String?
-  needs     NeedTag[]
-  source    StepSource @default(MANUAL)
-  doneAt    DateTime?
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id           String        @id @default(cuid())
+  hubId        String
+  hub          Hub           @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  stage        PlanStage
+  position     Int // order within the stage, 0-based
+  title        String
+  detail       String?
+  needs        NeedTag[]
+  source       StepSource    @default(MANUAL)
+  doneAt       DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  roleOpenings RoleOpening[]
+  signals      Signal[]
 
   @@index([hubId, stage, position])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Team (Phase 4): the owner plus people who joined through an
+// accepted ROLE_INTEREST signal.
+// ─────────────────────────────────────────────────────────────
+
+model HubMember {
+  id       String   @id @default(cuid())
+  hubId    String
+  hub      Hub      @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role     String // the role title they joined for
+  joinedAt DateTime @default(now())
+
+  @@unique([hubId, userId])
+}
+
+enum RoleStatus {
+  OPEN
+  FILLED
+  CLOSED
+}
+
+/// A role a hub is looking for. Posting one makes the hub's name, one-liner
+/// and thesis statement visible to other builders browsing roles.
+model RoleOpening {
+  id          String     @id @default(cuid())
+  hubId       String
+  hub         Hub        @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  planStepId  String? // the game-plan step this role serves, if any
+  planStep    PlanStep?  @relation(fields: [planStepId], references: [id], onDelete: SetNull)
+  title       String // "Technical co-founder"
+  description String
+  commitment  String // "Co-founder", "Part-time", "Advisor"…
+  skills      String[]
+  status      RoleStatus @default(OPEN)
+  signals     Signal[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([status, createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Signals: every "can we connect?" in SELF. See CLAUDE.md.
+// Contact details are only ever revealed between the two people
+// on an ACCEPTED signal (src/lib/signals.ts enforces this).
+// ─────────────────────────────────────────────────────────────
+
+enum SignalKind {
+  ROLE_INTEREST // builder → hub owner, about a role opening (Phase 4)
+  BACKER_INTEREST // backer → hub owner. Interest only, never money (Phase 6)
+  MENTOR_REQUEST // hub owner → mentor (Phase 7)
+  PARTNER_INTRO // hub owner → partner (Phase 5)
+}
+
+enum SignalStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  WITHDRAWN
+}
+
+model Signal {
+  id            String       @id @default(cuid())
+  kind          SignalKind
+  status        SignalStatus @default(PENDING)
+  fromUserId    String
+  fromUser      User         @relation("SignalFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUserId      String // the person who decides
+  toUser        User         @relation("SignalTo", fields: [toUserId], references: [id], onDelete: Cascade)
+  hubId         String?
+  hub           Hub?         @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  roleOpeningId String?
+  roleOpening   RoleOpening? @relation(fields: [roleOpeningId], references: [id], onDelete: SetNull)
+  planStepId    String?
+  planStep      PlanStep?    @relation(fields: [planStepId], references: [id], onDelete: SetNull)
+  note          String // the sender's message
+  respondedAt   DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([toUserId, status])
+  @@index([fromUserId, status])
+  @@index([hubId, kind])
 }

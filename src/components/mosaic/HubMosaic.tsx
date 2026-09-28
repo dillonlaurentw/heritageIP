@@ -22,7 +22,7 @@ export function HubMosaic({ hubs }: { hubs: HubCard[] }) {
           index={i}
           span={hubs.length === 1 ? "wide" : RHYTHM[i % RHYTHM.length]}
           tone={coverTileTone(h)}
-          label={`${hubNumber(h.number)} · ${STAGE_LABEL[h.stage]}`}
+          label={`${hubNumber(h.number)} · ${h.memberRole ? `Team · ${h.memberRole}` : STAGE_LABEL[h.stage]}`}
           title={h.name}
           href={`/hubs/${h.slug}` as Route}
           meta={h.isNew ? <Tag>New</Tag> : undefined}

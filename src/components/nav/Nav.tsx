@@ -2,12 +2,14 @@ import Link from "next/link";
 import { signOut } from "@/app/actions/auth";
 import { Arrow } from "@/components/ui/ArrowLink";
 import { getViewer } from "@/lib/session";
+import { pendingIncoming } from "@/lib/signals";
 
 const linkClass = "text-small font-medium text-smoke transition-colors duration-(--duration-fast) hover:text-bone";
 
 /** Wordmark, a few text links, one persistent "Ask SELF anything →". */
 export async function Nav() {
   const viewer = await getViewer();
+  const waiting = viewer ? await pendingIncoming(viewer.user.id) : 0;
 
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-field">
@@ -23,6 +25,17 @@ export async function Nav() {
               </Link>
               <Link href="/hubs" className={linkClass}>
                 Hubs
+              </Link>
+              <Link href="/roles" className={linkClass}>
+                Roles
+              </Link>
+              <Link href="/connections" className={`${linkClass} inline-flex items-center gap-2`}>
+                Connections
+                {waiting > 0 && (
+                  <span className="label bg-signal px-1.5 py-0.5 text-field" aria-label={`${waiting} waiting`}>
+                    {waiting}
+                  </span>
+                )}
               </Link>
               <Link href="/me" className={linkClass}>
                 You

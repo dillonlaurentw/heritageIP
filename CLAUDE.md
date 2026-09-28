@@ -308,6 +308,24 @@ npm run lint && npm run typecheck && npm test && npm run build   # before every 
 - Plan actions return the full step list; the client replaces its state with it.
 - `npm test` runs Vitest. Add tests for pure logic like this.
 
+## Team + signals conventions (Phase 4)
+
+- Signal transitions live in `src/lib/signal-rules.ts` (pure, unit tested):
+  only the recipient accepts/declines, only the sender withdraws, final states
+  never change. `actOnSignal()` in `src/lib/signals.ts` applies them with a
+  "still pending" guard, runs side effects (ROLE_INTEREST → HubMember), and
+  sends emails.
+- **Contact details only come from `contactsFor(viewerId, userIds)`.** It
+  returns entries only for people who share an ACCEPTED signal with the
+  viewer. Never select `contactEmail`/`contactLink` anywhere else for display.
+- Hub visibility: `getHubAccess()` lets owners and team members view a hub
+  (hub page, plan read-only, team). Edit, thesis and actions stay owner-only.
+- Posting a role makes the hub's name, one-liner and thesis statement visible to
+  other builders (on `/roles`). Plans, other theses fields and contacts stay private.
+- `/connections` is the single inbox for every signal kind; later phases add
+  kinds there instead of building new inboxes.
+- Dev/demo: the "Demo · Switch" menu (bottom-left) signs in as any seed user.
+
 ## Design primitives (Phase 0)
 
 - `src/design/tokens.css`: colors, type scale, radii, motion. Tailwind's default

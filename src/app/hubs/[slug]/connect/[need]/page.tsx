@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import type { Route } from "next";
+import { notFound, redirect } from "next/navigation";
 import { MaskedLines } from "@/components/motion/MaskedLines";
 import { PageWipe } from "@/components/motion/PageWipe";
 import { ArrowLink } from "@/components/ui/ArrowLink";
@@ -20,6 +21,7 @@ export default async function ConnectPage({ params }: { params: Promise<{ slug: 
   const { slug, need: needSlug } = await params;
   const need = needFromSlug(needSlug);
   if (!need) notFound();
+  if (need === "COFOUNDER") redirect(`/hubs/${slug}/team` as Route);
   const viewer = await requireOnboarded();
   const hub = await getOwnedHub(slug, viewer);
   const area = NEEDS[need];
@@ -41,7 +43,7 @@ export default async function ConnectPage({ params }: { params: Promise<{ slug: 
       </section>
 
       <section className="grid grid-cols-1 gap-6 border-t border-line px-edge py-10 md:grid-cols-[16rem_1fr]">
-        <Label>Steps that need this</Label>
+        <Label className="self-start">Steps that need this</Label>
         <div className="flex flex-col">
           {steps.length === 0 ? (
             <p className="text-body text-smoke">No steps in your game plan are tagged {area.label} yet.</p>
