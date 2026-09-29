@@ -13,6 +13,7 @@ import { seedPrivatePages, seedTidewaterPages, seedWorkspaceContent } from "./se
 import { seedNetwork } from "./seed-network";
 import { seedComments } from "./seed-comments";
 import { seedSimulations } from "./seed-sims";
+import { seedUsage } from "./seed-usage";
 
 const db = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }) });
 const DAY = 86_400_000;
@@ -155,6 +156,7 @@ async function main() {
   await seedNetwork(db, idOf);
   await seedSimulations(db, idOf);
   await seedComments(db, idOf);
+  await seedUsage(db, idOf);
 }
 
 main()

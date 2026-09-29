@@ -323,6 +323,17 @@ generic dashboard widgets (donut charts, KPI cards), cinematic type inside the a
 - Setting a person property on a row notifies the people newly added (ASSIGNED).
 - `/inbox` lists notifications with filters; the sidebar shows the unread count.
 
+### Admin (Phase 10)
+- `/admin` (overview, people, workspaces, partners, signals, AI usage), guarded
+  by `requireAdmin()` (`src/lib/admin.ts`): non-admins get a 404.
+- Admins see names, counts and signal notes, never page content or contact
+  details. People shows login emails (admins only).
+- Featuring (workspaces, partners) orders the public lists. Linking a PARTNER
+  user to a firm moves waiting intros to them; unlinking returns them to the
+  concierge (`setPartnerManager`).
+- AI usage: estimates from `src/lib/agent-cost.ts` by day, person, agent and
+  company, plus capped/declined/failed runs. Bars, not KPI cards.
+
 ## Running locally
 
 ```
