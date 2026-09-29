@@ -1,11 +1,11 @@
 "use client";
 
-import { Check, Copy, Database, History, Link2, Maximize2, MoreHorizontal, Plus, RotateCcw, Trash2 } from "lucide-react";
+import { Check, Copy, Database, History, Link2, Maximize2, MoreHorizontal, Plus, RotateCcw, Sparkles, Trash2 } from "lucide-react";
 import { newDatabase } from "@/app/actions/databases";
 import type { Route } from "next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   archivePageAction,
   deleteForeverAction,
@@ -14,6 +14,7 @@ import {
   restorePageAction,
   savePage,
 } from "@/app/actions/pages";
+import { AskAIPanel, type AskTarget } from "@/components/ai/AskAIPanel";
 import type { SaveState } from "@/components/editor/Editor";
 import { LazyEditor } from "@/components/editor/LazyEditor";
 import type { SelfEditor } from "@/components/editor/schema";
@@ -68,6 +69,29 @@ export function PageView(p: PageViewProps) {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [title, setTitle] = useState(p.page.title);
   const editorRef = useRef<SelfEditor | null>(null);
+  const [ask, setAsk] = useState<{ editor: SelfEditor | null; target: AskTarget | null; n: number } | null>(null);
+  const canAsk = p.editable && !p.hideEditor && !p.page.archived;
+
+  /** Open Ask AI on whatever is selected in the editor (or nothing). */
+  const openAsk = () => {
+    const editor = editorRef.current;
+    const blocks = editor?.getSelection()?.blocks ?? [];
+    const target = editor && blocks.length ? { blockIds: blocks.map((b) => b.id), markdown: editor.blocksToMarkdownLossy(blocks) } : null;
+    setAsk((a) => ({ editor, target, n: (a?.n ?? 0) + 1 }));
+  };
+
+  // ⌘J opens Ask AI, like other editors.
+  useEffect(() => {
+    if (!canAsk) return;
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "j") {
+        e.preventDefault();
+        openAsk();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [canAsk]);
 
   const crumbs = [...p.crumbs.slice(0, -1), { label: title || "Untitled", icon: p.page.icon }];
 
@@ -91,6 +115,11 @@ export function PageView(p: PageViewProps) {
               {save === "saving" ? "Saving…" : save === "saved" ? "Saved" : save === "error" ? "Couldn't save" : ""}
             </span>
             {p.topActions}
+            {canAsk && (
+              <Button variant="ghost" onClick={() => openAsk()} title="Ask AI (⌘J)">
+                <Sparkles className="size-3.5" /> Ask AI
+              </Button>
+            )}
             <Menu
               align="end"
               className="w-60"
@@ -180,6 +209,7 @@ export function PageView(p: PageViewProps) {
               people={p.people}
               onSaveState={setSave}
               onMention={p.onMention}
+              onAskAI={canAsk ? () => openAsk() : undefined}
               onReady={(e) => {
                 editorRef.current = e;
                 p.onEditorReady?.(e);
@@ -187,6 +217,14 @@ export function PageView(p: PageViewProps) {
               extraSlashItems={
                 p.editable
                   ? (editor) => [
+                      {
+                        title: "Ask AI",
+                        subtext: "Draft, summarise, or turn this page into tasks",
+                        aliases: ["ai", "write", "draft", "self"],
+                        group: "SELF",
+                        icon: <Sparkles className="size-4" />,
+                        onItemClick: () => openAsk(),
+                      },
                       {
                         title: "Database",
                         subtext: "A table, board, list or calendar inside this page",
@@ -233,6 +271,16 @@ export function PageView(p: PageViewProps) {
           </section>
         )}
       </article>
+
+      {ask && (
+        <AskAIPanel
+          key={ask.n}
+          pageId={p.page.id}
+          editor={ask.editor}
+          target={ask.target}
+          onClose={() => setAsk(null)}
+        />
+      )}
 
       <VersionHistory pageId={p.page.id} open={historyOpen} onOpenChange={setHistoryOpen} editable={p.editable} />
     </>

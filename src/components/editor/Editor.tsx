@@ -8,10 +8,15 @@ import type { Block } from "@blocknote/core";
 import { filterSuggestionItems } from "@blocknote/core/extensions";
 import {
   type DefaultReactSuggestionItem,
+  FormattingToolbar,
+  FormattingToolbarController,
   getDefaultReactSlashMenuItems,
+  getFormattingToolbarItems,
   SuggestionMenuController,
+  useComponentsContext,
   useCreateBlockNote,
 } from "@blocknote/react";
+import { Sparkles } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { savePage, uploadImage } from "@/app/actions/pages";
 import { schema, type SelfEditor } from "./schema";
@@ -35,6 +40,7 @@ export default function Editor({
   onReady,
   onMention,
   extraSlashItems,
+  onAskAI,
 }: {
   pageId: string;
   initialContent: unknown[] | null;
@@ -45,6 +51,8 @@ export default function Editor({
   /** Called with the ids of people newly @mentioned after a save. */
   onMention?: (userIds: string[]) => void;
   extraSlashItems?: (editor: SelfEditor) => DefaultReactSuggestionItem[];
+  /** Adds "Ask AI" to the selection toolbar. */
+  onAskAI?: () => void;
 }) {
   const theme = useEffectiveTheme();
   const editor = useCreateBlockNote({
@@ -96,6 +104,7 @@ export default function Editor({
       editable={editable}
       theme={theme}
       slashMenu={false}
+      formattingToolbar={!onAskAI}
       className="self-editor -mx-[54px]"
       onChange={() => {
         if (!editable) return;
@@ -105,6 +114,16 @@ export default function Editor({
         timer.current = setTimeout(() => void flush(), SAVE_DELAY);
       }}
     >
+      {onAskAI && (
+        <FormattingToolbarController
+          formattingToolbar={() => (
+            <FormattingToolbar>
+              <AskAIButton onClick={onAskAI} />
+              {...getFormattingToolbarItems()}
+            </FormattingToolbar>
+          )}
+        />
+      )}
       <SuggestionMenuController
         triggerCharacter="/"
         getItems={async (query) =>
@@ -129,6 +148,16 @@ export default function Editor({
         />
       )}
     </BlockNoteView>
+  );
+}
+
+function AskAIButton({ onClick }: { onClick: () => void }) {
+  const Components = useComponentsContext()!;
+  return (
+    <Components.FormattingToolbar.Button mainTooltip="Ask AI about the selection" onClick={onClick} className="self-ask-ai">
+      <Sparkles className="size-3.5" />
+      <span>Ask AI</span>
+    </Components.FormattingToolbar.Button>
   );
 }
 

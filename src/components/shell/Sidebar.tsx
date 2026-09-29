@@ -10,6 +10,7 @@ import {
   Search,
   Settings,
   Shield,
+  Sparkles,
   Trash2,
   User,
   Users,
@@ -161,6 +162,7 @@ export function Sidebar(p: SidebarProps) {
             ) : null,
           )}
           {navLink("/network", "Network", <Waypoints />)}
+          {p.current && navLink(`/w/${p.current.slug}/agents`, "Agents", <Sparkles />)}
           {p.current && navLink(`/w/${p.current.slug}/people`, "People", <Users />)}
           {p.current && navLink(`/w/${p.current.slug}/settings`, "Settings", <Settings />)}
         </nav>

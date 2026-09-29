@@ -241,6 +241,24 @@ generic dashboard widgets (donut charts, KPI cards), cinematic type inside the a
   "Use this" / "Add N steps". Need tags on a step link out via `needHref()`.
 - Templates live in `src/lib/templates.ts` (flows, pages, databases).
 
+### AI on every page (Phase 5)
+- "Ask AI" (top bar, selection toolbar, `/ask` slash item, ⌘J) opens
+  `AskAIPanel`. `askPage()` proposes Markdown or tasks and saves nothing; the
+  editor inserts/replaces blocks only when the person clicks, and
+  `addTasksFromPage()` writes Tasks rows linked back to the page.
+- Workspace agents (strategy, gtm, ops, fundraising, legal): roster and keyword
+  routing in `src/lib/workspace-agents.ts`, prompts in
+  `src/agents/prompts/workspaceAgents.ts`, context from `workspaceBriefing()`
+  (`src/agents/briefing.ts`, cached in the system prompt). Threads are per user,
+  per workspace, per agent (`AgentThread.kind = "agent:<key>"`).
+- Suggested tasks/steps are added only via "Add to Tasks" / "Add to game plan".
+  Accepted steps are the person's own (no `ai-step` template).
+- The legal explainer shows a fixed "Not legal advice" banner linking to Legal
+  partners, and the server appends `LEGAL_DISCLAIMER` if a reply lacks it.
+  Fundraising prep never drafts offering documents or suggests amounts/terms.
+- Guests read; only MEMBER and above can call agents (they cost money).
+- `/ask` (and ⌘K "Ask SELF") routes with `routerAgent` and opens the agent with the question.
+
 ## Running locally
 
 ```
