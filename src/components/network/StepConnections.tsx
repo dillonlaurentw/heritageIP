@@ -4,7 +4,7 @@ import { Tag } from "@/components/ui/Tag";
 
 type Item = { id: string; kind: string; status: string; who: string; href: string; contact: string | null };
 
-const KIND: Record<string, string> = { PARTNER_INTRO: "Intro", MENTOR_REQUEST: "Mentor", ROLE_INTEREST: "Role", BACKER_INTEREST: "Backer" };
+const KIND: Record<string, string> = { PARTNER_INTRO: "Intro", MENTOR_REQUEST: "Mentor", ROLE_INTEREST: "Role", ROLE_INVITE: "Let's talk", BACKER_INTEREST: "Backer" };
 
 /** On a game-plan step: the intros and requests made for it, and where they stand. */
 export function StepConnections({ items }: { items: Item[] }) {

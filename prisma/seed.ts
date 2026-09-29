@@ -15,6 +15,7 @@ import { seedComments } from "./seed-comments";
 import { seedSimulations } from "./seed-sims";
 import { seedUsage } from "./seed-usage";
 import { seedSelf } from "./seed-self";
+import { seedMessages } from "./seed-messages";
 
 const db = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }) });
 const DAY = 86_400_000;
@@ -44,6 +45,7 @@ async function seedPeople() {
       beliefs: null, workStyle: null, buildingToward: null, strengths: null, gaps: null,
       decisionStyle: null, mentorNote: null, backerNote: null, partnerOrgName: null, contactLink: null, mentorOpen: true,
       persona: null, personaUpdatedAt: null, simOptIn: false, simOptInAt: null, selfDoc: Prisma.DbNull,
+      openToMatches: false, openToMatchesAt: null, openToMatchesNote: null,
     };
     const data = {
       ...blank,
@@ -54,6 +56,7 @@ async function seedPeople() {
       contactEmail: email,
       onboardedAt: onboarded ? new Date() : null,
       onboardingStep: 0,
+      openToMatchesAt: rest.openToMatches ? new Date() : null,
     };
     await db.profile.upsert({ where: { userId: user.id }, create: { userId: user.id, ...data }, update: data });
   }
@@ -159,6 +162,7 @@ async function main() {
   await seedComments(db, idOf);
   await seedUsage(db, idOf);
   await seedSelf(db, idOf);
+  await seedMessages(db, idOf);
 }
 
 main()

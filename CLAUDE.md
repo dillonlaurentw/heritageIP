@@ -56,6 +56,7 @@ We model all of these with **one `Signal` table** instead of five lookalike tabl
 | `BACKER_INTEREST` | backer        | workspace           | contacts revealed (no money, ever)     |
 | `MENTOR_REQUEST`  | workspace owner | mentor            | contacts revealed                      |
 | `PARTNER_INTRO`   | workspace owner | partner           | intro email to both sides              |
+| `ROLE_INVITE`     | workspace member | builder open to matches | contacts revealed, conversation opens |
 
 Status is `PENDING → ACCEPTED | DECLINED | WITHDRAWN`. Signals can point at a
 page or database row (e.g. a game-plan step) so "find a supplier" links to the
@@ -412,6 +413,30 @@ orange fills, KPI cards or donut charts, scores or percentages about people.
 - Plan build-out: step chips read as ring themes (`needChip()`), and a small
   ring previews the open chairs the kept steps would create (`buildRing` on
   the client over `loadRing(..., { planChairs: false })`).
+
+### Matches and messages (Self3 phase 5)
+- Matching is opt-in: `Profile.openToMatches` (off by default, switch on
+  `/me/self`). Founders then see only name, headline, location, strengths,
+  building toward and `openToMatchesNote`. Advisor chairs use mentors who are
+  taking requests. Candidates and chairs: `src/lib/matches.ts`.
+- `/w/[ws]/matches?chair=role:<id>|need:COFOUNDER|need:MENTOR&who=<userId>`.
+  Open chairs on the ring link here. Order uses `orderForChair()` (word
+  overlap, tested) for ORDER ONLY; nothing numeric is ever shown.
+- Explanations come from `matchAgent` (grounded in what both people wrote, no
+  scores, nothing personal) and are cached in `MatchNote` per company, person
+  and chair; "Explain again" replaces the cache.
+- "Start a conversation" sends a `ROLE_INVITE` signal (members of the company
+  only, to people open to matches, one live invite per person). Accepting it
+  swaps contacts like every signal and opens a conversation seeded with the
+  note (`conversationFromYes`).
+- Messages (`src/lib/messages.ts`, rules in `message-rules.ts`, tested): one
+  `Conversation` per pair (`pairKey`), allowed only with a shared TEAM
+  workspace or an ACCEPTED signal (`mayMessage`, re-checked on every send).
+  The thread polls every 4s while visible. No inbox notification per message;
+  the sidebar shows unread conversations.
+- A trial week is a `TRIAL_PROPOSAL` message from an owner/admin to someone not
+  in the company. Accepting adds them as MEMBER titled "Trial week: …"
+  (proposal + consent); answers are guarded to happen once. No money or terms.
 
 ## Running locally
 

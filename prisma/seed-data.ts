@@ -23,6 +23,8 @@ export type Person = {
   partnerOrgName?: string;
   contactLink?: string;
   mentorOpen?: boolean;
+  openToMatches?: boolean;
+  openToMatchesNote?: string;
 };
 
 export const people: Person[] = [
@@ -100,6 +102,36 @@ export const people: Person[] = [
     strengths: "Design, research, making complex things feel simple.",
     gaps: "Engineering, regulatory, sales cycles.",
     decisionStyle: "I prototype the options and let users choose. With co-founders I want written trade-offs.",
+  },
+  {
+    key: "joana",
+    name: "Joana Pires",
+    roles: ["BUILDER"],
+    headline: "Brand designer. Twelve years of food and drink identities",
+    location: "Porto",
+    beliefs: "People buy the story before they buy the product, and the best stories are true and a little boring.",
+    workStyle: "Quiet mornings for making, afternoons with people. I need to see the thing in real life before I design for it.",
+    buildingToward: "Work that stays in Portugal and makes small producers look as good as they are.",
+    strengths: "Brand identity, packaging, telling a plain story that sells to buyers.",
+    gaps: "Operations, numbers, anything with a spreadsheet.",
+    decisionStyle: "I sleep on it and sketch both options. I'll argue for the customer.",
+    openToMatches: true,
+    openToMatchesNote: "Brand and story for a food or materials company. Part-time until something is paid.",
+  },
+  {
+    key: "rui",
+    name: "Rui Costa",
+    roles: ["BUILDER"],
+    headline: "Sold packaging into Iberian supermarkets for eight years",
+    location: "Lisbon",
+    beliefs: "Buyers don't buy sustainability, they buy fewer complaints and a better margin.",
+    workStyle: "On the road, on the phone. I write everything down on Friday.",
+    buildingToward: "Being employee number one somewhere I believe in, then building the sales team.",
+    strengths: "Retail buyers, trade shows, pricing conversations.",
+    gaps: "Design and product. I need someone to make the thing I'm selling beautiful.",
+    decisionStyle: "Fast, and I'll say when I got it wrong.",
+    openToMatches: true,
+    openToMatchesNote: "Sales and go-to-market, full-time for the right team.",
   },
   {
     key: "tomas",

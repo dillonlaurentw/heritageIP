@@ -8,6 +8,7 @@ import {
   Home,
   Inbox,
   LogOut,
+  MessageCircle,
   Plus,
   Search,
   Settings,
@@ -41,6 +42,7 @@ export type SidebarProps = {
   tree: TreeNode[];
   privateTree: TreeNode[];
   inboxCount: number;
+  messagesCount: number;
   canEdit: boolean;
   treeHandlers?: TreeHandlers;
   onNewPage?: (where: "workspace" | "private") => void;
@@ -174,6 +176,14 @@ export function Sidebar(p: SidebarProps) {
             <Inbox />,
             p.inboxCount > 0 ? (
               <span className="rounded-full bg-accent px-1.5 text-2xs font-semibold text-accent-fg">{p.inboxCount}</span>
+            ) : null,
+          )}
+          {navLink(
+            "/messages",
+            "Messages",
+            <MessageCircle />,
+            p.messagesCount > 0 ? (
+              <span className="rounded-full bg-accent px-1.5 text-2xs font-semibold text-accent-fg">{p.messagesCount}</span>
             ) : null,
           )}
           {navLink("/network", "Network", <Waypoints />)}

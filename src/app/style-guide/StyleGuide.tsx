@@ -68,6 +68,7 @@ export function StyleGuide() {
           tree={sampleTree}
           privateTree={[{ id: "p1", title: "Ideas scratchpad", icon: null, href: "#scratch", kind: "PAGE", children: [] }]}
           inboxCount={3}
+            messagesCount={1}
           canEdit
         />
         <main className="scroll-quiet min-w-0 flex-1 overflow-y-auto">

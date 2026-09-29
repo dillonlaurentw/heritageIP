@@ -9,7 +9,7 @@ import { AdminFrame, Table, Td } from "../AdminFrame";
 
 export const metadata: Metadata = { title: "Signals · Admin" };
 
-const KINDS = ["ROLE_INTEREST", "BACKER_INTEREST", "MENTOR_REQUEST", "PARTNER_INTRO"] as const;
+const KINDS = ["ROLE_INTEREST", "ROLE_INVITE", "BACKER_INTEREST", "MENTOR_REQUEST", "PARTNER_INTRO"] as const;
 const STATUSES = ["PENDING", "ACCEPTED", "DECLINED", "WITHDRAWN"] as const;
 const label = (s: string) => s.replace("_", " ").toLowerCase();
 

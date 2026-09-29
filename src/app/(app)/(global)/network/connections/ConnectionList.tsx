@@ -16,7 +16,7 @@ import { timeAgo } from "@/lib/time";
 
 export type ConnectionItem = {
   id: string;
-  kind: "ROLE_INTEREST" | "BACKER_INTEREST" | "MENTOR_REQUEST" | "PARTNER_INTRO";
+  kind: "ROLE_INTEREST" | "ROLE_INVITE" | "BACKER_INTEREST" | "MENTOR_REQUEST" | "PARTNER_INTRO";
   status: "PENDING" | "ACCEPTED" | "DECLINED" | "WITHDRAWN";
   received: boolean;
   note: string;
@@ -27,11 +27,13 @@ export type ConnectionItem = {
   aboutHref: string | null;
   partner: { name: string; slug: string; concierge: boolean } | null;
   contact: { email: string | null; link: string | null } | null;
+  messageHref: string | null;
   canAddToWorkspace: boolean;
 };
 
 const KIND: Record<ConnectionItem["kind"], { label: string; color: TagColor }> = {
   ROLE_INTEREST: { label: "Role", color: "purple" },
+  ROLE_INVITE: { label: "Let's talk", color: "purple" },
   BACKER_INTEREST: { label: "Backer", color: "green" },
   MENTOR_REQUEST: { label: "Mentor", color: "blue" },
   PARTNER_INTRO: { label: "Intro", color: "orange" },
@@ -47,11 +49,13 @@ function headline(i: ConnectionItem) {
   const ws = i.workspace?.name ?? "";
   if (i.received) {
     if (i.kind === "ROLE_INTEREST") return `${i.person.name} is interested in “${i.about ?? "a role"}” at ${ws}`;
+    if (i.kind === "ROLE_INVITE") return `${i.person.name} from ${ws} would like to talk${i.about ? ` about “${i.about}”` : ""}`;
     if (i.kind === "BACKER_INTEREST") return `${i.person.name}, a backer, is interested in ${ws}`;
     if (i.kind === "MENTOR_REQUEST") return `${i.person.name} (${ws}) asked you to mentor them`;
     return `${i.person.name} (${ws}) asked for an intro to ${i.partner?.name}`;
   }
   if (i.kind === "ROLE_INTEREST") return `You said you're interested in “${i.about ?? "a role"}” at ${ws}`;
+  if (i.kind === "ROLE_INVITE") return `You asked ${i.person.name} to talk about ${ws}`;
   if (i.kind === "BACKER_INTEREST") return `You signalled interest in ${ws}`;
   if (i.kind === "MENTOR_REQUEST") return `You asked ${i.person.name} to mentor you`;
   return `${ws} asked for an intro to ${i.partner?.name}`;
@@ -124,6 +128,11 @@ export function ConnectionList({ items }: { items: ConnectionItem[] }) {
                     </Link>
                   )}
 
+                  {i.messageHref && (
+                    <Link href={i.messageHref as Route} className="self-start text-sm font-medium text-fg underline underline-offset-2 hover:text-accent-text">
+                      Message {i.person.name.split(" ")[0]}
+                    </Link>
+                  )}
                   {i.status === "ACCEPTED" && i.contact && (i.contact.email || i.contact.link) && (
                     <div className="mt-3 flex flex-wrap items-center gap-3 rounded-md bg-bg-subtle px-3 py-2 text-sm">
                       <Mail className="size-4 text-fg-muted" />

@@ -42,6 +42,9 @@ model User {
   simulationsStarted Simulation[]            @relation("SimulationsStarted")
   simulationSeats    SimulationParticipant[]
   presence           PagePresence[]
+  conversations      ConversationMember[]
+  directMessages     DirectMessage[]
+  matchNotes         MatchNote[]
 
   @@map("user")
 }
@@ -136,6 +139,13 @@ model Profile {
   /// suggestions. Shape and rules: src/lib/self-doc.ts. The agent is given
   /// exactly the rendered lines, never pending suggestions.
   selfDoc          Json?
+
+  // Matching (Self3). Off by default. When on, founders looking for someone
+  // like you see your name, headline, location, strengths, what you're
+  // building toward and this note, and SELF explains in words where you might fit.
+  openToMatches     Boolean   @default(false)
+  openToMatchesAt   DateTime?
+  openToMatchesNote String? // "Brand and story, part-time until something is paid"
   simOptIn         Boolean   @default(false)
   simOptInAt       DateTime?
   backerNote       String? // what they back. Never amounts or terms.
@@ -211,6 +221,8 @@ model Workspace {
   agentRuns     AgentRun[]
   simulations   Simulation[]
   activities    Activity[]
+  conversations Conversation[]
+  matchNotes    MatchNote[]
   notifications Notification[]
 
   @@index([kind, discoverable])
@@ -536,6 +548,7 @@ enum SignalKind {
   BACKER_INTEREST // backer → workspace owner. Interest only, never money
   MENTOR_REQUEST // workspace owner → mentor
   PARTNER_INTRO // workspace owner → partner
+  ROLE_INVITE // workspace member → a builder who is open to matches: "talk about this role?" (Self3)
 }
 
 enum SignalStatus {
@@ -704,3 +717,72 @@ model FitReport {
 // relationship. Until then: no amount, valuation, terms or "commit" fields,
 // anywhere. See src/lib/no-terms.ts for the guard on free text.
 // ─────────────────────────────────────────────────────────────
+
+// ─────────────────────────────────────────────────────────────
+// Messages (Self3). One conversation per pair of people, allowed only when
+// they share a TEAM workspace or an ACCEPTED signal (src/lib/messages.ts).
+// A trial week is proposed as a message; accepting it adds the person to
+// the company as a member.
+// ─────────────────────────────────────────────────────────────
+
+model Conversation {
+  id          String               @id @default(cuid())
+  /// The two user ids, sorted and joined with ":". One conversation per pair.
+  pairKey     String               @unique
+  /// The company it started about, if any (shown as context).
+  workspaceId String?
+  workspace   Workspace?           @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+  members     ConversationMember[]
+  messages    DirectMessage[]
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+}
+
+model ConversationMember {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lastReadAt     DateTime?
+
+  @@unique([conversationId, userId])
+  @@index([userId])
+}
+
+enum DirectMessageKind {
+  TEXT
+  TRIAL_PROPOSAL // data: { workspaceId, workspaceName, roleId?, title, focus, status, answeredAt? }
+  NOTE // quiet system line ("Joana joined Tidewater Kelp")
+}
+
+model DirectMessage {
+  id             String            @id @default(cuid())
+  conversationId String
+  conversation   Conversation      @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  authorId       String
+  author         User              @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  kind           DirectMessageKind @default(TEXT)
+  text           String
+  data           Json?
+  createdAt      DateTime          @default(now())
+
+  @@index([conversationId, createdAt])
+}
+
+/// Why SELF thinks someone might fit an open chair, in words. Never a score.
+/// Cached so the explanation isn't regenerated on every visit.
+model MatchNote {
+  id          String    @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  userId      String // the person who might fit
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chairKey    String // "role:<rowId>", "need:COFOUNDER" or "need:MENTOR"
+  fit         String[]
+  askAbout    String[]
+  demo        Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+
+  @@unique([workspaceId, userId, chairKey])
+}

@@ -168,6 +168,13 @@ export async function seedTidewaterPages(db: PrismaClient, ws: Ws, idOf: IdOf) {
         createdById: maya,
       },
       {
+        key: "brand",
+        title: "Brand and story co-founder",
+        props: { commitment: "cofounder", state: "open", skills: "Brand, packaging, storytelling for buyers", posted: true },
+        content: [B.p("Someone who makes a tray on ice look like the future to a supermarket buyer. You'd own the brand, the buyer site and the story we tell processors.")],
+        createdById: maya,
+      },
+      {
         key: "ops",
         title: "Operations co-founder",
         props: { commitment: "cofounder", state: "open", skills: "Manufacturing, supply chain, Portuguese", posted: false },

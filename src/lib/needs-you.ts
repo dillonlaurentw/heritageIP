@@ -14,6 +14,7 @@ export type NeedsYouItem = {
 
 const SIGNAL_LINE = {
   ROLE_INTEREST: (from: string, ws: string) => `${from} is interested in a role at ${ws}`,
+  ROLE_INVITE: (from: string, ws: string) => `${from} from ${ws} would like to talk`,
   BACKER_INTEREST: (from: string, ws: string) => `${from} would like to follow ${ws}`,
   MENTOR_REQUEST: (from: string, ws: string) => `${from} asked you to mentor ${ws}`,
   PARTNER_INTRO: (from: string, ws: string) => `${from} from ${ws} asked for an intro`,

@@ -1,6 +1,5 @@
 import "server-only";
 import { db } from "./db";
-import { pageHref } from "./pages";
 import { buildRing } from "./ring-build";
 import type { RingNode, Theme } from "./ring";
 
@@ -59,7 +58,7 @@ export async function loadRing(
         id: r.id,
         title: r.title || "An open role",
         advisor: p.commitment === "advisor",
-        href: p.posted === true ? `/network/roles/${r.id}` : pageHref(workspace.slug, r.id),
+        href: `/w/${workspace.slug}/matches?chair=role:${r.id}`,
         interested: interested.get(r.id) ?? 0,
       })),
     signals: signals.map((s) => ({

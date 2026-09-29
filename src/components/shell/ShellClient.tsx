@@ -28,6 +28,7 @@ type Props = {
   tree: TreeNode[];
   privateTree: TreeNode[];
   inboxCount: number;
+  messagesCount: number;
   canEdit: boolean;
   signOut: () => Promise<void>;
   demoUsers: { email: string; name: string; roles: string }[];
@@ -50,6 +51,8 @@ export function ShellClient(p: Props) {
   const palette: PaletteItem[] = [
       { id: "go-home", label: "Home", group: "Go to", href: "/home" },
       { id: "go-inbox", label: "Inbox", group: "Go to", href: "/inbox" },
+      { id: "go-messages", label: "Messages", group: "Go to", href: "/messages", keywords: "chat dm conversation" },
+      { id: "go-self", label: "Your Self", group: "Go to", href: "/me/self", keywords: "persona agent beliefs" },
       { id: "go-network", label: "Network", group: "Go to", href: "/network", keywords: "co-founders mentors partners backers roles" },
       ...(p.current
         ? [
@@ -82,6 +85,7 @@ export function ShellClient(p: Props) {
           tree={p.tree}
           privateTree={p.privateTree}
           inboxCount={p.inboxCount}
+          messagesCount={p.messagesCount}
           canEdit={p.canEdit}
           signOut={() => void p.signOut()}
           onNewPage={(where) => void create(where === "private" || !p.current ? p.personal.id : p.current.id, null)}

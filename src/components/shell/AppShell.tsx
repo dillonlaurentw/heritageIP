@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { signOut } from "@/app/actions/auth";
 import { db } from "@/lib/db";
 import { DEMO_EMAIL_DOMAIN, demoLoginEnabled } from "@/lib/demo";
+import { unreadConversations } from "@/lib/messages";
 import { loadTree } from "@/lib/pages";
 import { rolesLine } from "@/lib/roles";
 import { getViewer } from "@/lib/session";
@@ -24,7 +25,7 @@ export async function AppShell({ slug, children }: { slug?: string; children: Re
   const currentSlug = slug && slug !== personal.slug ? slug : await lastWorkspaceSlug(viewer.user.id);
   const current = workspaces.find((w) => w.slug === currentSlug) ?? null;
 
-  const [tree, privateTree, inboxCount, demoUsers] = await Promise.all([
+  const [tree, privateTree, inboxCount, demoUsers, unread] = await Promise.all([
     current ? loadTree(current.id, current.slug) : [],
     loadTree(personal.id, personal.slug),
     db.notification.count({ where: { userId: viewer.user.id, readAt: null } }),
@@ -35,6 +36,7 @@ export async function AppShell({ slug, children }: { slug?: string; children: Re
           select: { email: true, name: true, profile: { select: { roles: true } } },
         })
       : [],
+    unreadConversations(viewer.user.id),
   ]);
 
   return (
@@ -46,6 +48,7 @@ export async function AppShell({ slug, children }: { slug?: string; children: Re
       tree={tree}
       privateTree={privateTree}
       inboxCount={inboxCount}
+      messagesCount={unread}
       canEdit={canEdit(current?.role)}
       signOut={signOut}
       demoUsers={demoUsers.map((u) => ({ email: u.email, name: u.name, roles: rolesLine(u.profile?.roles ?? []) }))}

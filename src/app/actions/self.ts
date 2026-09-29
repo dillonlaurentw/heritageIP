@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { FACETS } from "@/lib/self-doc";
 import { changeSelf, findSuggestions } from "@/lib/self";
+import { db } from "@/lib/db";
 import { requireOnboarded } from "@/lib/session";
 
 const opSchema = z.discriminatedUnion("type", [
@@ -30,4 +31,21 @@ export async function suggestSelfLines() {
   const res = await findSuggestions(viewer);
   revalidatePath("/me/self");
   return res;
+}
+
+/**
+ * "Let founders find you": off by default. When on, founders with an open
+ * chair see your name, headline, location, strengths, what you're building
+ * toward and this note, with SELF's explanation of where you might fit.
+ */
+export async function setOpenToMatches(on: boolean, note: string) {
+  const viewer = await requireOnboarded();
+  const parsed = z.object({ on: z.boolean(), note: z.string().trim().max(200, "Keep the note under 200 characters.") }).safeParse({ on, note });
+  if (!parsed.success) return { ok: false as const, message: parsed.error.issues[0]!.message };
+  await db.profile.update({
+    where: { userId: viewer.user.id },
+    data: { openToMatches: parsed.data.on, openToMatchesAt: parsed.data.on ? new Date() : null, openToMatchesNote: parsed.data.note || null },
+  });
+  revalidatePath("/me/self");
+  return { ok: true as const };
 }

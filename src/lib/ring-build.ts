@@ -13,7 +13,7 @@ export type RingInput = {
   roles: { id: string; title: string; advisor: boolean; href: string; interested: number }[];
   signals: {
     id: string;
-    kind: "ROLE_INTEREST" | "BACKER_INTEREST" | "MENTOR_REQUEST" | "PARTNER_INTRO";
+    kind: "ROLE_INTEREST" | "ROLE_INVITE" | "BACKER_INTEREST" | "MENTOR_REQUEST" | "PARTNER_INTRO";
     status: "PENDING" | "ACCEPTED" | "DECLINED" | "WITHDRAWN";
     fromUserId: string;
     fromName: string;
@@ -82,6 +82,17 @@ export function buildRing(input: RingInput): RingNode[] {
         note: state === "linked" ? "backer, in touch" : "interested",
         href: "/network/connections",
       });
+    } else if (s.kind === "ROLE_INVITE" && !memberIds.has(s.toUserId)) {
+      // Someone the company reached out to: talking, not yet on the team.
+      put(`u:${s.toUserId}`, {
+        id: `s-${s.id}`,
+        theme: "COFOUNDERS",
+        kind: "person",
+        state: "pending",
+        name: s.toName,
+        note: state === "linked" ? "talking" : "invited to talk",
+        href: "/messages",
+      });
     } else if (s.kind === "ROLE_INTEREST" && state === "pending" && !memberIds.has(s.fromUserId)) {
       put(`u:${s.fromUserId}`, {
         id: `s-${s.id}`,
@@ -125,7 +136,12 @@ export function buildRing(input: RingInput): RingNode[] {
         state: "open",
         name: NEED_CHAIR[need],
         note: `for “${step.title}”`,
-        href: needHref(need, input.slug, step.id),
+        href:
+          need === "COFOUNDER"
+            ? `/w/${input.slug}/matches`
+            : need === "MENTOR"
+              ? `/w/${input.slug}/matches?chair=need:MENTOR`
+              : needHref(need, input.slug, step.id),
       });
     }
   }

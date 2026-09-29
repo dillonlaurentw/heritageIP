@@ -10,6 +10,7 @@ import { selfOf } from "@/lib/self";
 import { requireOnboarded } from "@/lib/session";
 import { formatDate } from "@/lib/time";
 import { lastWorkspaceSlug } from "@/lib/workspaces";
+import { OpenToMatches } from "./OpenToMatches";
 import { OptInSwitch } from "./OptInSwitch";
 import { FindSuggestions, SelfLines, Suggestions } from "./SelfEditor";
 
@@ -74,6 +75,10 @@ export default async function SelfPage() {
               Only with people you&apos;re connected to, and only if they opt in too. Turn it off any time; any rehearsal
               you&apos;re in stops.
             </p>
+          </Card>
+
+          <Card className="flex flex-col gap-3 p-5">
+            <OpenToMatches on={profile.openToMatches} note={profile.openToMatchesNote ?? ""} />
           </Card>
 
           <div className="flex flex-col gap-2.5">

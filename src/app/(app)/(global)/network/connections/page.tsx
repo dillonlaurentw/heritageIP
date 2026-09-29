@@ -61,6 +61,7 @@ export default async function ConnectionsPage() {
       aboutHref: s.page && s.workspace && roleOf(s.workspace.id, me) ? `/w/${s.workspace.slug}/${s.page.id}` : s.kind === "ROLE_INTEREST" && s.page ? `/network/roles/${s.page.id}` : null,
       partner: s.partner ? { name: s.partner.name, slug: s.partner.slug, concierge: received && s.partner.claimedById !== me } : null,
       contact: partnerContact ? { email: partnerContact.email, link: partnerContact.website } : c ? { email: c.email, link: c.link } : null,
+      messageHref: s.status === "ACCEPTED" && s.kind !== "PARTNER_INTRO" ? `/messages/with/${otherId}` : null,
       canAddToWorkspace:
         s.kind === "ROLE_INTEREST" &&
         s.status === "ACCEPTED" &&
