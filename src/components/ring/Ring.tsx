@@ -33,6 +33,7 @@ export function Ring({
   size = 520,
   center,
   labels = true,
+  highlight,
   themeHref,
   className,
 }: {
@@ -41,6 +42,8 @@ export function Ring({
   /** What sits in the middle (defaults to "you"). */
   center?: ReactNode;
   labels?: boolean;
+  /** Quarters to draw in orange: "this touches them" (what-if checks). */
+  highlight?: Theme[];
   /** Where a quarter's label links, e.g. the matching part of the network. */
   themeHref?: Partial<Record<Theme, string>>;
   className?: string;
@@ -60,7 +63,7 @@ export function Ring({
         <g fill="none" strokeLinecap="round" strokeWidth={stroke} className="stroke-ring-track">
           {THEMES.map((t) => {
             const [a, b] = THEME_ARC[t];
-            return <path key={t} d={arcPath(c, c, r, a + ARC_GAP, b - ARC_GAP)} />;
+            return <path key={t} d={arcPath(c, c, r, a + ARC_GAP, b - ARC_GAP)} className={highlight?.includes(t) ? "stroke-accent" : undefined} />;
           })}
         </g>
         {/* A dark stretch of arc under everyone you work with. */}

@@ -9,7 +9,7 @@ import { db } from "@/lib/db";
 import { requireOnboarded } from "@/lib/session";
 import { formatDate } from "@/lib/time";
 
-export const metadata: Metadata = { title: "Simulations" };
+export const metadata: Metadata = { title: "Rehearsals" };
 
 /** Every simulation your agent took part in (started by you or someone else). */
 export default async function SimulationsPage() {
@@ -30,26 +30,26 @@ export default async function SimulationsPage() {
   });
   return (
     <Screen
-      crumbs={[{ label: "Simulations" }]}
-      title="Simulations"
-      description="Rehearsals between AI stand-ins, built from personas people wrote and approved. Transcripts and conversation starters; never scores."
+      crumbs={[{ label: "Rehearsals" }]}
+      title="Rehearsals"
+      description="Hard conversations, tried first between your Selves. Every one is a SIMULATION: a transcript and conversation starters, never scores or verdicts."
       headerActions={
         <>
           <LinkButton href="/me/self">Your Self</LinkButton>
           <LinkButton href="/simulations/new" variant="primary">
-            <Plus className="size-4" /> New simulation
+            <Plus className="size-4" /> New rehearsal
           </LinkButton>
         </>
       }
     >
       {sims.length === 0 ? (
-        <EmptyState title="No simulations yet." hint="Run one with a teammate or candidate to rehearse a hard conversation." />
+        <EmptyState title="No rehearsals yet." hint="Try one with a teammate or someone you're talking to before a hard conversation." />
       ) : (
         <ul className="divide-y divide-border border-y border-border">
           {sims.map((s) => (
             <li key={s.id}>
               <Link href={`/simulations/${s.id}` as Route} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-2 py-3 hover:bg-bg-hover">
-                <Tag color="purple">SIMULATION</Tag>
+                <span className="rounded-sm bg-agent px-1.5 py-0.5 font-mono text-2xs text-fg-muted">SIMULATION</span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-base font-medium">{s.scenarioTitle}</span>
                   <span className="block truncate text-xs text-fg-muted">

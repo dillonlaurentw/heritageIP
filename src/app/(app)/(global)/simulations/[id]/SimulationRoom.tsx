@@ -119,7 +119,7 @@ export function SimulationRoom({
           return (
             <span key={p.id} className={cn("flex items-center gap-1.5 rounded-md px-2 py-1 text-xs", speaking ? "bg-accent-soft text-accent-text" : "text-fg-muted")}>
               <Avatar name={p.name} size="sm" />
-              {p.name.split(" ")[0]}&apos;s agent{speaking && " · speaking"}
+              {p.name.split(" ")[0]}&apos;s Self{speaking && " · speaking"}
             </span>
           );
         })}
@@ -132,7 +132,7 @@ export function SimulationRoom({
             <Avatar name={t.speaker} size="md" className="mt-0.5" />
             <div className="min-w-0 flex-1">
               <p className="text-xs text-fg-subtle">
-                <span className="font-medium text-fg">{t.speaker.split(" ")[0]}&apos;s agent</span> · turn {t.index + 1}
+                <span className="font-medium text-fg">{t.speaker.split(" ")[0]}&apos;s Self</span> · turn {t.index + 1}
               </p>
               <p className="mt-1 text-base leading-relaxed">{t.text}</p>
             </div>

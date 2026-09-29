@@ -456,6 +456,20 @@ orange fills, KPI cards or donut charts, scores or percentages about people.
   asked about is flagged "Needs you") and `/w/[ws]/areas/[area]` (sections,
   team on this, partners and advisors, plan steps, agent starters).
 
+### What-ifs and rehearsals (Self3 phase 7)
+- `/w/[ws]/what-if`: `whatIfAgent` checks a scenario against the unfinished
+  plan steps (numbered in the prompt, resolved back with `resolveSlips`). It
+  returns what slips, which ring quarters it touches (drawn with
+  `<Ring highlight>`), money in words only (placeholders, never figures) and up
+  to four suggested steps. Checks are stored as `AgentThread(kind "whatif")`
+  messages so the team can see them; nothing changes in the plan until
+  someone adds changes (`applyWhatIfChanges`, each change once,
+  `changesToApply` tested). Ideas to start from: `whatIfIdeas()` (pure).
+- Rehearsals are the Phase 8 simulations with Self3 words: "Maya's Self",
+  SIMULATION in mono on every surface, "Rehearsals" in the menu. After the
+  notes, "Take it to <name>" opens Messages. `/simulations/new?with=<id>`
+  preselects someone (only if eligible and opted in).
+
 ## Running locally
 
 ```

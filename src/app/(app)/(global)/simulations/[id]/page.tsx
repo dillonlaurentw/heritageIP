@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Screen } from "@/components/shell/Screen";
-import { Tag } from "@/components/ui/Tag";
+import type { Route } from "next";
+import { LinkButton } from "@/components/ui/Button";
 import { db } from "@/lib/db";
 import { requireOnboarded } from "@/lib/session";
 import { formatDate } from "@/lib/time";
@@ -29,14 +30,13 @@ export default async function SimulationPage({ params }: { params: Promise<{ id:
   const r = sim.report;
 
   return (
-    <Screen crumbs={[{ label: "Simulations", href: "/simulations" }, { label: sim.scenarioTitle }]} width="narrow">
+    <Screen crumbs={[{ label: "Rehearsals", href: "/simulations" }, { label: sim.scenarioTitle }]} width="narrow">
       <div className="flex flex-col gap-6">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <Tag color="purple">SIMULATION</Tag>
-            <span className="text-xs text-fg-subtle">Not a real conversation</span>
+            <span className="rounded-md bg-agent px-2 py-1 font-mono text-xs text-fg-muted">SIMULATION · not a real conversation</span>
           </div>
-          <h1 className="mt-3 text-2xl font-semibold tracking-tight">{sim.scenarioTitle}</h1>
+          <h1 className="mt-4 text-3xl font-medium">{sim.scenarioTitle}</h1>
           <p className="mt-2 text-base text-fg-muted">{sim.scenarioBrief}</p>
           <p className="mt-3 text-xs text-fg-subtle">
             {driver ? "Started by you" : `Started by ${sim.createdBy.name}`}
@@ -58,22 +58,20 @@ export default async function SimulationPage({ params }: { params: Promise<{ id:
 
         {r && (
           <section className="rounded-xl bg-surface shadow-card p-5">
-            <div className="flex flex-wrap items-center gap-2">
-              <Tag color="purple">SIMULATION</Tag>
-              <span className="text-xs text-fg-subtle">Conversation starters. No scores. Not a verdict on anyone.</span>
-            </div>
+            <span className="rounded-md bg-agent px-2 py-1 font-mono text-xs text-fg-muted">SIMULATION · conversation starters, not a verdict</span>
             <h2 className="mt-3 text-lg font-semibold">What the real people should talk about</h2>
             <p className="mt-1 text-sm text-fg-muted">
               These notes describe what AI stand-ins said in a rehearsal. Use them to start a conversation with the real people, never to decide about them.
             </p>
             <div className="mt-5 grid gap-6 md:grid-cols-3">
+              {/* aligned · pulled apart · talk about this */}
               {[
                 { label: "Where they aligned", items: r.aligned },
                 { label: "Where they pulled apart", items: r.clashed },
                 { label: "Talk about this", items: r.talkAbout },
               ].map((col) => (
                 <div key={col.label}>
-                  <p className="text-xs font-medium text-fg-subtle">{col.label}</p>
+                  <p className={col.label === "Talk about this" ? "text-sm text-accent-text" : "text-sm text-fg-subtle"}>{col.label}</p>
                   <ul className="mt-2 flex flex-col gap-2 text-sm">
                     {col.items.map((it, i) => (
                       <li key={i}>{it}</li>
@@ -81,6 +79,18 @@ export default async function SimulationPage({ params }: { params: Promise<{ id:
                   </ul>
                 </div>
               ))}
+            </div>
+            <div className="mt-6 flex flex-wrap gap-2 border-t border-border pt-5">
+              {sim.participants
+                .filter((p) => p.userId !== viewer.user.id)
+                .map((p) => (
+                  <LinkButton key={p.userId} href={`/messages/with/${p.userId}` as Route} variant="primary" size="md">
+                    Take it to {p.user.name.split(" ")[0]}
+                  </LinkButton>
+                ))}
+              <LinkButton href="/simulations/new" size="md">
+                Try it another way
+              </LinkButton>
             </div>
           </section>
         )}

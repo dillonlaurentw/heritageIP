@@ -9,14 +9,15 @@ import { NewSimulationForm } from "./NewSimulationForm";
 
 export const metadata: Metadata = { title: "New simulation" };
 
-export default async function NewSimulationPage() {
+export default async function NewSimulationPage({ searchParams }: { searchParams: Promise<{ with?: string }> }) {
   const viewer = await requireOnboarded();
+  const withId = (await searchParams).with;
   const [people, workspaces, today] = await Promise.all([eligiblePeople(viewer.user.id), listWorkspaces(viewer.user.id), simsStartedToday(viewer.user.id)]);
   return (
     <Screen
-      crumbs={[{ label: "Simulations", href: "/simulations" }, { label: "New" }]}
-      title="Run a team simulation"
-      description="AI stand-ins for you and the people you pick talk through a scenario, then SELF writes conversation starters for the real people. Everyone has to have opted in. It's a rehearsal, not a verdict."
+      crumbs={[{ label: "Rehearsals", href: "/simulations" }, { label: "New" }]}
+      title="Rehearse a hard conversation"
+      description="Your Self and the Selves of the people you pick talk it through first, then SELF writes conversation starters for the real people. Everyone has to have opted in. A SIMULATION, not a verdict."
       width="narrow"
     >
       {!viewer.profile.simOptIn ? (
@@ -29,7 +30,7 @@ export default async function NewSimulationPage() {
       ) : today >= SIM_LIMITS.perUserPerDay ? (
         <p className="rounded-lg bg-bg-subtle px-4 py-3 text-sm">That&apos;s {SIM_LIMITS.perUserPerDay} simulations today. More tomorrow.</p>
       ) : (
-        <NewSimulationForm people={people} workspaces={workspaces.filter((w) => w.role !== "GUEST").map((w) => ({ id: w.id, name: w.name }))} />
+        <NewSimulationForm initialWith={people.some((p) => p.id === withId && p.optedIn) ? withId : undefined} people={people} workspaces={workspaces.filter((w) => w.role !== "GUEST").map((w) => ({ id: w.id, name: w.name }))} />
       )}
     </Screen>
   );

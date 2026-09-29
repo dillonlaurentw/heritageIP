@@ -143,7 +143,7 @@ export function Sidebar(p: SidebarProps) {
               Your Self
             </MenuItem>
             <MenuItem icon={<Theater />} render={<Link href="/simulations" />}>
-              Simulations
+              Rehearsals
             </MenuItem>
             {p.user.isAdmin && (
               <MenuItem icon={<Shield />} render={<Link href="/admin" />}>

@@ -12,8 +12,8 @@ import { SIM_LIMITS } from "@/lib/simulation-rules";
 
 type Person = { id: string; name: string; headline: string | null; optedIn: boolean; context: string[] };
 
-export function NewSimulationForm({ people, workspaces }: { people: Person[]; workspaces: { id: string; name: string }[] }) {
-  const [picked, setPicked] = useState<string[]>([]);
+export function NewSimulationForm({ people, workspaces, initialWith }: { people: Person[]; workspaces: { id: string; name: string }[]; initialWith?: string }) {
+  const [picked, setPicked] = useState<string[]>(initialWith ? [initialWith] : []);
   const [scenario, setScenario] = useState(SCENARIOS[0].key);
   const [customTitle, setCustomTitle] = useState("");
   const [customBrief, setCustomBrief] = useState("");

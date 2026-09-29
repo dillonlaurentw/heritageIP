@@ -98,7 +98,12 @@ export default async function WorkspaceHome({ params }: { params: Promise<{ ws: 
           <div className="flex justify-center">
             <Ring nodes={ring} size={380} themeHref={themeLinks(workspace.slug)} />
           </div>
-          <Journey journey={journey} slug={workspace.slug} editable={canEdit(role)} memberCount={members.length} />
+          <div className="flex flex-col gap-3">
+            <Journey journey={journey} slug={workspace.slug} editable={canEdit(role)} memberCount={members.length} />
+            <Link href={`/w/${workspace.slug}/what-if` as Route} className="self-end text-sm text-fg-muted hover:text-fg">
+              What if something slips? Check it against the plan →
+            </Link>
+          </div>
         </div>
       )}
 
