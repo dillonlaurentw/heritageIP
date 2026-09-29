@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import type { Route } from "next";
 import { agentsLive, LIMITS } from "@/agents";
-import { Screen } from "@/components/shell/Screen";
+import { Topbar } from "@/components/shell/Topbar";
+import { parseSelfDoc } from "@/lib/self-doc";
 import { db } from "@/lib/db";
 import { pageHref } from "@/lib/pages";
 import { requireOnboarded } from "@/lib/session";
@@ -58,14 +59,15 @@ export default async function ThesisStudioPage({ params }: { params: Promise<{ w
   }
 
   return (
-    <Screen
-      crumbs={[
-        { label: workspace.name, href: `/w/${workspace.slug}` as Route },
-        ...(page ? [{ label: "Thesis", icon: page.icon, href: pageHref(workspace.slug, page.id) }] : []),
-        { label: current ? "Sharpen with SELF" : "Write the thesis" },
-      ]}
-      width="narrow"
-    >
+    <>
+      <Topbar
+        crumbs={[
+          { label: workspace.name, href: `/w/${workspace.slug}` as Route },
+          ...(page ? [{ label: "Thesis", icon: page.icon, href: pageHref(workspace.slug, page.id) }] : []),
+          { label: current ? "Sharpen with SELF" : "Write the thesis" },
+        ]}
+      />
+      <div className="mx-auto w-full max-w-6xl px-6 pt-6 pb-24 md:px-12">
       <ThesisStudio
         workspace={{ id: workspace.id, slug: workspace.slug, name: workspace.name, rawIdea: workspace.rawIdea || workspace.oneLiner || "" }}
         thesis={current}
@@ -77,7 +79,9 @@ export default async function ThesisStudioPage({ params }: { params: Promise<{ w
         maxRounds={LIMITS.thesisRounds}
         live={agentsLive()}
         editable={canEdit(role)}
+        hasSelf={(parseSelfDoc(viewer.profile.selfDoc)?.lines.length ?? 0) > 0}
       />
-    </Screen>
+      </div>
+    </>
   );
 }

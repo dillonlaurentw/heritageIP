@@ -72,3 +72,11 @@ export const NEED_CHAIR: Record<Need, string> = {
   MENTOR: "A mentor",
   FUNDING: "Backers",
 };
+
+/** How a need reads on a plan step: "Partner · legal", "Co-founder". */
+export function needChip(n: Need) {
+  if (n === "COFOUNDER") return "Co-founder";
+  if (n === "MENTOR") return "Advisor · mentor";
+  if (n === "FUNDING") return "Capital · backers";
+  return `Partner · ${NEEDS[n].label.toLowerCase()}`;
+}

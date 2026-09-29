@@ -1,52 +1,62 @@
 import type { Metadata } from "next";
 import type { Route } from "next";
 import { agentsLive } from "@/agents";
-import { Screen } from "@/components/shell/Screen";
+import { FlowSteps } from "@/components/flow/FlowSteps";
+import { Topbar } from "@/components/shell/Topbar";
 import { LinkButton } from "@/components/ui/Button";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { Card } from "@/components/ui/Card";
 import { db } from "@/lib/db";
 import { pageHref } from "@/lib/pages";
+import { loadRing } from "@/lib/ring-data";
 import { requireOnboarded } from "@/lib/session";
 import { readThesis } from "@/lib/thesis";
 import { canEdit } from "@/lib/workspace-rules";
 import { getWorkspaceAccess } from "@/lib/workspaces";
 import { PlanProposal } from "./PlanProposal";
 
-export const metadata: Metadata = { title: "Game plan" };
+export const metadata: Metadata = { title: "Plan" };
 
 export default async function PlanPage({ params }: { params: Promise<{ ws: string }> }) {
   const viewer = await requireOnboarded();
   const { workspace, role } = await getWorkspaceAccess((await params).ws, viewer);
-  const [thesis, plan] = await Promise.all([
+  const [thesis, plan, baseRing] = await Promise.all([
     readThesis(workspace.id),
     db.page.findUnique({ where: { workspaceId_systemKey: { workspaceId: workspace.id, systemKey: "gamePlan" } }, select: { id: true, archivedAt: true } }),
+    loadRing(workspace, viewer.user.id, { planChairs: false }),
   ]);
   const planHref = plan && !plan.archivedAt ? pageHref(workspace.slug, plan.id) : null;
 
   return (
-    <Screen
-      crumbs={[
-        { label: workspace.name, href: `/w/${workspace.slug}` as Route },
-        ...(planHref ? [{ label: "Game plan", href: planHref }] : []),
-        { label: "Plan with SELF" },
-      ]}
-      title="Plan with SELF"
-      description="From the thesis to the steps between idea and launch, in four stages. Each step is tagged with who you need; tags lead straight to the right people."
-      width="narrow"
-    >
-      {!thesis ? (
-        <EmptyState
-          title="Write the thesis first."
-          hint="The game plan is built from it: who it's for, why now, and what you still need to prove."
-          action={
-            <LinkButton href={`/w/${workspace.slug}/thesis` as Route} variant="primary" size="md">
-              Write the thesis
-            </LinkButton>
-          }
-        />
-      ) : (
-        <PlanProposal workspaceId={workspace.id} live={agentsLive()} editable={canEdit(role)} planHref={planHref} />
-      )}
-    </Screen>
+    <>
+      <Topbar
+        crumbs={[
+          { label: workspace.name, href: `/w/${workspace.slug}` as Route },
+          ...(planHref ? [{ label: "Game plan", href: planHref }] : []),
+          { label: "Plan with SELF" },
+        ]}
+      />
+      <div className="mx-auto w-full max-w-7xl px-6 pt-6 pb-24 md:px-12">
+        {!thesis ? (
+          <div className="mx-auto flex max-w-3xl flex-col gap-7">
+            <FlowSteps current="Plan" />
+            <Card lift className="flex flex-col items-start gap-4 p-10">
+              <h1 className="text-2xl font-medium">The thesis comes first.</h1>
+              <p className="text-md text-fg-muted">The plan is built from it: who it&apos;s for, why now, and what you still need to prove.</p>
+              <LinkButton href={`/w/${workspace.slug}/thesis` as Route} variant="primary" size="lg">
+                Write the thesis
+              </LinkButton>
+            </Card>
+          </div>
+        ) : (
+          <PlanProposal
+            workspace={{ id: workspace.id, slug: workspace.slug }}
+            live={agentsLive()}
+            editable={canEdit(role)}
+            planHref={planHref}
+            baseRing={baseRing}
+          />
+        )}
+      </div>
+    </>
   );
 }

@@ -399,6 +399,20 @@ orange fills, KPI cards or donut charts, scores or percentages about people.
 - `/me/self` is the page; `/me/agent` redirects there. Opt-in for rehearsals
   (`simOptIn`) is on that page and stays off by default.
 
+### Idea → questions → thesis → plan (Self3 phase 4)
+- One flow with a `FlowSteps` indicator (`src/components/flow/FlowSteps.tsx`):
+  `/new` (the idea, then a working name) → `/w/[ws]/thesis` (questions one at a
+  time, then the draft) → `/w/[ws]/plan` (build-out) → the company home (ring).
+- The backend is Self2's: question rounds of three (`askQuestions`), one draft
+  (`draftThesis`), `saveThesis` only on "Use this and plan it", `acceptPlan`
+  only on "Use this plan". The client walks a round one question at a time;
+  "Skip" leaves an answer empty, "I don't know yet" says so.
+- The draft's `openQuestions` show as "Still unproven". Draft fields are edited
+  in place (`Bare` textareas); nothing is written before "Use this".
+- Plan build-out: step chips read as ring themes (`needChip()`), and a small
+  ring previews the open chairs the kept steps would create (`buildRing` on
+  the client over `loadRing(..., { planChairs: false })`).
+
 ## Running locally
 
 ```

@@ -255,6 +255,9 @@
   --text-xl--line-height: 1.8rem;
   --text-2xl: 1.75rem; /* 28px */
   --text-2xl--line-height: 2.2rem;
+  --text-3xl: 2.125rem; /* 34px: the one big question or statement on a screen */
+  --text-3xl--line-height: 1.2;
+  --text-3xl--letter-spacing: -0.02em;
   --text-title: 2.75rem; /* 44px: page titles */
   --text-title--line-height: 1.2;
   --text-title--letter-spacing: -0.03em;

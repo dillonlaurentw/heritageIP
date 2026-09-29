@@ -5,7 +5,11 @@ import { buildRing } from "./ring-build";
 import type { RingNode, Theme } from "./ring";
 
 /** Everything a company's ring shows, read from the database. Callers check access first. */
-export async function loadRing(workspace: { id: string; slug: string }, viewerId: string): Promise<RingNode[]> {
+export async function loadRing(
+  workspace: { id: string; slug: string },
+  viewerId: string,
+  opts: { planChairs?: boolean } = {},
+): Promise<RingNode[]> {
   const [members, signals, dbs] = await Promise.all([
     db.workspaceMember.findMany({
       where: { workspaceId: workspace.id },
@@ -69,7 +73,7 @@ export async function loadRing(workspace: { id: string; slug: string }, viewerId
       partner: s.partner,
       pageId: s.pageId,
     })),
-    openSteps: stepRows
+    openSteps: opts.planChairs === false ? [] : stepRows
       .map((r) => ({ r, p: (r.props ?? {}) as { status?: string; needs?: string[] } }))
       .filter(({ p }) => p.status !== "done")
       .map(({ r, p }) => ({ id: r.id, title: r.title, needs: p.needs ?? [] })),
