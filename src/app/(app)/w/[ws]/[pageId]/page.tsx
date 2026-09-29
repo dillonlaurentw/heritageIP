@@ -4,9 +4,12 @@ import type { Route } from "next";
 import { DatabaseView } from "@/components/database/DatabaseView";
 import { LinkButton } from "@/components/ui/Button";
 import { RowProperties } from "@/components/database/RowProperties";
+import { GoalTasks } from "@/components/ops/GoalTasks";
+import { MeetingActions } from "@/components/ops/MeetingActions";
 import { PageView } from "@/components/page/PageView";
 import { loadDatabase } from "@/lib/databases";
 import { db } from "@/lib/db";
+import { goalTasks, meetingTasks } from "@/lib/ops";
 import { ancestors, getPageAccess, pageHref } from "@/lib/pages";
 import { requireOnboarded } from "@/lib/session";
 import { canManage } from "@/lib/workspace-rules";
@@ -35,6 +38,12 @@ export default async function PageRoute({ params }: { params: Promise<{ ws: stri
   const personal = page.workspace.kind === "PERSONAL";
   const database = page.kind === "DATABASE" ? await loadDatabase(page.id, viewer) : null;
   const parentDb = page.kind === "ROW" && page.parentId ? await loadDatabase(page.parentId, viewer) : null;
+  const parentKey = parentDb?.database.systemKey;
+  const fromMeeting = parentKey === "meetings" ? await meetingTasks(page.workspaceId, ws, page.id) : null;
+  const forGoal = parentKey === "goals" ? await goalTasks(page.workspaceId, ws, page.id) : null;
+  const tasksDb = forGoal
+    ? await db.page.findUnique({ where: { workspaceId_systemKey: { workspaceId: page.workspaceId, systemKey: "tasks" } }, select: { id: true } })
+    : null;
 
   return (
     <PageView
@@ -85,9 +94,13 @@ export default async function PageRoute({ params }: { params: Promise<{ ws: stri
             <DatabaseView initial={database} />
           </div>
         ) : parentDb ? (
-          <RowProperties initial={parentDb} rowId={page.id} />
+          <>
+            <RowProperties initial={parentDb} rowId={page.id} />
+            {forGoal && <GoalTasks tasks={forGoal} tasksHref={tasksDb ? pageHref(ws, tasksDb.id) : null} />}
+          </>
         ) : undefined
       }
+      belowEditor={fromMeeting ? <MeetingActions meetingId={page.id} tasks={fromMeeting} editable={editable} /> : undefined}
     />
   );
 }

@@ -42,6 +42,14 @@ export const B = {
   bullet: (text: string) => ({ id: id(), type: "bulletListItem", props: {}, content: c(text), children: [] }),
   number: (text: string) => ({ id: id(), type: "numberedListItem", props: {}, content: c(text), children: [] }),
   todo: (text: string, checked = false) => ({ id: id(), type: "checkListItem", props: { checked }, content: c(text), children: [] }),
+  /** A to-do assigned with an @mention: "Send the dates @Dev". */
+  todoFor: (text: string, person: { id: string; name: string }) => ({
+    id: id(),
+    type: "checkListItem",
+    props: { checked: false },
+    content: [...c(`${text} `), { type: "mention", props: { userId: person.id, name: person.name } }],
+    children: [],
+  }),
   quote: (text: string) => ({ id: id(), type: "quote", props: {}, content: c(text), children: [] }),
   /** A lead paragraph with a bold label: "Problem. People…" */
   labeled: (label: string, text: string) => ({

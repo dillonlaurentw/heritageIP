@@ -89,20 +89,127 @@ export async function seedWorkspaceContent(db: PrismaClient, ws: Ws, h: SeedHub,
 export async function seedTidewaterPages(db: PrismaClient, ws: Ws, idOf: IdOf) {
   const maya = idOf("maya");
   const dev = idOf("dev");
-  await seedSystemDb(
+  const person = (id: string, name: string) => ({ id, name });
+
+  // Phase 6: goals, a meeting whose action items became tasks, hiring, a CRM.
+  const goals = await seedSystemDb(
+    db,
+    ws,
+    "goals",
+    [
+      { key: "pilot", title: "First paid pilot with a processor by November", props: { health: "on", owner: [maya], target: dateIn(40) } },
+      { key: "food", title: "Pass food-contact testing", props: { health: "risk", owner: [dev], target: dateIn(60) } },
+    ],
+    { createdById: maya },
+  );
+  const meetings = await seedSystemDb(
+    db,
+    ws,
+    "meetings",
+    [
+      {
+        key: "weekly",
+        title: "Weekly sync",
+        props: { date: dateIn(-1), attendees: [maya, dev], kind: "weekly" },
+        createdById: maya,
+        content: [
+          B.h3("Agenda"),
+          B.bullet("Sample run timing"),
+          B.bullet("Food-contact lab options"),
+          B.h3("Notes"),
+          B.p("Press is free from the 12th. Costa Fria wants trays that survive wet chillers; Mar Azul cares about price per kilo."),
+          B.h3("Decisions"),
+          B.bullet("Run 5,000 trays, split between both processors."),
+          B.h3("Action items"),
+          B.todoFor("Send Costa Fria the sample-run dates", person(dev, "Dev Raman")),
+          B.todoFor("Ask Rosa about the grant timing", person(maya, "Maya Okonkwo")),
+          B.todo("Get two quotes from food-contact labs"),
+        ],
+      },
+      {
+        key: "costa",
+        title: "Call with Costa Fria",
+        props: { date: dateIn(-6), attendees: [dev], kind: "customer" },
+        createdById: dev,
+        content: [B.p("Trays softened after 30 hours in the wet chiller. They'd test a thicker wall."), B.todo("Price a 1.2mm wall", true)],
+      },
+    ],
+    { createdById: maya },
+  );
+  const tasks = await seedSystemDb(
     db,
     ws,
     "tasks",
     [
-      { title: "Book the kelp press for a 5,000-tray sample run", props: { status: "doing", assignee: [maya], due: dateIn(3), priority: "high" } },
-      { title: "Send Costa Fria the sample-run dates", props: { status: "todo", assignee: [dev], due: dateIn(1), priority: "medium" } },
-      { title: "Draft the food-contact test plan", props: { status: "todo", assignee: [dev], due: dateIn(6), priority: "high" } },
+      { title: "Book the kelp press for a 5,000-tray sample run", props: { status: "doing", assignee: [maya], due: dateIn(3), priority: "high", goal: [goals.rows.pilot] } },
+      {
+        title: "Send Costa Fria the sample-run dates",
+        props: { status: "todo", assignee: [dev], due: dateIn(1), priority: "medium", goal: [goals.rows.pilot], meeting: [meetings.rows.weekly] },
+      },
+      { title: "Draft the food-contact test plan", props: { status: "todo", assignee: [dev], due: dateIn(6), priority: "high", goal: [goals.rows.food] } },
       { title: "Shortlist two packaging designers", props: { status: "todo", assignee: [maya], due: dateIn(9), priority: "low" } },
-      { title: "Price the landed cost per kilo for Mar Azul", props: { status: "done", assignee: [maya], due: dateIn(-4), priority: "high" } },
+      { title: "Price the landed cost per kilo for Mar Azul", props: { status: "done", assignee: [maya], due: dateIn(-4), priority: "high", goal: [goals.rows.pilot] } },
+      { title: "Price a 1.2mm wall", props: { status: "done", assignee: [dev], due: dateIn(-3), priority: "medium", goal: [goals.rows.food], meeting: [meetings.rows.costa] } },
       { title: "Set up the shared drive and handbook", props: { status: "done", assignee: [dev], due: dateIn(-10), priority: "low" } },
+      { title: "Send the weekly update to Rosa", props: { status: "todo", assignee: [maya], due: dateIn(-2), priority: "low" } },
     ],
     { createdById: maya },
   );
+  const roles = await seedSystemDb(
+    db,
+    ws,
+    "roles",
+    [
+      {
+        key: "designer",
+        title: "Packaging designer (freelance)",
+        props: { commitment: "freelance", state: "open", skills: "Food packaging, structural design, print", posted: true },
+        content: [B.p("Two months to take the tray from prototype to a printable, stackable design. Remote is fine; a visit to Peniche helps.")],
+        createdById: maya,
+      },
+      {
+        key: "ops",
+        title: "Operations co-founder",
+        props: { commitment: "cofounder", state: "open", skills: "Manufacturing, supply chain, Portuguese", posted: false },
+        createdById: maya,
+      },
+    ],
+    { createdById: maya },
+  );
+  await seedSystemDb(
+    db,
+    ws,
+    "candidates",
+    [
+      { title: "Lena Fischer", props: { role: [roles.rows.designer], stage: "talking", source: "network", owner: [maya] } },
+      { title: "Joana Pires", props: { role: [roles.rows.designer], stage: "new", source: "referral", owner: [maya] } },
+    ],
+    { createdById: maya },
+  );
+  await seedSystemDb(
+    db,
+    ws,
+    "crm",
+    [
+      { title: "Mar Azul", props: { type: "customer", stage: "trial", owner: [maya], contact: "Head of procurement", next: "Share sample-run results", nextDate: dateIn(12) } },
+      { title: "Costa Fria", props: { type: "customer", stage: "talking", owner: [dev], contact: "Plant manager", next: "Send run dates", nextDate: dateIn(1) } },
+      { title: "AlgaPress", props: { type: "supplier", stage: "active", owner: [maya], contact: "Production planner", next: "Confirm press slot", nextDate: dateIn(3) } },
+      { title: "Nazaré Fish Co-op", props: { type: "customer", stage: "lead", owner: [maya], next: "Intro via Rosa" } },
+    ],
+    { createdById: maya },
+  );
+  await linkRelations(db, ws.id);
+
+  // A week of activity, so "This week" has something to say.
+  const doneThisWeek = ["Price the landed cost per kilo for Mar Azul", "Price a 1.2mm wall"];
+  for (const [i, title] of doneThisWeek.entries()) {
+    await db.activity.create({
+      data: { workspaceId: ws.id, actorId: i ? dev : maya, kind: "row.done", pageId: tasks.rows[title], data: { title }, createdAt: new Date(Date.now() - (i + 1) * 3_600_000) },
+    });
+  }
+  await db.activity.create({
+    data: { workspaceId: ws.id, actorId: maya, kind: "meeting.actions", pageId: meetings.rows.weekly, data: { title: "Weekly sync", count: 1 }, createdAt: new Date(Date.now() - 20 * 3_600_000) },
+  });
   const handbook = await page(db, ws, {
     title: "Team handbook",
     icon: "📘",

@@ -42,6 +42,18 @@ export default async function PeoplePage({
       : [],
   ]);
 
+  // What each person is working on: open tasks assigned to them.
+  const tasksDb = await db.page.findUnique({ where: { workspaceId_systemKey: { workspaceId: workspace.id, systemKey: "tasks" } }, select: { id: true, archivedAt: true } });
+  const openTasks: Record<string, number> = {};
+  if (tasksDb && !tasksDb.archivedAt) {
+    const rows = await db.page.findMany({ where: { parentId: tasksDb.id, kind: "ROW", archivedAt: null }, select: { props: true } });
+    for (const r of rows) {
+      const p = (r.props ?? {}) as { status?: unknown; assignee?: unknown };
+      if (p.status === "done" || !Array.isArray(p.assignee)) continue;
+      for (const id of p.assignee) if (typeof id === "string") openTasks[id] = (openTasks[id] ?? 0) + 1;
+    }
+  }
+
   return (
     <Screen
       crumbs={[{ label: workspace.name, href: `/w/${workspace.slug}` as Route }, { label: "People" }]}
@@ -59,10 +71,13 @@ export default async function PeoplePage({
           name: m.user.name,
           email: "email" in m.user ? (m.user.email as string) : null,
           headline: m.user.profile?.headline ?? null,
+          focusAreas: m.user.profile?.focusAreas ?? [],
+          openTasks: openTasks[m.user.id] ?? 0,
           role: m.role,
           title: m.title,
           joinedAt: m.joinedAt.toISOString(),
         }))}
+        tasksHref={tasksDb && !tasksDb.archivedAt ? `/w/${workspace.slug}/${tasksDb.id}` : null}
         invites={invites.map((i) => ({ ...i, createdAt: i.createdAt.toISOString(), expired: i.expiresAt < new Date() }))}
       />
     </Screen>

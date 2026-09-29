@@ -1,5 +1,6 @@
 "use client";
 
+import { Progress } from "@/components/ui/Progress";
 import { Maximize2, MoreHorizontal, Plus, Trash2, Type } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
@@ -55,6 +56,7 @@ export function TitleCell({ api, row, autoFocus = false }: { api: DbApi; row: Vi
       >
         {row.title || <span className="text-fg-subtle">Untitled</span>}
       </button>
+      {api.data.rollups[row.id] && <Progress {...api.data.rollups[row.id]} />}
       <Link
         href={row.href as Route}
         className="flex h-6 shrink-0 items-center gap-1 rounded-sm border border-border bg-bg px-1.5 text-xs text-fg-muted opacity-0 group-hover/title:opacity-100 hover:text-fg focus:opacity-100"

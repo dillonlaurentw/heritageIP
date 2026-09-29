@@ -21,6 +21,7 @@ import { insertPage, pageHref } from "./pages";
 import type { Viewer } from "./session";
 import { SYSTEM_DBS, SYSTEM_RELATIONS, type SystemKey } from "./system-dbs";
 import { canEdit } from "./workspace-rules";
+import { goalProgress } from "./ops-rules";
 import { logActivity, requireWorkspaceRole } from "./workspaces";
 
 export type DatabaseData = Awaited<ReturnType<typeof loadDatabase>>;
@@ -58,6 +59,16 @@ export async function loadDatabase(dbId: string, viewer: Viewer) {
   const targetDbs = targets.length
     ? await db.page.findMany({ where: { id: { in: targets } }, select: { id: true, title: true } })
     : [];
+
+  // Goals: progress from the tasks linked to each goal.
+  let rollups: Record<string, { done: number; total: number }> = {};
+  if (page.systemKey === "goals") {
+    const tasksDb = await db.page.findUnique({ where: { workspaceId_systemKey: { workspaceId: page.workspaceId, systemKey: "tasks" } }, select: { id: true } });
+    if (tasksDb) {
+      const tasks = await db.page.findMany({ where: { parentId: tasksDb.id, kind: "ROW", archivedAt: null }, select: { props: true } });
+      rollups = goalProgress(tasks.map((t) => ({ status: (t.props as Record<string, unknown> | null)?.status, goal: (t.props as Record<string, unknown> | null)?.goal })));
+    }
+  }
 
   const names: Record<string, string> = {};
   for (const m of members) names[m.user.id] = m.user.name;
@@ -98,6 +109,7 @@ export async function loadDatabase(dbId: string, viewer: Viewer) {
         },
       ]),
     ) as Record<string, { title: string; rows: { id: string; title: string; href: string }[] }>,
+    rollups,
     me: viewer.user.id,
     editable: canEdit(role),
   };
@@ -211,7 +223,11 @@ export async function addRow(dbId: string, viewer: Viewer, init: { title?: strin
   for (const p of schema.properties) {
     if (init.props && p.id in init.props) props[p.id] = normalizeValue(p, init.props[p.id]);
   }
-  const row = await insertPage({ workspaceId: page.workspaceId, parentId: page.id, kind: "ROW", title: init.title ?? "", props }, viewer.user.id);
+  const template = page.systemKey && page.systemKey in SYSTEM_DBS ? SYSTEM_DBS[page.systemKey as SystemKey].rowTemplate : undefined;
+  const row = await insertPage(
+    { workspaceId: page.workspaceId, parentId: page.id, kind: "ROW", title: init.title ?? "", props, content: template?.() },
+    viewer.user.id,
+  );
   return row;
 }
 

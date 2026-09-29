@@ -3,10 +3,11 @@
  * so features (my tasks, goal progress, hiring, need tags) can rely on them.
  * Pure data: used by the server and by the seed.
  */
+import { B } from "./blocks";
 import { DEFAULT_STATUS, emptyConfig, type DbSchema, type ViewConfig, type ViewType } from "./db-schema";
 import { NEED_TAGS, NEEDS } from "./needs";
 
-export type SystemKey = "tasks" | "gamePlan" | "roles" | "meetings" | "goals" | "crm";
+export type SystemKey = "tasks" | "gamePlan" | "roles" | "candidates" | "meetings" | "goals" | "crm";
 
 export type SystemDb = {
   key: SystemKey;
@@ -15,6 +16,8 @@ export type SystemDb = {
   description: string;
   schema: DbSchema;
   views: { name: string; type: ViewType; config: ViewConfig }[];
+  /** Starting content for a new row (e.g. a meeting's agenda and action items). */
+  rowTemplate?: () => unknown[];
 };
 
 export const STAGES = [
@@ -115,11 +118,62 @@ export const SYSTEM_DBS: Record<SystemKey, SystemDb> = {
       { name: "By state", type: "BOARD", config: { ...emptyConfig(), groupBy: "state" } },
     ],
   },
+  candidates: {
+    key: "candidates",
+    title: "Candidates",
+    icon: "🙋",
+    description: "People interested in your roles, and where each conversation stands. Interest from the Network lands here.",
+    schema: {
+      properties: [
+        { id: "role", name: "Role", type: "relation", relation: { databaseId: "" } },
+        {
+          id: "stage",
+          name: "Stage",
+          type: "select",
+          options: [
+            { id: "new", name: "New", color: "gray" },
+            { id: "talking", name: "Talking", color: "yellow" },
+            { id: "trial", name: "Working trial", color: "purple" },
+            { id: "offer", name: "Offer", color: "blue" },
+            { id: "joined", name: "Joined", color: "green" },
+            { id: "passed", name: "Passed", color: "red" },
+          ],
+        },
+        {
+          id: "source",
+          name: "Source",
+          type: "select",
+          options: [
+            { id: "network", name: "SELF Network", color: "orange" },
+            { id: "referral", name: "Referral", color: "blue" },
+            { id: "other", name: "Other", color: "gray" },
+          ],
+        },
+        { id: "owner", name: "Owner", type: "person" },
+        { id: "profile", name: "Profile", type: "url" },
+      ],
+    },
+    views: [
+      { name: "Pipeline", type: "BOARD", config: { ...emptyConfig(), groupBy: "stage" } },
+      { name: "All", type: "TABLE", config: emptyConfig() },
+    ],
+  },
   meetings: {
     key: "meetings",
     title: "Meetings",
     icon: "🗓️",
     description: "Notes from every meeting. Action items become tasks with one click.",
+    rowTemplate: () => [
+      B.h3("Agenda"),
+      B.bullet(""),
+      B.h3("Notes"),
+      B.p(""),
+      B.h3("Decisions"),
+      B.bullet(""),
+      B.h3("Action items"),
+      B.p("One to-do per action. @mention the owner; Send to Tasks below when you're done."),
+      B.todo(""),
+    ],
     schema: {
       properties: [
         { id: "date", name: "Date", type: "date" },
@@ -215,4 +269,5 @@ export const SYSTEM_RELATIONS: { from: SystemKey; prop: string; to: SystemKey }[
   { from: "tasks", prop: "goal", to: "goals" },
   { from: "tasks", prop: "meeting", to: "meetings" },
   { from: "roles", prop: "step", to: "gamePlan" },
+  { from: "candidates", prop: "role", to: "roles" },
 ];

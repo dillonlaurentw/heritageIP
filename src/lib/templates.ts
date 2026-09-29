@@ -144,6 +144,7 @@ export const TEMPLATES: Template[] = [
   { key: "meetings", kind: "database", db: "meetings", group: "Team", title: "Meetings", icon: "🗓️", blurb: "Every meeting's notes; action items become tasks." },
   { key: "goals", kind: "database", db: "goals", group: "Plan", title: "Goals", icon: "🎯", blurb: "What you're aiming for, with progress from linked tasks." },
   { key: "roles", kind: "database", db: "roles", group: "Team", title: "Roles", icon: "🤝", blurb: "Co-founders and teammates you're looking for; post them to the Network." },
+  { key: "candidates", kind: "database", db: "candidates", group: "Team", title: "Candidates", icon: "🙋", blurb: "Everyone interested in your roles, from first hello to joined." },
   { key: "crm", kind: "database", db: "crm", group: "Run", title: "Customers & suppliers", icon: "📇", blurb: "Everyone you sell to or buy from, and the next step with each." },
 ];
 

@@ -7,7 +7,7 @@ import { insertPage, pageHref } from "./pages";
 import type { Viewer } from "./session";
 import { logActivity, requireWorkspaceRole } from "./workspaces";
 
-export type TaskDraft = { title: string; detail?: string; assignee?: string[]; due?: string | null };
+export type TaskDraft = { title: string; detail?: string; assignee?: string[]; due?: string | null; meeting?: string; goal?: string };
 
 /** A paragraph linking back to where something came from ("From: Weekly sync"). */
 function fromBlock(label: string, href: string) {
@@ -26,7 +26,13 @@ function fromBlock(label: string, href: string) {
  * Add rows to the workspace's Tasks database (created if missing). `from`
  * links each task back to the page it came from.
  */
-export async function addTasks(workspaceId: string, tasks: TaskDraft[], viewer: Viewer, from?: { pageId: string; title: string }) {
+export async function addTasks(
+  workspaceId: string,
+  tasks: TaskDraft[],
+  viewer: Viewer,
+  from?: { pageId: string; title: string },
+  activityKind = "tasks.added",
+) {
   await requireWorkspaceRole(workspaceId, viewer, "MEMBER");
   const ws = await db.workspace.findUniqueOrThrow({ where: { id: workspaceId }, select: { slug: true } });
   const tasksDb = await ensureSystemDb(workspaceId, "tasks", viewer.user.id);
@@ -42,14 +48,20 @@ export async function addTasks(workspaceId: string, tasks: TaskDraft[], viewer: 
         parentId: tasksDb.id,
         kind: "ROW",
         title: t.title,
-        props: { status: "todo", ...(t.assignee?.length ? { assignee: t.assignee } : {}), ...(t.due ? { due: t.due } : {}) },
+        props: {
+          status: "todo",
+          ...(t.assignee?.length ? { assignee: t.assignee } : {}),
+          ...(t.due ? { due: t.due } : {}),
+          ...(t.meeting ? { meeting: [t.meeting] } : {}),
+          ...(t.goal ? { goal: [t.goal] } : {}),
+        },
         content,
       },
       viewer.user.id,
     );
     ids.push(row.id);
   }
-  await logActivity(workspaceId, viewer.user.id, "tasks.added", from?.pageId ?? tasksDb.id, { title: from?.title ?? "Tasks", count: tasks.length });
+  await logActivity(workspaceId, viewer.user.id, activityKind, from?.pageId ?? tasksDb.id, { title: from?.title ?? "Tasks", count: tasks.length });
   return { ids, href: pageHref(ws.slug, tasksDb.id) };
 }
 

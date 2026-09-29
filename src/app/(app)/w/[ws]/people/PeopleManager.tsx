@@ -1,6 +1,8 @@
 "use client";
 
 import { Copy, MoreHorizontal, UserPlus } from "lucide-react";
+import type { Route } from "next";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { changeMemberRole, inviteMembers, removeMember, revokeInvite, setMemberTitle } from "@/app/actions/workspaces";
@@ -19,6 +21,8 @@ type Member = {
   name: string;
   email: string | null;
   headline: string | null;
+  focusAreas: string[];
+  openTasks: number;
   role: WorkspaceRole;
   title: string | null;
   joinedAt: string;
@@ -33,6 +37,7 @@ export function PeopleManager(p: {
   openInvite: boolean;
   members: Member[];
   invites: InviteRow[];
+  tasksHref: string | null;
 }) {
   const router = useRouter();
   const toast = useToast();
@@ -106,7 +111,19 @@ export function PeopleManager(p: {
                     </button>
                   )}
                   {m.email && <p className="truncate text-xs text-fg-subtle">{m.email}</p>}
+                  {m.focusAreas.length > 0 && (
+                    <div className="mt-1.5 flex flex-wrap gap-1">
+                      {m.focusAreas.slice(0, 5).map((f) => (
+                        <Tag key={f}>{f}</Tag>
+                      ))}
+                    </div>
+                  )}
                 </div>
+                {p.tasksHref && m.openTasks > 0 && (
+                  <Link href={p.tasksHref as Route} className="hidden text-xs text-fg-muted hover:text-fg hover:underline sm:inline">
+                    {m.openTasks} open {m.openTasks === 1 ? "task" : "tasks"}
+                  </Link>
+                )}
                 <span className="hidden text-xs text-fg-subtle sm:inline">Joined {formatDate(m.joinedAt, true)}</span>
                 <Tag color={m.role === "OWNER" ? "orange" : m.role === "ADMIN" ? "purple" : m.role === "GUEST" ? "gray" : "blue"}>
                   {ROLE_LABEL[m.role]}

@@ -259,6 +259,22 @@ generic dashboard widgets (donut charts, KPI cards), cinematic type inside the a
 - Guests read; only MEMBER and above can call agents (they cost money).
 - `/ask` (and ⌘K "Ask SELF") routes with `routerAgent` and opens the agent with the question.
 
+### Team and company operations (Phase 6)
+- Pure rules in `src/lib/ops-rules.ts` (tested): `actionItems()` (unchecked
+  to-dos + @mentions), `itemsToSend()` (dedupe against the meeting's tasks),
+  `goalProgress()`, `summarizeWeek()`. Server side in `src/lib/ops.ts`.
+- Meetings: new rows start from `SYSTEM_DBS.meetings.rowTemplate`. "Send to
+  Tasks" creates Tasks rows linked via `meeting`; @mentions become assignees
+  (members only). Sending twice never duplicates.
+- Goals: progress = linked tasks done / total (Tasks → Goal relation). It is
+  computed on read (`loadDatabase().rollups`), never stored.
+- Hiring: Roles database (posted ones go to the Network in Phase 7) and a
+  Candidates database linked to Roles.
+- `/w/[ws]/week` summarises the week from Activity and the built-in databases;
+  "Save as a page" writes an ordinary editable page. No KPI cards.
+- Add new system databases in `system-dbs.ts` + a `database` template in
+  `templates.ts`; the home page's "Run the company" tiles read from there.
+
 ## Running locally
 
 ```

@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { PageIcon } from "@/components/ui/PageIcon";
 import { Tag } from "@/components/ui/Tag";
+import { Progress } from "@/components/ui/Progress";
 import { cn } from "@/lib/cn";
 import { groupRows, isEmpty, valueForGroup, type Property, type ViewConfig } from "@/lib/db-schema";
 import { ValueView } from "./cells";
@@ -31,6 +32,7 @@ function Card({ api, row, props, draggable, onDragStart }: { api: DbApi; row: Vi
         {row.icon && <PageIcon icon={row.icon} />}
         <span className="min-w-0 break-words">{row.title || <span className="text-fg-subtle">Untitled</span>}</span>
       </span>
+      {api.data.rollups[row.id] && <Progress {...api.data.rollups[row.id]} />}
       {shown.map((p) => (
         <span key={p.id} className="min-w-0">
           <ValueView prop={p} value={row.props[p.id]} names={api.data.names} wrap />
@@ -111,6 +113,7 @@ export function ListView({ api, rows, config }: { api: DbApi; rows: ViewRow[]; c
             <span className="flex min-w-0 flex-1 items-center gap-1.5 text-sm font-medium">
               {r.icon && <PageIcon icon={r.icon} />}
               <span className="truncate">{r.title || <span className="text-fg-subtle">Untitled</span>}</span>
+              {api.data.rollups[r.id] && <Progress {...api.data.rollups[r.id]} className="ml-2" />}
             </span>
             {shown
               .filter((p) => !isEmpty(r.props[p.id]))

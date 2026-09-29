@@ -13,6 +13,8 @@ import { canEdit, canManage } from "@/lib/workspace-rules";
 import { Journey, journeyFor } from "./Journey";
 import { getWorkspaceAccess } from "@/lib/workspaces";
 import { ActivityFeed } from "./ActivityFeed";
+import { CompanyTiles } from "./CompanyTiles";
+import { TEMPLATES } from "@/lib/templates";
 
 export async function generateMetadata({ params }: { params: Promise<{ ws: string }> }): Promise<Metadata> {
   const ws = await db.workspace.findUnique({ where: { slug: (await params).ws }, select: { name: true } });
@@ -42,6 +44,14 @@ export default async function WorkspaceHome({ params }: { params: Promise<{ ws: 
     }),
     journeyFor(workspace.id, workspace.slug),
   ]);
+  const systems = await db.page.findMany({
+    where: { workspaceId: workspace.id, systemKey: { in: ["tasks", "meetings", "goals", "roles", "candidates", "crm"] }, archivedAt: null },
+    select: { id: true, systemKey: true },
+  });
+  const tiles = TEMPLATES.filter((t) => t.kind === "database").map((t) => {
+    const found = systems.find((s) => s.systemKey === t.key);
+    return { key: t.key, title: t.title, icon: t.icon, blurb: t.blurb, href: found ? pageHref(workspace.slug, found.id) : null };
+  });
 
   return (
     <Screen
@@ -81,6 +91,8 @@ export default async function WorkspaceHome({ params }: { params: Promise<{ ws: 
       </div>
 
       {workspace.kind === "TEAM" && <Journey journey={journey} slug={workspace.slug} editable={canEdit(role)} memberCount={members.length} />}
+
+      {workspace.kind === "TEAM" && <CompanyTiles workspaceId={workspace.id} slug={workspace.slug} tiles={tiles} editable={canEdit(role)} />}
 
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_20rem]">
         <section>
