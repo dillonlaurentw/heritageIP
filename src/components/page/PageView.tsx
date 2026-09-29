@@ -1,6 +1,7 @@
 "use client";
 
-import { Check, Copy, History, Link2, Maximize2, MoreHorizontal, Plus, RotateCcw, Trash2 } from "lucide-react";
+import { Check, Copy, Database, History, Link2, Maximize2, MoreHorizontal, Plus, RotateCcw, Trash2 } from "lucide-react";
+import { newDatabase } from "@/app/actions/databases";
 import type { Route } from "next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -52,6 +53,9 @@ export type PageViewProps = {
   onMention?: (userIds: string[]) => void;
   titlePlaceholder?: string;
   hideEditor?: boolean;
+  /** Databases use the full width of the screen. */
+  wide?: boolean;
+  hideChildren?: boolean;
 };
 
 /** A page: header, body, pages inside it, and page-level actions. */
@@ -59,7 +63,8 @@ export function PageView(p: PageViewProps) {
   const router = useRouter();
   const toast = useToast();
   const [save, setSave] = useState<SaveState>("idle");
-  const [fullWidth, setFullWidth] = useState(p.page.fullWidth);
+  const [fullWidthPref, setFullWidth] = useState(p.page.fullWidth);
+  const fullWidth = fullWidthPref || Boolean(p.wide);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [title, setTitle] = useState(p.page.title);
   const editorRef = useRef<SelfEditor | null>(null);
@@ -104,12 +109,12 @@ export function PageView(p: PageViewProps) {
               >
                 Copy link
               </MenuItem>
-              {p.editable && (
+              {p.editable && !p.wide && (
                 <MenuItem
                   icon={fullWidth ? <Check /> : <Maximize2 />}
                   onClick={() => {
-                    setFullWidth(!fullWidth);
-                    void savePage(p.page.id, { fullWidth: !fullWidth });
+                    setFullWidth(!fullWidthPref);
+                    void savePage(p.page.id, { fullWidth: !fullWidthPref });
                   }}
                 >
                   Full width
@@ -179,11 +184,31 @@ export function PageView(p: PageViewProps) {
                 editorRef.current = e;
                 p.onEditorReady?.(e);
               }}
+              extraSlashItems={
+                p.editable
+                  ? (editor) => [
+                      {
+                        title: "Database",
+                        subtext: "A table, board, list or calendar inside this page",
+                        aliases: ["table", "board", "db", "calendar", "list"],
+                        group: "Advanced",
+                        icon: <Database className="size-4" />,
+                        onItemClick: async () => {
+                          const res = await newDatabase(p.page.workspaceId, p.page.id);
+                          if (!res.ok) return toast(res.message, "danger");
+                          const at = editor.getTextCursorPosition().block;
+                          editor.insertBlocks([{ type: "database", props: { databaseId: res.id } }], at, "after");
+                          router.refresh();
+                        },
+                      },
+                    ]
+                  : undefined
+              }
             />
           </div>
         )}
         {p.belowEditor}
-        {(p.childPages.length > 0 || p.editable) && !p.page.archived && (
+        {!p.hideChildren && (p.childPages.length > 0 || p.editable) && !p.page.archived && (
           <section className="mt-12 border-t border-border pt-4">
             {p.childPages.length > 0 && <h2 className="mb-1 text-xs font-medium text-fg-subtle">Pages inside</h2>}
             <ul className="flex flex-col">

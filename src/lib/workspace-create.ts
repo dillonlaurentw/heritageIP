@@ -1,5 +1,6 @@
 import "server-only";
 import { B } from "./blocks";
+import { ensureSystemDb } from "./databases";
 import { db } from "./db";
 import { insertPage } from "./pages";
 import { logActivity, uniqueWorkspaceSlug } from "./workspaces";
@@ -44,4 +45,5 @@ export async function addStarterContent(workspaceId: string, userId: string, inp
     },
     userId,
   );
+  await ensureSystemDb(workspaceId, "tasks", userId);
 }

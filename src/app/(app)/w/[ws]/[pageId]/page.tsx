@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { DatabaseView } from "@/components/database/DatabaseView";
+import { RowProperties } from "@/components/database/RowProperties";
 import { PageView } from "@/components/page/PageView";
+import { loadDatabase } from "@/lib/databases";
 import { db } from "@/lib/db";
 import { ancestors, getPageAccess, pageHref } from "@/lib/pages";
 import { requireOnboarded } from "@/lib/session";
@@ -10,20 +13,25 @@ export async function generateMetadata({ params }: { params: Promise<{ pageId: s
   return { title: p?.title || "Untitled" };
 }
 
+/** Any page: a document, a database, or a database row. */
 export default async function PageRoute({ params }: { params: Promise<{ ws: string; pageId: string }> }) {
   const viewer = await requireOnboarded();
   const { ws, pageId } = await params;
   const { page, role, editable } = await getPageAccess(ws, pageId, viewer);
   const [trail, children, members] = await Promise.all([
     ancestors(page.id),
-    db.page.findMany({
-      where: { parentId: page.id, archivedAt: null, kind: { in: ["PAGE", "DATABASE"] } },
-      orderBy: { position: "asc" },
-      select: { id: true, title: true, icon: true },
-    }),
+    page.kind === "PAGE"
+      ? db.page.findMany({
+          where: { parentId: page.id, archivedAt: null, kind: { in: ["PAGE", "DATABASE"] } },
+          orderBy: { position: "asc" },
+          select: { id: true, title: true, icon: true },
+        })
+      : [],
     db.workspaceMember.findMany({ where: { workspaceId: page.workspaceId }, select: { user: { select: { id: true, name: true } } } }),
   ]);
   const personal = page.workspace.kind === "PERSONAL";
+  const database = page.kind === "DATABASE" ? await loadDatabase(page.id, viewer) : null;
+  const parentDb = page.kind === "ROW" && page.parentId ? await loadDatabase(page.parentId, viewer) : null;
 
   return (
     <PageView
@@ -47,6 +55,20 @@ export default async function PageRoute({ params }: { params: Promise<{ ws: stri
       canDeleteForever={canManage(role)}
       childPages={children.map((c) => ({ ...c, href: pageHref(ws, c.id) }))}
       people={members.map((m) => m.user).filter((u) => u.id !== viewer.user.id)}
+      titlePlaceholder={page.kind === "DATABASE" ? "Untitled database" : "Untitled"}
+      hideEditor={page.kind === "DATABASE"}
+      hideChildren={page.kind !== "PAGE"}
+      wide={page.kind === "DATABASE"}
+      aboveEditor={
+        database ? (
+          <div className="mt-2">
+            {database.database.description && <p className="mb-4 max-w-2xl text-base text-fg-muted">{database.database.description}</p>}
+            <DatabaseView initial={database} />
+          </div>
+        ) : parentDb ? (
+          <RowProperties initial={parentDb} rowId={page.id} />
+        ) : undefined
+      }
     />
   );
 }

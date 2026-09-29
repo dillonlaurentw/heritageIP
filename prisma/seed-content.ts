@@ -5,6 +5,7 @@
 import type { PrismaClient } from "../src/generated/prisma/client";
 import type { Prisma } from "../src/generated/prisma/client";
 import { B, blocksToText } from "../src/lib/blocks";
+import { SYSTEM_DBS, SYSTEM_RELATIONS, type SystemKey } from "../src/lib/system-dbs";
 import type { SeedHub } from "./seed-data";
 
 type Ws = { id: string; slug: string; name: string; createdById: string };
@@ -70,6 +71,20 @@ export async function seedWorkspaceContent(db: PrismaClient, ws: Ws, h: SeedHub)
 export async function seedTidewaterPages(db: PrismaClient, ws: Ws, idOf: IdOf) {
   const maya = idOf("maya");
   const dev = idOf("dev");
+  await seedSystemDb(
+    db,
+    ws,
+    "tasks",
+    [
+      { title: "Book the kelp press for a 5,000-tray sample run", props: { status: "doing", assignee: [maya], due: dateIn(3), priority: "high" } },
+      { title: "Send Costa Fria the sample-run dates", props: { status: "todo", assignee: [dev], due: dateIn(1), priority: "medium" } },
+      { title: "Draft the food-contact test plan", props: { status: "todo", assignee: [dev], due: dateIn(6), priority: "high" } },
+      { title: "Shortlist two packaging designers", props: { status: "todo", assignee: [maya], due: dateIn(9), priority: "low" } },
+      { title: "Price the landed cost per kilo for Mar Azul", props: { status: "done", assignee: [maya], due: dateIn(-4), priority: "high" } },
+      { title: "Set up the shared drive and handbook", props: { status: "done", assignee: [dev], due: dateIn(-10), priority: "low" } },
+    ],
+    { createdById: maya },
+  );
   const handbook = await page(db, ws, {
     title: "Team handbook",
     icon: "📘",
@@ -136,3 +151,58 @@ export async function seedPrivatePages(db: PrismaClient, ws: Ws, owner: string) 
     ],
   });
 }
+
+/** Create a built-in database (Tasks, Game plan…) with rows. Returns ids by row key. */
+export async function seedSystemDb(
+  db: PrismaClient,
+  ws: Ws,
+  key: SystemKey,
+  rows: { key?: string; title: string; props?: Record<string, unknown>; content?: unknown[]; createdById?: string; daysAgo?: number }[],
+  opts: { parentId?: string | null; createdById?: string } = {},
+) {
+  const def = SYSTEM_DBS[key];
+  const dbPage = await page(db, ws, {
+    title: def.title,
+    icon: def.icon,
+    kind: "DATABASE",
+    schema: structuredClone(def.schema),
+    systemKey: key,
+    content: [B.p(def.description)],
+    parentId: opts.parentId ?? null,
+    createdById: opts.createdById,
+  });
+  await db.databaseView.createMany({
+    data: def.views.map((v, i) => ({ databaseId: dbPage.id, name: v.name, type: v.type, config: v.config as Prisma.InputJsonValue, position: i })),
+  });
+  const ids: Record<string, string> = {};
+  for (const r of rows) {
+    const row = await page(db, ws, {
+      title: r.title,
+      kind: "ROW",
+      parentId: dbPage.id,
+      props: r.props ?? {},
+      content: r.content ?? [],
+      createdById: r.createdById ?? opts.createdById,
+      daysAgo: r.daysAgo,
+    });
+    ids[r.key ?? r.title] = row.id;
+  }
+  return { id: dbPage.id, rows: ids };
+}
+
+/** Point built-in relations at each other (Tasks → Goals, Roles → Game plan…). */
+export async function linkRelations(db: PrismaClient, wsId: string) {
+  const systems = await db.page.findMany({ where: { workspaceId: wsId, systemKey: { in: Object.keys(SYSTEM_DBS) } }, select: { id: true, systemKey: true, schema: true } });
+  const byKey = new Map(systems.map((s) => [s.systemKey, s]));
+  for (const rel of SYSTEM_RELATIONS) {
+    const from = byKey.get(rel.from);
+    const to = byKey.get(rel.to);
+    if (!from || !to) continue;
+    const schema = from.schema as { properties: { id: string; relation?: { databaseId: string } }[] };
+    const prop = schema.properties.find((p) => p.id === rel.prop);
+    if (prop) prop.relation = { databaseId: to.id };
+    await db.page.update({ where: { id: from.id }, data: { schema: schema as Prisma.InputJsonValue } });
+  }
+}
+
+export const dateIn = (days: number) => new Date(Date.now() + days * 86_400_000).toISOString().slice(0, 10);

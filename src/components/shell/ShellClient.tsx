@@ -11,6 +11,7 @@ import {
   newPage,
   searchPalette,
 } from "@/app/actions/pages";
+import { newDatabase } from "@/app/actions/databases";
 import { Menu, MenuItem, MenuSeparator } from "@/components/ui/Menu";
 import { useToast } from "@/components/ui/Toast";
 import { CommandPalette } from "./CommandPalette";
@@ -60,6 +61,7 @@ export function ShellClient(p: Props) {
         .filter((w) => w.slug !== p.current?.slug)
         .map((w) => ({ id: `ws:${w.slug}`, label: w.name, group: "Workspaces", href: `/w/${w.slug}`, keywords: "switch workspace" })),
       ...(p.canEdit && p.current ? [{ id: "new-page", label: "New page", group: "Actions", action: "new-page", keywords: "create add" }] : []),
+      ...(p.canEdit && p.current ? [{ id: "new-db", label: "New database", group: "Actions", action: "new-database", keywords: "create table board calendar tracker" }] : []),
       { id: "new-private", label: "New private page", group: "Actions", action: "new-private", keywords: "create note" },
       { id: "new-ws", label: "New workspace", group: "Actions", href: "/new", keywords: "company idea create" },
       { id: "profile", label: "Your profile", group: "Actions", href: "/me", keywords: "account settings" },
@@ -127,6 +129,8 @@ export function ShellClient(p: Props) {
         search={searchPalette}
         onAction={(action, q) => {
           if (action === "new-page" && p.current) void create(p.current.id, null);
+          else if (action === "new-database" && p.current)
+            void newDatabase(p.current.id, null).then((res) => (res.ok ? router.push(res.href as Route) : toast(res.message, "danger")));
           else if (action === "new-private") void create(p.personal.id, null);
           else if (action === "ask") router.push(`/ask?q=${encodeURIComponent(q)}` as Route);
         }}

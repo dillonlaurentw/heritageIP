@@ -1,80 +1,45 @@
 /**
- * What a game-plan step can need, and where each need leads. Shared by client
- * and server. Connection areas light up phase by phase.
+ * What a game-plan step can need, and where each need leads in the network.
+ * Shared by client, server and seed. The game plan's "Needs" property uses
+ * these ids as its option ids.
  */
-export const NEED_TAGS = ["COFOUNDER", "SUPPLIER", "LEGAL", "FUNDING", "MARKETING", "GTM", "WEBSITE", "MENTOR"] as const;
+import type { TagColor } from "@/components/ui/Tag";
+
+export const NEED_TAGS = ["COFOUNDER", "SUPPLIER", "LEGAL", "MARKETING", "GTM", "WEBSITE", "DESIGN", "FINANCE", "FUNDING", "MENTOR"] as const;
 export type Need = (typeof NEED_TAGS)[number];
 
-export const NEEDS: Record<Need, { slug: string; label: string; title: string; line: string; phase: number }> = {
-  COFOUNDER: {
-    slug: "cofounder",
-    label: "Co-founder",
-    title: "Find your people.",
-    line: "Post the roles you need. Other builders signal interest, and you choose who joins.",
-    phase: 4,
-  },
-  SUPPLIER: {
-    slug: "supplier",
-    label: "Supplier",
-    title: "Find who makes it.",
-    line: "Manufacturers, sourcing brokers and suppliers, introduced from inside your hub.",
-    phase: 5,
-  },
-  LEGAL: {
-    slug: "legal",
-    label: "Legal",
-    title: "Get it right on paper.",
-    line: "Formation, equity, contracts and IP, with lawyers who work with early builders.",
-    phase: 5,
-  },
-  WEBSITE: {
-    slug: "website",
-    label: "Website",
-    title: "Get it built.",
-    line: "Studios and developers for your site, product and first real version.",
-    phase: 5,
-  },
-  MARKETING: {
-    slug: "marketing",
-    label: "Marketing",
-    title: "Get it seen.",
-    line: "Brand, content and growth partners for the story and the launch.",
-    phase: 5,
-  },
-  GTM: {
-    slug: "gtm",
-    label: "Go-to-market",
-    title: "Get it sold.",
-    line: "Sales, distribution and channel partners who open the first doors.",
-    phase: 5,
-  },
-  FUNDING: {
-    slug: "funding",
-    label: "Funding",
-    title: "Find backers.",
-    line: "Open your hub to backers. They signal interest; you decide who to talk to. No money moves on SELF.",
-    phase: 6,
-  },
-  MENTOR: {
-    slug: "mentor",
-    label: "Mentor",
-    title: "Learn from someone who's done it.",
-    line: "Mentors with real experience in your area, one request away.",
-    phase: 7,
-  },
+export const NEEDS: Record<Need, { slug: string; label: string; color: TagColor; line: string }> = {
+  COFOUNDER: { slug: "cofounder", label: "Co-founder", color: "purple", line: "Post the role; builders signal interest and you choose who joins." },
+  SUPPLIER: { slug: "supplier", label: "Supplier", color: "orange", line: "Manufacturers, sourcing brokers and suppliers." },
+  LEGAL: { slug: "legal", label: "Legal", color: "red", line: "Formation, equity, contracts and IP." },
+  MARKETING: { slug: "marketing", label: "Marketing", color: "pink", line: "Brand, content and growth partners." },
+  GTM: { slug: "gtm", label: "Go-to-market", color: "yellow", line: "Sales, distribution and channel partners." },
+  WEBSITE: { slug: "website", label: "Website & build", color: "blue", line: "Studios and developers for your site and product." },
+  DESIGN: { slug: "design", label: "Design", color: "brown", line: "Product, brand and packaging design." },
+  FINANCE: { slug: "finance", label: "Finance", color: "gray", line: "Bookkeeping, payroll and runway." },
+  FUNDING: { slug: "funding", label: "Funding", color: "green", line: "Open your workspace to backers. Interest only; no money moves on SELF." },
+  MENTOR: { slug: "mentor", label: "Mentor", color: "purple", line: "Someone who's done it, one request away." },
 };
 
 /** Needs served by the partner directory, and the category each maps to. */
-export const NEED_TO_CATEGORY: Partial<Record<Need, "SUPPLIER" | "LEGAL" | "WEBSITE" | "MARKETING" | "GTM">> = {
+export const NEED_TO_CATEGORY: Partial<Record<Need, "SUPPLIER" | "LEGAL" | "WEBSITE" | "MARKETING" | "GTM" | "DESIGN" | "FINANCE">> = {
   SUPPLIER: "SUPPLIER",
   LEGAL: "LEGAL",
   WEBSITE: "WEBSITE",
   MARKETING: "MARKETING",
   GTM: "GTM",
+  DESIGN: "DESIGN",
+  FINANCE: "FINANCE",
 };
 
-export const needFromSlug = (slug: string) =>
-  (Object.keys(NEEDS) as Need[]).find((k) => NEEDS[k].slug === slug) ?? null;
+export const needFromSlug = (slug: string) => (Object.keys(NEEDS) as Need[]).find((k) => NEEDS[k].slug === slug) ?? null;
 
-/** Connection areas that are live. Grows as phases ship. */
-export const LIVE_PHASE = 8;
+/** Where a need tag on a step leads. `stepId` ties the resulting request to the step. */
+export function needHref(need: Need, workspaceSlug: string, stepId?: string) {
+  const q = new URLSearchParams({ ws: workspaceSlug, ...(stepId ? { step: stepId } : {}) });
+  if (need === "COFOUNDER") return `/network/roles/post?${q}`;
+  if (need === "FUNDING") return `/w/${workspaceSlug}/backers`;
+  if (need === "MENTOR") return `/network/mentors?${q}`;
+  const cat = NEED_TO_CATEGORY[need];
+  return `/network/partners?${new URLSearchParams({ c: NEEDS[need].slug, ws: workspaceSlug, ...(stepId ? { step: stepId } : {}) })}${cat ? "" : ""}`;
+}
