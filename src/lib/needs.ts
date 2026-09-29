@@ -4,6 +4,7 @@
  * these ids as its option ids.
  */
 import type { TagColor } from "@/components/ui/Tag";
+import { CATEGORY_COPY } from "./partner-categories";
 
 export const NEED_TAGS = ["COFOUNDER", "SUPPLIER", "LEGAL", "MARKETING", "GTM", "WEBSITE", "DESIGN", "FINANCE", "FUNDING", "MENTOR"] as const;
 export type Need = (typeof NEED_TAGS)[number];
@@ -40,5 +41,6 @@ export function needHref(need: Need, workspaceSlug: string, stepId?: string) {
   if (need === "COFOUNDER") return `/network/roles/post?${q}`;
   if (need === "FUNDING") return `/w/${workspaceSlug}/backers`;
   if (need === "MENTOR") return `/network/mentors?${q}`;
-  return `/network/partners?${new URLSearchParams({ c: NEEDS[need].slug, ws: workspaceSlug, ...(stepId ? { step: stepId } : {}) })}`;
+  const category = NEED_TO_CATEGORY[need];
+  return `/network/partners?${new URLSearchParams({ ...(category ? { c: CATEGORY_COPY[category].slug } : {}), ws: workspaceSlug, ...(stepId ? { step: stepId } : {}) })}`;
 }

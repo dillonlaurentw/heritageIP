@@ -275,6 +275,24 @@ generic dashboard widgets (donut charts, KPI cards), cinematic type inside the a
 - Add new system databases in `system-dbs.ts` + a `database` template in
   `templates.ts`; the home page's "Run the company" tiles read from there.
 
+### The network (Phase 7)
+- Everything lives in `src/lib/network.ts`; routes under `/network` (roles,
+  mentors, partners, backers, funding, connections) and `/w/[ws]/backers`.
+- **Contact details only come from `contactsFor()` / `partnerContactsFor()`**,
+  across an ACCEPTED signal. Never select `contactEmail`/`contactLink` elsewhere.
+- Signals carry `workspaceId` and `pageId`: the role row (ROLE_INTEREST) or the
+  game-plan step (intros, mentor asks). `stepSignals()` shows them on the step.
+- Requests are sent on behalf of a company by its MEMBERs and above
+  (`actingFor`). Workspace owners answer role and backer interest.
+- Role interest creates a Candidates row (`props.signalId`); answering moves it
+  to Talking/Passed. **Accepting never adds anyone to a workspace**; "Add to
+  <company>" in Connections is a separate, explicit owner/admin action.
+- Posted roles expose only name, one-liner, thesis statement and the role.
+- Backers: `discoverable` needs a thesis and a sector; the teaser shows only
+  what the teaser page lists. `mentionsTerms()` guards every backer-facing
+  field; `<NotAnOffer />` sits on every backer surface.
+- Every signal writes a Notification for the recipient (and one when answered).
+
 ## Running locally
 
 ```

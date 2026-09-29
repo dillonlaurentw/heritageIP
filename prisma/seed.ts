@@ -10,6 +10,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { hubs, partners, people, plans } from "./seed-data";
 import { seedPrivatePages, seedTidewaterPages, seedWorkspaceContent } from "./seed-content";
+import { seedNetwork } from "./seed-network";
 
 const db = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }) });
 const DAY = 86_400_000;
@@ -148,6 +149,8 @@ async function main() {
     await db.partner.upsert({ where: { slug: p.slug }, create: row, update: row });
   }
   console.log(`Seeded ${partners.length} partners.`);
+
+  await seedNetwork(db, idOf);
 }
 
 main()

@@ -1,14 +1,17 @@
 import { Sparkles } from "lucide-react";
 import type { Metadata } from "next";
 import type { Route } from "next";
+import Link from "next/link";
 import { DatabaseView } from "@/components/database/DatabaseView";
 import { LinkButton } from "@/components/ui/Button";
 import { RowProperties } from "@/components/database/RowProperties";
+import { StepConnections } from "@/components/network/StepConnections";
 import { GoalTasks } from "@/components/ops/GoalTasks";
 import { MeetingActions } from "@/components/ops/MeetingActions";
 import { PageView } from "@/components/page/PageView";
 import { loadDatabase } from "@/lib/databases";
 import { db } from "@/lib/db";
+import { stepSignals } from "@/lib/network";
 import { goalTasks, meetingTasks } from "@/lib/ops";
 import { ancestors, getPageAccess, pageHref } from "@/lib/pages";
 import { requireOnboarded } from "@/lib/session";
@@ -41,6 +44,8 @@ export default async function PageRoute({ params }: { params: Promise<{ ws: stri
   const parentKey = parentDb?.database.systemKey;
   const fromMeeting = parentKey === "meetings" ? await meetingTasks(page.workspaceId, ws, page.id) : null;
   const forGoal = parentKey === "goals" ? await goalTasks(page.workspaceId, ws, page.id) : null;
+  const forStep = parentKey === "gamePlan" ? await stepSignals(page.id, viewer.user.id) : null;
+  const postedRole = parentKey === "roles" && (page.props as Record<string, unknown> | null)?.posted === true;
   const tasksDb = forGoal
     ? await db.page.findUnique({ where: { workspaceId_systemKey: { workspaceId: page.workspaceId, systemKey: "tasks" } }, select: { id: true } })
     : null;
@@ -97,6 +102,15 @@ export default async function PageRoute({ params }: { params: Promise<{ ws: stri
           <>
             <RowProperties initial={parentDb} rowId={page.id} />
             {forGoal && <GoalTasks tasks={forGoal} tasksHref={tasksDb ? pageHref(ws, tasksDb.id) : null} />}
+            {forStep && <StepConnections items={forStep} />}
+            {postedRole && (
+              <p className="mb-4 text-sm text-fg-muted">
+                Posted to the Network.{" "}
+                <Link href={`/network/roles/${page.id}` as Route} className="text-fg underline underline-offset-2">
+                  See the public role
+                </Link>
+              </p>
+            )}
           </>
         ) : undefined
       }
