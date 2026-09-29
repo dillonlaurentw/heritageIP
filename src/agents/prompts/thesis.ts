@@ -4,7 +4,7 @@ import { defineAgent } from "../define";
 
 export type ThesisCtx = {
   builder: BuilderContext;
-  hubName: string;
+  companyName: string;
   rawIdea: string;
   /** Answers so far, across rounds. */
   qa: QA[];
@@ -24,7 +24,7 @@ unknown, ask or leave it as an open question.`;
 
 function situation(ctx: ThesisCtx) {
   return [
-    `Hub: ${ctx.hubName}`,
+    `Company: ${ctx.companyName}`,
     `Raw idea, in the builder's words:\n"""${ctx.rawIdea}"""`,
     ctx.current ? `Current thesis:\n${thesisBlock(ctx.current)}` : null,
     ctx.qa.length ? `Questions answered so far:\n${qaBlock(ctx.qa)}` : null,
@@ -107,7 +107,7 @@ than papering over it.`,
   demo: (ctx) => {
     const a = (i: number) => ctx.qa[i]?.answer?.trim() || undefined;
     return {
-      statement: `${ctx.hubName} exists because ${ctx.rawIdea.split(/[.!?]/)[0].trim().toLowerCase()}, and the people who feel it most have been ignored.`,
+      statement: `${ctx.companyName} exists because ${ctx.rawIdea.split(/[.!?]/)[0].trim().toLowerCase()}, and the people who feel it most have been ignored.`,
       problem: ctx.rawIdea.trim(),
       audience: a(0) ?? "A specific first customer you can name and reach this month.",
       whyNow: a(1) ?? "Costs have dropped and habits have shifted enough that this is newly possible.",

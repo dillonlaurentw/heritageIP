@@ -30,19 +30,27 @@ const id = () => `b${Date.now().toString(36)}${(counter++).toString(36)}`;
 
 type Inline = { type: "text"; text: string; styles: Record<string, boolean> };
 const t = (text: string, styles: Record<string, boolean> = {}): Inline => ({ type: "text", text, styles });
+/** Inline content for a string; empty strings make no text node (the editor rejects empty ones). */
+const c = (text: string, styles: Record<string, boolean> = {}): Inline[] => (text ? [t(text, styles)] : []);
 
 /** Build BlockNote blocks on the server (templates, seed data, AI output). */
 export const B = {
-  p: (text = "", bold = false) => ({ id: id(), type: "paragraph", props: {}, content: text ? [t(text, bold ? { bold: true } : {})] : [], children: [] }),
-  h1: (text: string) => ({ id: id(), type: "heading", props: { level: 1 }, content: [t(text)], children: [] }),
-  h2: (text: string) => ({ id: id(), type: "heading", props: { level: 2 }, content: [t(text)], children: [] }),
-  h3: (text: string) => ({ id: id(), type: "heading", props: { level: 3 }, content: [t(text)], children: [] }),
-  bullet: (text: string) => ({ id: id(), type: "bulletListItem", props: {}, content: [t(text)], children: [] }),
-  number: (text: string) => ({ id: id(), type: "numberedListItem", props: {}, content: [t(text)], children: [] }),
-  todo: (text: string, checked = false) => ({ id: id(), type: "checkListItem", props: { checked }, content: [t(text)], children: [] }),
-  quote: (text: string) => ({ id: id(), type: "quote", props: {}, content: [t(text)], children: [] }),
-  /** A callout-style lead paragraph with a bold label: "Problem. People…" */
-  labeled: (label: string, text: string) => ({ id: id(), type: "paragraph", props: {}, content: [t(`${label} `, { bold: true }), t(text)], children: [] }),
+  p: (text = "", bold = false) => ({ id: id(), type: "paragraph", props: {}, content: c(text, bold ? { bold: true } : {}), children: [] }),
+  h1: (text: string) => ({ id: id(), type: "heading", props: { level: 1 }, content: c(text), children: [] }),
+  h2: (text: string) => ({ id: id(), type: "heading", props: { level: 2 }, content: c(text), children: [] }),
+  h3: (text: string) => ({ id: id(), type: "heading", props: { level: 3 }, content: c(text), children: [] }),
+  bullet: (text: string) => ({ id: id(), type: "bulletListItem", props: {}, content: c(text), children: [] }),
+  number: (text: string) => ({ id: id(), type: "numberedListItem", props: {}, content: c(text), children: [] }),
+  todo: (text: string, checked = false) => ({ id: id(), type: "checkListItem", props: { checked }, content: c(text), children: [] }),
+  quote: (text: string) => ({ id: id(), type: "quote", props: {}, content: c(text), children: [] }),
+  /** A lead paragraph with a bold label: "Problem. People…" */
+  labeled: (label: string, text: string) => ({
+    id: id(),
+    type: "paragraph",
+    props: {},
+    content: [...c(`${label} `, { bold: true }), ...c(text)],
+    children: [],
+  }),
 };
 
 /** Paragraph blocks from plain text, one per line; "- " lines become bullets. */

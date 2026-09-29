@@ -1,5 +1,8 @@
+import { Sparkles } from "lucide-react";
 import type { Metadata } from "next";
+import type { Route } from "next";
 import { DatabaseView } from "@/components/database/DatabaseView";
+import { LinkButton } from "@/components/ui/Button";
 import { RowProperties } from "@/components/database/RowProperties";
 import { PageView } from "@/components/page/PageView";
 import { loadDatabase } from "@/lib/databases";
@@ -55,6 +58,22 @@ export default async function PageRoute({ params }: { params: Promise<{ ws: stri
       canDeleteForever={canManage(role)}
       childPages={children.map((c) => ({ ...c, href: pageHref(ws, c.id) }))}
       people={members.map((m) => m.user).filter((u) => u.id !== viewer.user.id)}
+      topActions={
+        editable && page.systemKey === "thesis" ? (
+          <>
+            <LinkButton href={`/w/${ws}/thesis` as Route} variant="ghost" size="sm">
+              <Sparkles className="size-3.5" /> Sharpen with SELF
+            </LinkButton>
+            <LinkButton href={`/w/${ws}/plan` as Route} size="sm">
+              Plan with SELF
+            </LinkButton>
+          </>
+        ) : editable && page.systemKey === "gamePlan" ? (
+          <LinkButton href={`/w/${ws}/plan` as Route} variant="ghost" size="sm">
+            <Sparkles className="size-3.5" /> Plan with SELF
+          </LinkButton>
+        ) : undefined
+      }
       titlePlaceholder={page.kind === "DATABASE" ? "Untitled database" : "Untitled"}
       hideEditor={page.kind === "DATABASE"}
       hideChildren={page.kind !== "PAGE"}

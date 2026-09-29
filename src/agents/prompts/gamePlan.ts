@@ -1,9 +1,10 @@
 import { z } from "zod";
 import { builderBlock, SELF_VOICE, thesisBlock, type BuilderContext, type ThesisFields } from "../context";
 import { defineAgent } from "../define";
+import { NEED_TAGS } from "@/lib/needs";
 
 const STAGE = z.enum(["VALIDATE", "SETUP", "BUILD", "LAUNCH"]);
-const NEED = z.enum(["COFOUNDER", "SUPPLIER", "LEGAL", "FUNDING", "MARKETING", "GTM", "WEBSITE", "MENTOR"]);
+const NEED = z.enum(NEED_TAGS);
 
 const planSchema = z.object({
   steps: z.array(
@@ -18,7 +19,7 @@ const planSchema = z.object({
 
 export type GamePlanCtx = {
   builder: BuilderContext;
-  hubName: string;
+  companyName: string;
   thesis: ThesisFields;
   /** Steps already done; the plan should build on them, not repeat them. */
   done: string[];
@@ -42,9 +43,11 @@ Tag each step with what it needs from other people:
 COFOUNDER (a co-founder or key early teammate), SUPPLIER (manufacturing or
 sourcing), LEGAL (formation, contracts, IP, compliance), FUNDING (backers or
 grants), MARKETING (brand, content), GTM (sales, distribution, channels),
-WEBSITE (a site or software built), MENTOR (advice from someone experienced).
+WEBSITE (a site or software built), DESIGN (product, brand or packaging
+design), FINANCE (bookkeeping, payroll, runway), MENTOR (advice from someone
+experienced).
 Only tag real needs. Lean on the builder's stated gaps.`,
-  prompt: (ctx: GamePlanCtx) => `Hub: ${ctx.hubName}
+  prompt: (ctx: GamePlanCtx) => `Company: ${ctx.companyName}
 
 ${thesisBlock(ctx.thesis)}
 
@@ -67,7 +70,7 @@ builder. No generic advice like "do market research".`,
         { stage: "BUILD", title: "Source the first production run", detail: "Two quotes, one sample, one small order you can afford to lose.", needs: ["SUPPLIER"] },
         { stage: "BUILD", title: "Build the smallest version that works", detail: "The embarrassing, specific version for your first three customers.", needs: ["WEBSITE"] },
         { stage: "BUILD", title: "Run a paid pilot with one customer", detail: "They pay something, you learn everything. Write down what broke.", needs: [] },
-        { stage: "LAUNCH", title: "Nail the one-line positioning", detail: `Why ${ctx.hubName}, for whom, instead of what. Test it on ten strangers.`, needs: ["MARKETING"] },
+        { stage: "LAUNCH", title: "Nail the one-line positioning", detail: `Why ${ctx.companyName}, for whom, instead of what. Test it on ten strangers.`, needs: ["MARKETING"] },
         { stage: "LAUNCH", title: "Open the first sales channel", detail: "One channel you can reach this month. Twenty conversations, five customers.", needs: ["GTM"] },
         { stage: "LAUNCH", title: "Launch to the first twenty customers", detail: "Small, loud, personal. Every customer hears from you directly.", needs: ["MARKETING", "GTM"] },
       ],

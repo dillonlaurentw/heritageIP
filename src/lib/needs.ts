@@ -40,6 +40,5 @@ export function needHref(need: Need, workspaceSlug: string, stepId?: string) {
   if (need === "COFOUNDER") return `/network/roles/post?${q}`;
   if (need === "FUNDING") return `/w/${workspaceSlug}/backers`;
   if (need === "MENTOR") return `/network/mentors?${q}`;
-  const cat = NEED_TO_CATEGORY[need];
-  return `/network/partners?${new URLSearchParams({ c: NEEDS[need].slug, ws: workspaceSlug, ...(stepId ? { step: stepId } : {}) })}${cat ? "" : ""}`;
+  return `/network/partners?${new URLSearchParams({ c: NEEDS[need].slug, ws: workspaceSlug, ...(stepId ? { step: stepId } : {}) })}`;
 }

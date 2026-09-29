@@ -1,4 +1,4 @@
-import { Settings, UserPlus } from "lucide-react";
+import { LayoutTemplate, Settings, UserPlus } from "lucide-react";
 import type { Metadata } from "next";
 import type { Route } from "next";
 import Link from "next/link";
@@ -9,7 +9,8 @@ import { PageIcon, WorkspaceMark } from "@/components/ui/PageIcon";
 import { db } from "@/lib/db";
 import { pageHref } from "@/lib/pages";
 import { requireOnboarded } from "@/lib/session";
-import { canManage } from "@/lib/workspace-rules";
+import { canEdit, canManage } from "@/lib/workspace-rules";
+import { Journey, journeyFor } from "./Journey";
 import { getWorkspaceAccess } from "@/lib/workspaces";
 import { ActivityFeed } from "./ActivityFeed";
 
@@ -22,7 +23,7 @@ export async function generateMetadata({ params }: { params: Promise<{ ws: strin
 export default async function WorkspaceHome({ params }: { params: Promise<{ ws: string }> }) {
   const viewer = await requireOnboarded();
   const { workspace, role } = await getWorkspaceAccess((await params).ws, viewer);
-  const [pages, members, activity] = await Promise.all([
+  const [pages, members, activity, journey] = await Promise.all([
     db.page.findMany({
       where: { workspaceId: workspace.id, parentId: null, archivedAt: null, kind: { in: ["PAGE", "DATABASE"] } },
       orderBy: { position: "asc" },
@@ -39,17 +40,25 @@ export default async function WorkspaceHome({ params }: { params: Promise<{ ws: 
       take: 12,
       include: { actor: { select: { name: true } }, page: { select: { id: true, title: true, archivedAt: true } } },
     }),
+    journeyFor(workspace.id, workspace.slug),
   ]);
 
   return (
     <Screen
       crumbs={[{ label: workspace.name }]}
       actions={
-        canManage(role) ? (
-          <LinkButton href={`/w/${workspace.slug}/settings` as Route} variant="ghost" size="sm">
-            <Settings className="size-4" /> Settings
-          </LinkButton>
-        ) : undefined
+        <>
+          {canEdit(role) && (
+            <LinkButton href={`/w/${workspace.slug}/templates` as Route} variant="ghost" size="sm">
+              <LayoutTemplate className="size-4" /> Templates
+            </LinkButton>
+          )}
+          {canManage(role) && (
+            <LinkButton href={`/w/${workspace.slug}/settings` as Route} variant="ghost" size="sm">
+              <Settings className="size-4" /> Settings
+            </LinkButton>
+          )}
+        </>
       }
     >
       <div className="mb-10 flex items-start gap-4">
@@ -70,6 +79,8 @@ export default async function WorkspaceHome({ params }: { params: Promise<{ ws: 
           )}
         </div>
       </div>
+
+      {workspace.kind === "TEAM" && <Journey journey={journey} slug={workspace.slug} editable={canEdit(role)} memberCount={members.length} />}
 
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_20rem]">
         <section>

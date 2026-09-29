@@ -98,7 +98,7 @@ function StatusDot({ group }: { group?: string }) {
     <span
       aria-hidden
       className={cn(
-        "size-2 rounded-full border",
+        "mr-1 inline-block size-2 shrink-0 rounded-full border align-[0.5px]",
         group === "done" ? "border-current bg-current" : group === "doing" ? "border-current bg-current/40" : "border-current",
       )}
     />

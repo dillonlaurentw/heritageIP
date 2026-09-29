@@ -213,6 +213,34 @@ generic dashboard widgets (donut charts, KPI cards), cinematic type inside the a
 - If a request is technically unwise, say so and propose an alternative.
 - Explain decisions in plain language; the founder is not an engineer by background.
 
+## Self2 conventions (by area)
+
+### Workspaces, pages, databases (Phases 1–3)
+- Access: `getWorkspaceAccess(slug)` / `getPageAccess()` in pages (non-members get a
+  404), `requireWorkspaceRole(id, viewer, "MEMBER")` in actions. Role rules are pure
+  and tested in `src/lib/workspace-rules.ts` (OWNER > ADMIN > MEMBER > GUEST;
+  guests read only).
+- Every page body is BlockNote JSON; `blocksToText()` fills `Page.text` for search.
+  Build seed/agent content with the `B` builders in `src/lib/blocks.ts`.
+- Databases are Pages (`kind: DATABASE`) with a `schema`; rows are Pages
+  (`kind: ROW`) with `props` keyed by property id. View logic (filter, sort,
+  group) is pure in `src/lib/db-schema.ts`.
+- Built-in databases (Tasks, Game plan, Roles, Meetings, Goals, CRM) are defined
+  once in `src/lib/system-dbs.ts` with fixed property ids and found by
+  `systemKey`. Create them with `ensureSystemDb()`, never by hand.
+- Seed code must not import `server-only` modules; keep shared logic in pure files.
+
+### Idea → thesis → game plan (Phase 4)
+- The thesis is an ordinary page with `systemKey: "thesis"`. Its sections are
+  read back from the blocks (`thesisFromBlocks`, `src/lib/thesis-doc.ts`), so
+  edits made on the page count. Saving from the studio snapshots a PageVersion.
+- The game plan is the `gamePlan` system database. Steps SELF added carry
+  `template: "ai-step"`; a new plan archives those that aren't done and keeps
+  done steps and steps people wrote.
+- `/w/[ws]/thesis` and `/w/[ws]/plan` propose; nothing is written until
+  "Use this" / "Add N steps". Need tags on a step link out via `needHref()`.
+- Templates live in `src/lib/templates.ts` (flows, pages, databases).
+
 ## Running locally
 
 ```

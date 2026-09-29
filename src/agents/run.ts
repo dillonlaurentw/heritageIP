@@ -11,7 +11,7 @@ export type AgentResult<T> =
   | { ok: true; output: T; demo: boolean }
   | { ok: false; reason: "capped" | "refused" | "error"; message: string };
 
-type RunMeta = { userId: string; hubId?: string | null };
+type RunMeta = { userId: string; workspaceId?: string | null };
 
 /** Calls today that count against the user's cap. */
 export async function runsToday(userId: string) {
@@ -42,7 +42,7 @@ export async function runAgent<Ctx, Out extends z.ZodType>(
     error?: string;
   }) =>
     db.agentRun.create({
-      data: { userId: meta.userId, hubId: meta.hubId ?? null, purpose: agent.purpose, model: AGENT_MODEL, ...data },
+      data: { userId: meta.userId, workspaceId: meta.workspaceId ?? null, purpose: agent.purpose, model: AGENT_MODEL, ...data },
     });
 
   // Demo mode: no key configured. Canned but realistic output, zero cost.

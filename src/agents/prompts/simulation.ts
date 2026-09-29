@@ -7,7 +7,7 @@ export type SimPerson = { name: string; persona: string };
 export type SimTurnCtx = {
   scenarioTitle: string;
   scenarioBrief: string;
-  hubContext: string | null; // e.g. "Tidewater Kelp: <thesis statement>"
+  companyContext: string | null; // e.g. "Tidewater Kelp: <thesis statement>"
   people: SimPerson[];
   speaker: number; // index into people
   transcript: { speaker: string; text: string }[];
@@ -49,7 +49,7 @@ export const simulationTurnAgent = defineAgent({
       ctx.turn >= ctx.maxTurns - 1 ? "\nThe meeting is nearly over: move toward a decision or name what's unresolved." : "";
     return `Scenario: ${ctx.scenarioTitle}
 ${ctx.scenarioBrief}
-${ctx.hubContext ? `\nContext: ${ctx.hubContext}\n` : ""}
+${ctx.companyContext ? `\nContext: ${ctx.companyContext}\n` : ""}
 The people in the room:
 
 ${cast(ctx.people)}

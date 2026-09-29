@@ -6,7 +6,8 @@ import type { PrismaClient } from "../src/generated/prisma/client";
 import type { Prisma } from "../src/generated/prisma/client";
 import { B, blocksToText } from "../src/lib/blocks";
 import { SYSTEM_DBS, SYSTEM_RELATIONS, type SystemKey } from "../src/lib/system-dbs";
-import type { SeedHub } from "./seed-data";
+import { thesisToBlocks } from "../src/lib/thesis-doc";
+import type { SeedHub, SeedStep } from "./seed-data";
 
 type Ws = { id: string; slug: string; name: string; createdById: string };
 type IdOf = (key: string) => string;
@@ -52,7 +53,7 @@ export async function page(
   });
 }
 
-export async function seedWorkspaceContent(db: PrismaClient, ws: Ws, h: SeedHub) {
+export async function seedWorkspaceContent(db: PrismaClient, ws: Ws, h: SeedHub, plan?: SeedStep[]) {
   await page(db, ws, {
     title: "Start here",
     content: [
@@ -65,6 +66,23 @@ export async function seedWorkspaceContent(db: PrismaClient, ws: Ws, h: SeedHub)
       B.todo("Press ⌘K to jump anywhere, or type / on a page to add blocks"),
     ],
   });
+  // Phase 4: the thesis as a page, and the game plan as a database.
+  if (h.thesis) {
+    await page(db, ws, { title: "Thesis", icon: "💡", systemKey: "thesis", content: thesisToBlocks(h.thesis), daysAgo: 6 });
+  }
+  if (plan?.length) {
+    await seedSystemDb(
+      db,
+      ws,
+      "gamePlan",
+      plan.map(([stage, title, detail, needs, done]) => ({
+        title,
+        props: { stage, status: done ? "done" : "todo", needs },
+        content: detail ? [B.p(detail)] : [],
+        template: "ai-step",
+      })),
+    );
+  }
 }
 
 /** Phase 2: a few real-looking pages, nested, for the demo company. */
@@ -157,7 +175,7 @@ export async function seedSystemDb(
   db: PrismaClient,
   ws: Ws,
   key: SystemKey,
-  rows: { key?: string; title: string; props?: Record<string, unknown>; content?: unknown[]; createdById?: string; daysAgo?: number }[],
+  rows: { key?: string; title: string; props?: Record<string, unknown>; content?: unknown[]; createdById?: string; daysAgo?: number; template?: string }[],
   opts: { parentId?: string | null; createdById?: string } = {},
 ) {
   const def = SYSTEM_DBS[key];
@@ -184,6 +202,7 @@ export async function seedSystemDb(
       content: r.content ?? [],
       createdById: r.createdById ?? opts.createdById,
       daysAgo: r.daysAgo,
+      template: r.template,
     });
     ids[r.key ?? r.title] = row.id;
   }

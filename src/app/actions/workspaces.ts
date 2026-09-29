@@ -35,7 +35,8 @@ export async function createWorkspaceAction(_prev: CreateState, form: FormData):
     return { errors };
   }
   const ws = await createWorkspace(parsed.data, viewer.user.id);
-  redirect(`/w/${ws.slug}` as never);
+  // Started from an idea: go straight to turning it into a thesis.
+  redirect((parsed.data.rawIdea ? `/w/${ws.slug}/thesis` : `/w/${ws.slug}`) as never);
 }
 
 const settings = z.object({
