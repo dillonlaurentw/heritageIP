@@ -293,6 +293,21 @@ generic dashboard widgets (donut charts, KPI cards), cinematic type inside the a
   field; `<NotAnOffer />` sits on every backer surface.
 - Every signal writes a Notification for the recipient (and one when answered).
 
+### Personal agents and simulations (Phase 8)
+- `/me/agent` shows exactly `personaText()` (saved persona, else a plain
+  restatement of the person's answers). "Rebuild" is a proposal; only Save or
+  "Use this" writes. Opt-in is off by default and revocable there.
+- `src/lib/simulations.ts`: `eligiblePeople()` = teammates in shared TEAM
+  workspaces, candidates who signalled interest in the viewer's roles, and
+  accepted connections. Rules stay pure in `simulation-rules.ts`.
+- Each simulation freezes `personaSnapshot` + `consentAt` per participant and
+  may carry a `workspaceId` (the agents see its name and thesis statement).
+- Consent is re-checked every turn; any opt-out cancels (no report). Only
+  participants can open a simulation; others get a SIMULATION notification and
+  an email when it finishes. No scores, ranks or verdicts anywhere.
+- Routes: `/me/agent`, `/simulations`, `/simulations/new`, `/simulations/[id]`
+  (also in the user menu).
+
 ## Running locally
 
 ```

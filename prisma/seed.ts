@@ -11,6 +11,7 @@ import { PrismaClient } from "../src/generated/prisma/client";
 import { hubs, partners, people, plans } from "./seed-data";
 import { seedPrivatePages, seedTidewaterPages, seedWorkspaceContent } from "./seed-content";
 import { seedNetwork } from "./seed-network";
+import { seedSimulations } from "./seed-sims";
 
 const db = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }) });
 const DAY = 86_400_000;
@@ -151,6 +152,7 @@ async function main() {
   console.log(`Seeded ${partners.length} partners.`);
 
   await seedNetwork(db, idOf);
+  await seedSimulations(db, idOf);
 }
 
 main()

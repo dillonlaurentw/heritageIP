@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Bot,
   Check,
   ChevronsUpDown,
   Home,
@@ -11,6 +12,7 @@ import {
   Settings,
   Shield,
   Sparkles,
+  Theater,
   Trash2,
   User,
   Users,
@@ -119,6 +121,12 @@ export function Sidebar(p: SidebarProps) {
             <MenuSeparator />
             <MenuItem icon={<User />} render={<Link href="/me" />}>
               Your profile
+            </MenuItem>
+            <MenuItem icon={<Bot />} render={<Link href="/me/agent" />}>
+              Your agent
+            </MenuItem>
+            <MenuItem icon={<Theater />} render={<Link href="/simulations" />}>
+              Simulations
             </MenuItem>
             {p.user.isAdmin && (
               <MenuItem icon={<Shield />} render={<Link href="/admin" />}>
