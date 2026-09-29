@@ -9,4 +9,5 @@ export { gamePlanAgent, type GamePlanCtx } from "./prompts/gamePlan";
 export { pageAssistAgent, type PageAssistOutput } from "./prompts/pageAssist";
 export { agentChatAgent, routerAgent, type AgentChatOutput } from "./prompts/workspaceAgents";
 export { defaultPersona, personaAgent } from "./prompts/persona";
+export { selfSuggestAgent, type SelfSuggestCtx } from "./prompts/self";
 export { fitReportAgent, simulationTurnAgent, type SimPerson, type SimTurnCtx } from "./prompts/simulation";

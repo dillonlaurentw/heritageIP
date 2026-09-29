@@ -243,7 +243,7 @@ function Done({ name }: { name: string }) {
     <form action={completeOnboarding}>
       <h1 className="text-2xl font-semibold tracking-tight">Thanks, {first}. What are you building?</h1>
       <p className="mt-2 text-md text-fg-muted">
-        Everything you wrote stays editable on your profile. It also teaches your personal agent how you think.
+        Everything you wrote stays editable on your profile. It also becomes the first draft of your Self, the AI version of you, which you can read and change.
       </p>
       <Button type="submit" variant="primary" size="md" className="mt-8">
         Take me in

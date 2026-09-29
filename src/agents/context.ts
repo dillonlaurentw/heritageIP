@@ -12,6 +12,8 @@ export type BuilderContext = {
   strengths?: string | null;
   gaps?: string | null;
   decisionStyle?: string | null;
+  /** Their Self (Self3), rendered from the lines they approved. Preferred over the raw answers. */
+  self?: string | null;
 };
 
 export function builderBlock(b: BuilderContext) {
@@ -24,6 +26,7 @@ export function builderBlock(b: BuilderContext) {
     ["Strengths", b.strengths],
     ["Needs others for", b.gaps],
     ["Makes hard calls by", b.decisionStyle],
+    ["Their Self, in lines they approved", b.self],
   ];
   return rows
     .filter(([, v]) => v && v.trim())

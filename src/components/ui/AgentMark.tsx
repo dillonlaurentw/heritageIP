@@ -11,7 +11,7 @@ export function AgentMark({ mark, size = "md", className, label }: { mark: strin
       aria-hidden={label ? undefined : true}
       className={cn("inline-flex shrink-0 items-center justify-center bg-agent font-mono text-fg-muted", sizes[size], className)}
     >
-      {mark.slice(0, 2)}
+      {mark.slice(0, 4)}
     </span>
   );
 }

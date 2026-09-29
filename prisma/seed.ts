@@ -7,13 +7,14 @@
  */
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "../src/generated/prisma/client";
+import { Prisma, PrismaClient } from "../src/generated/prisma/client";
 import { hubs, partners, people, plans } from "./seed-data";
 import { seedPrivatePages, seedTidewaterPages, seedWorkspaceContent } from "./seed-content";
 import { seedNetwork } from "./seed-network";
 import { seedComments } from "./seed-comments";
 import { seedSimulations } from "./seed-sims";
 import { seedUsage } from "./seed-usage";
+import { seedSelf } from "./seed-self";
 
 const db = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }) });
 const DAY = 86_400_000;
@@ -42,7 +43,7 @@ async function seedPeople() {
     const blank = {
       beliefs: null, workStyle: null, buildingToward: null, strengths: null, gaps: null,
       decisionStyle: null, mentorNote: null, backerNote: null, partnerOrgName: null, contactLink: null, mentorOpen: true,
-      persona: null, personaUpdatedAt: null, simOptIn: false, simOptInAt: null,
+      persona: null, personaUpdatedAt: null, simOptIn: false, simOptInAt: null, selfDoc: Prisma.DbNull,
     };
     const data = {
       ...blank,
@@ -157,6 +158,7 @@ async function main() {
   await seedSimulations(db, idOf);
   await seedComments(db, idOf);
   await seedUsage(db, idOf);
+  await seedSelf(db, idOf);
 }
 
 main()

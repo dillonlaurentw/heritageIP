@@ -22,7 +22,7 @@ export default async function NewSimulationPage() {
       {!viewer.profile.simOptIn ? (
         <p className="rounded-lg bg-bg-subtle px-4 py-3 text-sm">
           Your own agent has to opt in first.{" "}
-          <Link href="/me/agent" className="font-medium text-accent-text hover:underline">
+          <Link href="/me/self" className="font-medium text-accent-text hover:underline">
             Turn on simulations →
           </Link>
         </p>

@@ -7,6 +7,7 @@ import { scenarioByKey } from "./scenarios";
 import type { Viewer } from "./session";
 import { checkParticipants, shouldStop, SIM_LIMITS, speakerIndex } from "./simulation-rules";
 import { readThesis } from "./thesis";
+import { parseSelfDoc, renderPersona } from "./self-doc";
 
 const appUrl = () => process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
 
@@ -19,10 +20,16 @@ type ProfileLike = {
   gaps: string | null;
   decisionStyle: string | null;
   persona: string | null;
+  selfDoc?: unknown;
 };
 
-/** Exactly what someone's personal agent is given: their saved persona, or a plain restatement of their answers. */
+/**
+ * Exactly what someone's personal agent is given: the lines of their Self
+ * (Self3), else a saved Self2 persona, else a plain restatement of their answers.
+ */
 export function personaText(name: string, p: ProfileLike) {
+  const self = parseSelfDoc(p.selfDoc);
+  if (self && self.lines.length > 0) return renderPersona(name, self, p.headline);
   if (p.persona?.trim()) return p.persona.trim();
   const b: BuilderContext = { name, ...p };
   return defaultPersona(b);
@@ -263,7 +270,7 @@ export async function finishSimulation(simId: string, viewer: Viewer) {
       sendEmail({
         to: p.user.email,
         subject: `Your agent took part in a simulation: ${sim.scenarioTitle}`,
-        text: `${viewer.user.name} ran a SIMULATION ("${sim.scenarioTitle}") that included your personal agent, with your opt-in.\n\nIt's an AI stand-in built from the persona you approved, not you. Read the transcript and the conversation starters: ${appUrl()}/simulations/${sim.id}\n\nYou can turn simulations off any time: ${appUrl()}/me/agent`,
+        text: `${viewer.user.name} ran a SIMULATION ("${sim.scenarioTitle}") that included your personal agent, with your opt-in.\n\nIt's an AI stand-in built from the persona you approved, not you. Read the transcript and the conversation starters: ${appUrl()}/simulations/${sim.id}\n\nYou can turn simulations off any time: ${appUrl()}/me/self`,
       }),
     ),
   );

@@ -71,10 +71,10 @@ export function ProfileForm({ initial }: { initial: V }) {
 
       <Section
         title="How you think"
-        hint="Your personal agent is built from these answers."
+        hint="Your Self starts from these answers. You can change it line by line."
         extra={
-          <Link href="/me/agent" className="text-sm font-medium text-accent-text hover:underline">
-            Your agent →
+          <Link href="/me/self" className="text-sm font-medium text-accent-text hover:underline">
+            Your Self →
           </Link>
         }
         onSave={() => save(REFLECT.map((r) => r.field))}

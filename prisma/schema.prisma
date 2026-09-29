@@ -130,8 +130,12 @@ model Profile {
 
   // Personal agent (Phase 9). `persona` is exactly what the agent is given;
   // the person can always read and edit it. Simulations need explicit opt-in.
-  persona          String?
+  persona          String? // Self2 free-text persona; Self3 uses selfDoc when present
   personaUpdatedAt DateTime?
+  /// Your Self (Self3): short lines you can read and edit, plus "Is this you?"
+  /// suggestions. Shape and rules: src/lib/self-doc.ts. The agent is given
+  /// exactly the rendered lines, never pending suggestions.
+  selfDoc          Json?
   simOptIn         Boolean   @default(false)
   simOptInAt       DateTime?
   backerNote       String? // what they back. Never amounts or terms.

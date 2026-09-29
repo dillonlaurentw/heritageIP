@@ -4,6 +4,7 @@ import {
   Bot,
   Check,
   ChevronsUpDown,
+  Fingerprint,
   Home,
   Inbox,
   LogOut,
@@ -136,8 +137,8 @@ export function Sidebar(p: SidebarProps) {
             <MenuItem icon={<User />} render={<Link href="/me" />}>
               Your profile
             </MenuItem>
-            <MenuItem icon={<Bot />} render={<Link href="/me/agent" />}>
-              Your agent
+            <MenuItem icon={<Bot />} render={<Link href="/me/self" />}>
+              Your Self
             </MenuItem>
             <MenuItem icon={<Theater />} render={<Link href="/simulations" />}>
               Simulations
@@ -166,6 +167,7 @@ export function Sidebar(p: SidebarProps) {
             <Kbd>⌘K</Kbd>
           </button>
           {navLink("/home", "You", <Home />)}
+          {navLink("/me/self", "Your Self", <Fingerprint />)}
           {navLink(
             "/inbox",
             "Inbox",

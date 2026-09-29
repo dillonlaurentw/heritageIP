@@ -11,7 +11,7 @@ export default async function ProfilePage() {
     <Screen
       crumbs={[{ label: "Your profile" }]}
       title="Your profile"
-      description="How you show up on SELF. Your answers also teach your personal agent how you think; you can see exactly what it's given under Your agent."
+      description="How you show up on SELF. Your answers are where your Self starts; you can see and change every line of it under Your Self."
       width="narrow"
     >
       <ProfileForm

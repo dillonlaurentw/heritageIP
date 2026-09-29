@@ -35,7 +35,7 @@ export default async function SimulationsPage() {
       description="Rehearsals between AI stand-ins, built from personas people wrote and approved. Transcripts and conversation starters; never scores."
       headerActions={
         <>
-          <LinkButton href="/me/agent">Your agent</LinkButton>
+          <LinkButton href="/me/self">Your Self</LinkButton>
           <LinkButton href="/simulations/new" variant="primary">
             <Plus className="size-4" /> New simulation
           </LinkButton>

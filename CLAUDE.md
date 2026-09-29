@@ -383,6 +383,22 @@ orange fills, KPI cards or donut charts, scores or percentages about people.
   `needsYou()` (`src/lib/needs-you.ts`): requests waiting on you, the next step
   on the path (thesis, plan), and open chairs.
 
+### Your Self (Self3 phase 3)
+- Your Self is `Profile.selfDoc`: short lines in seven facets (believe, why,
+  decide, energy, strengths and gaps, non-negotiables, building toward), each
+  with a source, plus "Is this you?" suggestions. Shape and all rules are pure
+  in `src/lib/self-doc.ts` (tested); server code in `src/lib/self.ts`.
+- Until someone first changes it, their Self is built from their onboarding
+  answers on the fly (`selfOf`). Every change goes through `applySelfOp`.
+- **The agent is given exactly the approved lines** (`renderPersona`), used by
+  `personaText()` for rehearsals and by `builderContext()` for every agent.
+  Pending or rejected suggestions are never shown to any agent.
+- Suggestions come from `selfSuggestAgent`, grounded only in evidence from
+  SELF (thesis fields, thesis answers); nothing sensitive, no labels, max three
+  pending, and answered ones never come back.
+- `/me/self` is the page; `/me/agent` redirects there. Opt-in for rehearsals
+  (`simOptIn`) is on that page and stays off by default.
+
 ## Running locally
 
 ```
