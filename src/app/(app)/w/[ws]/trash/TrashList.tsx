@@ -26,7 +26,7 @@ export function TrashList({ items }: { items: Item[] }) {
       }
     });
   return (
-    <ul className="divide-y divide-border rounded-lg border border-border">
+    <ul className="divide-y divide-border rounded-xl bg-surface shadow-card">
       {items.map((i) => (
         <li key={i.id} className="flex items-center gap-3 px-4 py-2.5">
           <PageIcon icon={i.icon} />

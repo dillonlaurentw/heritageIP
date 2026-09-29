@@ -185,7 +185,7 @@ export function CalendarView({ api, rows, config }: { api: DbApi; rows: ViewRow[
           return (
             <div key={key} className={cn("group min-h-24 border-r border-b border-border p-1", !inMonth && "bg-bg-subtle")}>
               <div className="flex items-center justify-between">
-                <span className={cn("flex size-5 items-center justify-center rounded-full", key === today ? "bg-accent text-accent-fg" : inMonth ? "text-fg-muted" : "text-fg-subtle")}>
+                <span className={cn("flex size-5 items-center justify-center rounded-full", key === today ? "bg-primary text-primary-fg" : inMonth ? "text-fg-muted" : "text-fg-subtle")}>
                   {d.getUTCDate()}
                 </span>
                 {api.data.editable && (

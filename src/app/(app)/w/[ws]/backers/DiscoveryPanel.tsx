@@ -59,7 +59,7 @@ export function DiscoveryPanel({
 
   return (
     <div className="flex flex-col gap-5">
-      <label className="flex items-center gap-3 rounded-lg border border-border p-4">
+      <label className="flex items-center gap-3 rounded-xl bg-surface shadow-card p-4">
         <Switch
           label="Open to backers"
           checked={f.discoverable}

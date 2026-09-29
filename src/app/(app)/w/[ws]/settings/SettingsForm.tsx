@@ -21,7 +21,7 @@ export function SettingsForm({ workspace, canManage, isOwner, userId }: { worksp
 
   return (
     <div className="flex flex-col gap-8">
-      <section className="flex flex-col gap-4 rounded-lg border border-border p-5">
+      <section className="flex flex-col gap-4 rounded-xl bg-surface shadow-card p-5">
         <div className="flex items-center gap-3">
           <WorkspaceMark name={v.name || "?"} icon={v.icon} size="lg" />
           <div className="text-sm text-fg-muted">The mark shows the first letter, or a character you choose.</div>

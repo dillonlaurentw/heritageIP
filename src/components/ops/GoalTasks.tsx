@@ -31,7 +31,7 @@ export function GoalTasks({ tasks, tasksHref }: { tasks: { id: string; title: st
           {tasks.map((t) => (
             <li key={t.id}>
               <Link href={t.href as Route} className="flex items-center gap-2 rounded-md px-1.5 py-1 text-sm hover:bg-bg-hover">
-                <span className={cn("flex size-3.5 items-center justify-center rounded-sm border", t.done ? "border-accent bg-accent text-accent-fg" : "border-border-strong")}>
+                <span className={cn("flex size-3.5 items-center justify-center rounded-sm border", t.done ? "border-primary bg-primary text-primary-fg" : "border-border-strong")}>
                   {t.done && <Check className="size-2.5" />}
                 </span>
                 <span className={cn("truncate", t.done && "text-fg-muted line-through")}>{t.title}</span>

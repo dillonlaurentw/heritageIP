@@ -147,7 +147,7 @@ export function AskAIPanel({
                       onClick={() => setResult({ ...result, tasks: result.tasks.map((x, j) => (j === i ? { ...x, keep: !x.keep } : x)) })}
                       className={cn(
                         "mt-1 flex size-4 shrink-0 items-center justify-center rounded-sm border",
-                        t.keep ? "border-accent bg-accent text-accent-fg" : "border-border-strong",
+                        t.keep ? "border-primary bg-primary text-primary-fg" : "border-border-strong",
                       )}
                     >
                       {t.keep && <Check className="size-3" />}

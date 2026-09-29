@@ -74,7 +74,7 @@ export default async function HomePage() {
               <Link
                 key={w.id}
                 href={`/w/${w.slug}` as Route}
-                className="flex flex-col gap-3 rounded-lg border border-border p-4 transition-colors hover:border-border-strong hover:bg-bg-hover"
+                className="flex flex-col gap-3 rounded-xl bg-surface shadow-card p-4 transition-colors hover:border-border-strong hover:bg-bg-hover"
               >
                 <div className="flex items-center gap-2.5">
                   <WorkspaceMark name={w.name} icon={w.icon} size="md" />
@@ -95,7 +95,7 @@ export default async function HomePage() {
         {recent.length === 0 ? (
           <p className="text-sm text-fg-subtle">Pages you edit show up here.</p>
         ) : (
-          <ul className="divide-y divide-border rounded-lg border border-border">
+          <ul className="divide-y divide-border rounded-xl bg-surface shadow-card">
             {recent.map((p) => (
               <li key={p.id}>
                 <Link href={pageHref(p.workspace.slug, p.id) as Route} className="flex items-center gap-3 px-4 py-2.5 hover:bg-bg-hover">

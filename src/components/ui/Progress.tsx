@@ -6,7 +6,7 @@ export function Progress({ done, total, className }: { done: number; total: numb
   return (
     <span className={cn("inline-flex items-center gap-1.5 text-xs text-fg-muted", className)} title={`${done} of ${total} linked tasks done`}>
       <span className="h-1 w-16 overflow-hidden rounded-full bg-bg-active">
-        <span className="block h-full rounded-full bg-accent" style={{ width: `${pct}%` }} />
+        <span className="block h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
       </span>
       <span className="tabular-nums">
         {done}/{total}

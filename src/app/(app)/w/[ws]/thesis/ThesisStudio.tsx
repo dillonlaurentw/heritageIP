@@ -127,7 +127,7 @@ export function ThesisStudio(init: Props) {
         </p>
       </div>
 
-      <div className="rounded-lg border border-border p-4">
+      <div className="rounded-xl bg-surface shadow-card p-4">
         <AgentStatus name="Thesis agent" state={state} demo={demo} right={`Round ${Math.max(roundsUsed, 1)}/${init.maxRounds}`} />
         {init.workspace.rawIdea && (
           <blockquote className="mt-4 border-l-2 border-border-strong pl-3 text-md text-fg-muted">{init.workspace.rawIdea}</blockquote>
@@ -135,7 +135,7 @@ export function ThesisStudio(init: Props) {
       </div>
 
       {pastRounds.map((r) => (
-        <details key={r.round} className="rounded-lg border border-border px-4 py-3">
+        <details key={r.round} className="rounded-xl bg-surface shadow-card px-4 py-3">
           <summary className="cursor-pointer text-sm font-medium">Round {r.round}</summary>
           <p className="mt-3 text-sm text-fg-muted">{r.reflection}</p>
           <ul className="mt-3 flex flex-col gap-3">

@@ -74,7 +74,7 @@ export function OptInSwitch({ on }: { on: boolean }) {
   const router = useRouter();
   const [busy, start] = useTransition();
   return (
-    <label className="flex items-center gap-3 rounded-lg border border-border p-4">
+    <label className="flex items-center gap-3 rounded-xl bg-surface shadow-card p-4">
       <Switch
         label="Let my agent join simulations"
         checked={on}

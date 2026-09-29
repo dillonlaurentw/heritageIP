@@ -146,7 +146,7 @@ function Section({
   pending: boolean;
 }) {
   return (
-    <section className="rounded-lg border border-border">
+    <section className="rounded-xl bg-surface shadow-card">
       <div className="flex items-start justify-between gap-4 border-b border-border px-5 py-3.5">
         <div>
           <h2 className="text-base font-semibold">{title}</h2>

@@ -11,7 +11,7 @@ export function MagicLinkForm({ next }: { next?: string }) {
 
   if (state.status === "sent") {
     return (
-      <div className="flex flex-col items-center gap-2 rounded-lg border border-border p-6 text-center">
+      <div className="flex flex-col items-center gap-2 rounded-xl bg-surface shadow-card p-6 text-center">
         <MailCheck className="size-6 text-accent-text" />
         <p className="text-base font-medium">Check your inbox</p>
         <p className="text-sm text-fg-muted">

@@ -100,7 +100,7 @@ export function SimulationRoom({
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-border">
+    <div className="overflow-hidden rounded-xl bg-surface shadow-card">
       <div className="flex flex-wrap items-center gap-3 border-b border-border bg-bg-subtle px-4 py-2.5 font-mono text-2xs tracking-wider uppercase" aria-live="polite">
         <span className={cn("flex items-center gap-1.5", live ? "text-accent-text" : "text-fg-muted")}>
           <span className={cn("size-1.5 rounded-full", live ? "animate-pulse bg-accent" : "bg-fg-subtle")} />

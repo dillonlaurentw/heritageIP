@@ -71,7 +71,7 @@ export function PeopleManager(p: {
             </Button>
           )}
         </div>
-        <div className="overflow-hidden rounded-lg border border-border">
+        <div className="overflow-hidden rounded-xl bg-surface shadow-card">
           {p.members.map((m) => {
             const self = m.id === p.me.id;
             const changeable = (["ADMIN", "MEMBER", "GUEST"] as WorkspaceRole[]).filter(
@@ -158,7 +158,7 @@ export function PeopleManager(p: {
       {p.canInvite && p.invites.length > 0 && (
         <section>
           <h2 className="mb-3 text-sm font-medium text-fg-muted">Invited</h2>
-          <div className="overflow-hidden rounded-lg border border-border">
+          <div className="overflow-hidden rounded-xl bg-surface shadow-card">
             {p.invites.map((i) => (
               <div key={i.id} className="flex items-center gap-3 border-b border-border px-4 py-2.5 last:border-b-0">
                 <span className="min-w-0 flex-1 truncate text-base">{i.email}</span>

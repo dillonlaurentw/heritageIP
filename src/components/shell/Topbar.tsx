@@ -14,7 +14,7 @@ export type Crumb = { label: string; href?: string; icon?: string | null };
 export function Topbar({ crumbs, actions, className }: { crumbs: Crumb[]; actions?: ReactNode; className?: string }) {
   const { sidebarOpen, toggleSidebar } = useShell();
   return (
-    <header className={cn("sticky top-0 z-20 flex h-11 shrink-0 items-center gap-2 bg-bg/95 px-3 backdrop-blur-sm", className)}>
+    <header className={cn("sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 bg-bg/95 px-4 backdrop-blur-sm", className)}>
       <button
         type="button"
         onClick={toggleSidebar}

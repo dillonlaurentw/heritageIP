@@ -38,7 +38,7 @@ export function AdminFrame({ tab, title, description, children }: { tab: (typeof
 /** A plain admin table: header row + rows. */
 export function Table({ head, children }: { head: ReactNode[]; children: ReactNode }) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-border">
+    <div className="overflow-x-auto rounded-xl bg-surface shadow-card">
       <table className="w-full text-left text-sm">
         <thead className="border-b border-border bg-bg-subtle text-xs text-fg-muted">
           <tr>

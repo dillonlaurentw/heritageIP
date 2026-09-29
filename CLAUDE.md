@@ -6,16 +6,19 @@ docs and databases, with the path from idea → thesis → game plan built in,
 AI agents on every page, and a network for finding co-founders, mentors,
 partners (manufacturing, legal, marketing) and backers.
 
-**This is Self2**, a rebuild of Self1 (the "Project Hub" version, saved on the
-`self1` branch). Self2 keeps everything Self1 does and reorganises it around
-workspaces, pages and databases, with a calm, Notion-like design.
+**This is Self3.** Self2 (workspaces, pages, databases, agents, network,
+simulations, live co-editing) is the foundation; Self3 re-centres it on the
+founder: the ring of people around you (co-founders, partners, advisors,
+capital), your Self (the AI version of you), and a quiet, warm design. Self1
+(the "Project Hub" version) is saved on the `self1` branch.
 
 SELF does **not** build every service itself. It connects builders to the right
 people and partner platforms. Long-term vision: funds inside SELF where people
 invest in each other. **That is not built now** (see "Hard rules").
 
-The build plan lives in `docs/PLAN.md`. Build one phase at a time and get
-approval before starting the next.
+The build plan lives in `docs/PLAN.md` (Self3 phases first). Build one phase at
+a time and get approval before starting the next, unless the founder asks for
+the full build.
 
 ---
 
@@ -158,45 +161,55 @@ agents/
 
 ---
 
-## Design system: calm workspace
+## Design system: quiet and warm (Self3)
 
-Direction: calm, clear and fast, like Notion or Linear. People work in SELF all
-day, so the interface gets out of the way. Content leads; chrome is quiet. This
-applies everywhere, including the landing page.
+Direction: in the spirit of Jony Ive. Few elements, generous space, soft
+depth, nothing that shouts. Content leads; chrome is quiet. The prototype
+(claude.ai/artifact/YVGqq9CK1tV5Cj3VpG9pLZ) is the reference for every screen.
+
+### The ring
+- The signature: you in the middle, four arcs around you: **Co-founders**
+  (top-left), **Partners** (top-right), **Advisors** (bottom-right),
+  **Capital** (bottom-left). Layout rules are pure in `src/lib/ring.ts`;
+  draw it only with `<Ring>` (`src/components/ring/Ring.tsx`).
+- People are round (ink `Avatar`), firms are soft squares, agents are soft
+  squares with a mono mark (`AgentMark`), open chairs are dashed orange circles.
+- A dark stretch of arc means "working together"; grey means pending.
 
 ### Typography
-- **Inter** (variable) for everything: UI 13–14px, body text 15–16px with 1.6
-  line height, page titles 32–40px at 700. Max ~72ch for writing.
-- **IBM Plex Mono**, small, only for IDs, counts, code and metadata that should
-  line up (`HUB-03`, `12/40`). Not uppercase-shouting.
+- **Geist** for everything: UI 13–15px, body 15–17px with 1.55–1.6 line height,
+  page titles 44px at 500 with tight tracking. Max ~72ch for writing.
+- **Geist Mono**, small, only for agent marks, IDs, counts and SIMULATION labels.
+- The wordmark is `SELF`, 600, letter-spacing 0.18em.
 - Copy stays short and human ("What are you building?"). Never corporate.
 
 ### Color (tokens only, in `src/design/tokens.css`; never hardcode)
-- Light and dark mode, following the system setting, with a manual toggle.
-- Neutrals do the work: background, a slightly tinted sidebar/surface, borders,
-  primary/secondary/tertiary text.
-- **One accent: SELF orange `#FF5B1F`**, used for the primary action, focus
-  rings, selection and "live"/unread states. Never large fills.
-- Semantic colors (success, warning, danger) muted, plus a small set of soft tag
-  colors for database select options.
+- Warm paper background (`bg`), white cards (`surface`), ink text (`fg`),
+  greys for secondary text. Light and dark, following the system, with a toggle.
+- **Actions are black pills** (`bg-primary`). Checked boxes, progress and
+  switches are ink too.
+- **Orange (`accent`, #E4521B) means "needs you"**: open chairs, unread counts,
+  the dot at the centre, focus rings. Never large fills, never decoration.
+- Semantic colors muted; soft tag colors only for database select options.
 
-### Layout
-- App shell: left sidebar (workspace switcher, search, inbox, page tree,
-  personal space), top bar with breadcrumbs and page actions, content centered.
-- Pages: optional cover and icon, big title, then blocks. Full-width toggle.
-- Databases: dense tables, boards with simple cards. Hairline borders.
-- Radius 6px (inputs, buttons, cards), 8px for popovers. Shadows only on
-  floating things (menus, popovers, dialogs), soft and small.
-- Keyboard first: ⌘K command palette, `/` block menu, shortcuts everywhere.
+### Layout and shape
+- Cards: `Card` (`src/components/ui/Card.tsx`), white on paper, radius 20px,
+  soft small shadow. The one big sheet on a screen (a question, a thesis) uses
+  `lift` (radius 28px, long soft shadow).
+- Buttons are pills (`Button`): primary black, secondary white with a hairline.
+- App shell: quiet left sidebar on the same paper (wordmark, company switcher,
+  You, Inbox, Network…, page tree); the active item is a white pill.
+- Matches and fits are explained in words, never scored. Unknown numbers are
+  placeholders (`[TIMELINE]`), never invented.
+- Keyboard first: ⌘K command palette, `/` block menu.
 
 ### Motion
-- Quick and quiet: 120–200ms ease-out for menus, hovers and panels. No scroll
-  reveals, no page wipes, no big type animation.
+- Quick and quiet: 120–200ms ease-out. No scroll reveals, no page wipes.
 - `prefers-reduced-motion`: instant.
 
 ### Never
 Gradients, glows, emoji as decoration, stock illustrations, heavy shadows,
-generic dashboard widgets (donut charts, KPI cards), cinematic type inside the app.
+orange fills, KPI cards or donut charts, scores or percentages about people.
 
 ## Conventions
 

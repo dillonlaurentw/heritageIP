@@ -103,7 +103,7 @@ export default async function AdminUsage({ searchParams }: { searchParams: Promi
             <li key={r.key} className="grid grid-cols-[5rem_1fr_4.5rem_4.5rem] items-center gap-3 text-xs">
               <span className="text-fg-muted">{formatDate(r.key)}</span>
               <span className="h-2 rounded-sm bg-bg-subtle">
-                <span className="block h-full rounded-sm bg-accent" style={{ width: `${(r.cost / maxDay) * 100}%` }} />
+                <span className="block h-full rounded-sm bg-primary" style={{ width: `${(r.cost / maxDay) * 100}%` }} />
               </span>
               <span className="text-right tabular-nums">{r.runs ? formatUsd(r.cost) : "—"}</span>
               <span className="text-right text-fg-subtle tabular-nums">{r.runs} runs</span>

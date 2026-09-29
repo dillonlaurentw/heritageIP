@@ -23,7 +23,7 @@ export default async function InvitePage({ params }: { params: Promise<{ token: 
 
   return (
     <div className="flex min-h-dvh items-start justify-center px-6 pt-[16vh]">
-      <div className="w-full max-w-sm rounded-lg border border-border p-6 text-center">
+      <div className="w-full max-w-sm rounded-xl bg-surface shadow-card p-6 text-center">
         {!valid ? (
           <>
             <h1 className="text-lg font-semibold">This invite has expired</h1>

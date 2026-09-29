@@ -57,7 +57,7 @@ export default async function SimulationPage({ params }: { params: Promise<{ id:
         />
 
         {r && (
-          <section className="rounded-lg border border-border p-5">
+          <section className="rounded-xl bg-surface shadow-card p-5">
             <div className="flex flex-wrap items-center gap-2">
               <Tag color="purple">SIMULATION</Tag>
               <span className="text-xs text-fg-subtle">Conversation starters. No scores. Not a verdict on anyone.</span>

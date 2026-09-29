@@ -48,10 +48,10 @@ export default async function PartnersPage({ searchParams }: { searchParams: Pro
         <ul className="grid gap-3 sm:grid-cols-2">
           {partners.map((p) => (
             <li key={p.slug}>
-              <Link href={link(`/network/partners/${p.slug}`)} className="flex h-full flex-col gap-2 rounded-lg border border-border p-4 hover:border-border-strong hover:bg-bg-hover">
+              <Link href={link(`/network/partners/${p.slug}`)} className="flex h-full flex-col gap-2 rounded-xl bg-surface shadow-card p-4 hover:border-border-strong hover:bg-bg-hover">
                 <span className="flex items-center gap-2">
                   <span className="text-base font-semibold">{p.name}</span>
-                  {p.featured && <Tag color="orange">Featured</Tag>}
+                  {p.featured && <Tag>Featured</Tag>}
                   <span className="ml-auto text-xs text-fg-subtle">{p.location}</span>
                 </span>
                 <span className="text-sm text-fg-muted">{p.tagline}</span>

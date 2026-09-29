@@ -48,7 +48,7 @@ export default async function MentorsPage({ searchParams }: { searchParams: Prom
         <ul className="grid gap-3 sm:grid-cols-2">
           {mentors.map((m) => (
             <li key={m.userId}>
-              <Link href={withCarry(`/network/mentors/${m.userId}`)} className="flex h-full flex-col gap-2 rounded-lg border border-border p-4 hover:border-border-strong hover:bg-bg-hover">
+              <Link href={withCarry(`/network/mentors/${m.userId}`)} className="flex h-full flex-col gap-2 rounded-xl bg-surface shadow-card p-4 hover:border-border-strong hover:bg-bg-hover">
                 <span className="flex items-center gap-3">
                   <Avatar name={m.user.name} size="lg" />
                   <span className="min-w-0">

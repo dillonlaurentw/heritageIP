@@ -40,7 +40,7 @@ export default async function AgentsPage({ params }: { params: Promise<{ ws: str
             <li key={key}>
               <Link
                 href={`/w/${workspace.slug}/agents/${key}` as Route}
-                className="group flex h-full flex-col gap-2 rounded-lg border border-border p-4 transition-colors hover:border-border-strong hover:bg-bg-hover"
+                className="group flex h-full flex-col gap-2 rounded-xl bg-surface shadow-card p-4 transition-colors hover:border-border-strong hover:bg-bg-hover"
               >
                 <span className="flex items-center gap-2">
                   <span className="flex size-6 items-center justify-center rounded-md bg-accent-soft text-accent-text">

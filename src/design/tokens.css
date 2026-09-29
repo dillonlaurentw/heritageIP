@@ -1,6 +1,7 @@
 /*
- * SELF design tokens: a calm workspace. The ONLY place colors, type sizes,
- * radii, shadows and motion values are defined.
+ * SELF design tokens (Self3): quiet and warm. Warm paper, white cards with
+ * soft depth, black pills for actions, orange only for "needs you".
+ * The ONLY place colors, type sizes, radii, shadows and motion values live.
  *
  * Colors are CSS variables that switch between light and dark. Tailwind
  * utilities (bg-bg, text-fg-muted, border-border, bg-accent…) read them via
@@ -11,26 +12,37 @@
  */
 
 :root {
-  --bg: #ffffff;
-  --bg-subtle: #f7f7f5; /* sidebar, table header */
-  --bg-inset: #f1f1ef; /* inputs, code, wells */
-  --bg-hover: rgb(55 53 47 / 0.06);
-  --bg-active: rgb(55 53 47 / 0.1);
+  --bg: #f6f5f2; /* warm paper: the page */
+  --bg-subtle: #f0efeb; /* sidebar wells, table header */
+  --bg-inset: #ebeae6; /* inputs, code, quiet chips */
+  --bg-hover: rgb(29 29 31 / 0.05);
+  --bg-active: rgb(29 29 31 / 0.08);
   --bg-popover: #ffffff;
-  --overlay: rgb(15 15 15 / 0.35);
+  --surface: #ffffff; /* cards sit on the paper */
+  --overlay: rgb(29 29 31 / 0.3);
 
-  --fg: #26251f;
-  --fg-muted: #6b6a65;
-  --fg-subtle: #9c9b97;
+  --fg: #1d1d1f;
+  --fg-muted: #6e6e73;
+  --fg-subtle: #7f7f85;
 
-  --border: #e9e9e6;
-  --border-strong: #d8d7d3;
+  --border: #e6e5e1;
+  --border-strong: #d2d2d7;
 
-  --accent: #ff5b1f; /* SELF orange: primary action, focus, live states */
-  --accent-hover: #f04e12;
+  --primary: #1d1d1f; /* the black pill: primary actions */
+  --primary-hover: #000000;
+  --primary-fg: #f6f5f2;
+
+  --accent: #e4521b; /* SELF orange: "needs you", open chairs, focus. Never fills. */
+  --accent-hover: #cf4614;
   --accent-fg: #ffffff;
-  --accent-text: #d6470f; /* orange that's readable as text on --bg */
-  --accent-soft: rgb(255 91 31 / 0.12);
+  --accent-text: #c2440f;
+  --accent-soft: rgb(228 82 27 / 0.1);
+
+  /* The ring */
+  --ring-track: #e8e7e3;
+  --ring-link: #1d1d1f;
+  --agent-bg: #edece8;
+  --avatar-1: #1d1d1f; --avatar-2: #3a3a3c; --avatar-3: #6e6e73; --avatar-fg: #f6f5f2;
 
   --danger: #c9463d;
   --danger-soft: rgb(201 70 61 / 0.1);
@@ -50,33 +62,45 @@
   --tag-pink-bg: #f8e4ee; --tag-pink-fg: #9a3f6c;
   --tag-red-bg: #fbe3e1; --tag-red-fg: #a63a33;
 
-  --shadow-popover: 0 0 0 1px rgb(15 15 15 / 0.06), 0 4px 16px rgb(15 15 15 / 0.08);
-  --shadow-dialog: 0 0 0 1px rgb(15 15 15 / 0.06), 0 16px 48px rgb(15 15 15 / 0.16);
+  --shadow-popover: 0 0 0 1px rgb(29 29 31 / 0.05), 0 12px 32px -8px rgb(29 29 31 / 0.14);
+  --shadow-dialog: 0 0 0 1px rgb(29 29 31 / 0.05), 0 40px 80px -32px rgb(29 29 31 / 0.3);
+  --shadow-card: 0 1px 2px rgb(29 29 31 / 0.03), 0 12px 24px -18px rgb(29 29 31 / 0.18);
+  --shadow-lift: 0 40px 80px -48px rgb(29 29 31 / 0.24);
 
   color-scheme: light;
 }
 
 :root[data-theme="dark"] {
-  --bg: #191919;
-  --bg-subtle: #202020;
-  --bg-inset: #262626;
-  --bg-hover: rgb(255 255 255 / 0.055);
+  --bg: #151514;
+  --bg-subtle: #1b1b1a;
+  --bg-inset: #242423;
+  --bg-hover: rgb(255 255 255 / 0.05);
   --bg-active: rgb(255 255 255 / 0.09);
-  --bg-popover: #252525;
+  --bg-popover: #232322;
+  --surface: #1e1e1d;
   --overlay: rgb(0 0 0 / 0.55);
 
-  --fg: #e8e7e3;
-  --fg-muted: #a09f9b;
-  --fg-subtle: #6f6e6a;
+  --fg: #edece8;
+  --fg-muted: #a1a1a6;
+  --fg-subtle: #85858a;
 
-  --border: #2d2d2c;
-  --border-strong: #3b3b39;
+  --border: #2b2b29;
+  --border-strong: #3c3c3a;
 
-  --accent: #ff6a33;
-  --accent-hover: #ff7c4a;
+  --primary: #edece8;
+  --primary-hover: #ffffff;
+  --primary-fg: #1d1d1f;
+
+  --accent: #f0612b;
+  --accent-hover: #ff7440;
   --accent-fg: #1a1a1a;
-  --accent-text: #ff8452;
-  --accent-soft: rgb(255 106 51 / 0.16);
+  --accent-text: #ff8a5c;
+  --accent-soft: rgb(240 97 43 / 0.15);
+
+  --ring-track: #2e2e2c;
+  --ring-link: #edece8;
+  --agent-bg: #2a2a28;
+  --avatar-1: #edece8; --avatar-2: #c9c8c4; --avatar-3: #a1a1a6; --avatar-fg: #1d1d1f;
 
   --danger: #e5675e;
   --danger-soft: rgb(229 103 94 / 0.14);
@@ -95,8 +119,10 @@
   --tag-pink-bg: #402636; --tag-pink-fg: #e69cc0;
   --tag-red-bg: #452826; --tag-red-fg: #ee9690;
 
-  --shadow-popover: 0 0 0 1px rgb(255 255 255 / 0.07), 0 8px 24px rgb(0 0 0 / 0.45);
-  --shadow-dialog: 0 0 0 1px rgb(255 255 255 / 0.07), 0 20px 56px rgb(0 0 0 / 0.55);
+  --shadow-popover: 0 0 0 1px rgb(255 255 255 / 0.07), 0 12px 32px rgb(0 0 0 / 0.5);
+  --shadow-dialog: 0 0 0 1px rgb(255 255 255 / 0.07), 0 32px 72px rgb(0 0 0 / 0.6);
+  --shadow-card: 0 0 0 1px rgb(255 255 255 / 0.04);
+  --shadow-lift: 0 0 0 1px rgb(255 255 255 / 0.05), 0 32px 64px -40px rgb(0 0 0 / 0.8);
 
   color-scheme: dark;
 }
@@ -104,29 +130,45 @@
 /* System dark, when nobody picked a theme. Same values as above. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
-    --bg: #191919;
-    --bg-subtle: #202020;
-    --bg-inset: #262626;
-    --bg-hover: rgb(255 255 255 / 0.055);
+    --bg: #151514;
+    --bg-subtle: #1b1b1a;
+    --bg-inset: #242423;
+    --bg-hover: rgb(255 255 255 / 0.05);
     --bg-active: rgb(255 255 255 / 0.09);
-    --bg-popover: #252525;
+    --bg-popover: #232322;
+    --surface: #1e1e1d;
     --overlay: rgb(0 0 0 / 0.55);
-    --fg: #e8e7e3;
-    --fg-muted: #a09f9b;
-    --fg-subtle: #6f6e6a;
-    --border: #2d2d2c;
-    --border-strong: #3b3b39;
-    --accent: #ff6a33;
-    --accent-hover: #ff7c4a;
+
+    --fg: #edece8;
+    --fg-muted: #a1a1a6;
+    --fg-subtle: #85858a;
+
+    --border: #2b2b29;
+    --border-strong: #3c3c3a;
+
+    --primary: #edece8;
+    --primary-hover: #ffffff;
+    --primary-fg: #1d1d1f;
+
+    --accent: #f0612b;
+    --accent-hover: #ff7440;
     --accent-fg: #1a1a1a;
-    --accent-text: #ff8452;
-    --accent-soft: rgb(255 106 51 / 0.16);
+    --accent-text: #ff8a5c;
+    --accent-soft: rgb(240 97 43 / 0.15);
+
+    --ring-track: #2e2e2c;
+    --ring-link: #edece8;
+    --agent-bg: #2a2a28;
+    --avatar-1: #edece8; --avatar-2: #c9c8c4; --avatar-3: #a1a1a6; --avatar-fg: #1d1d1f;
+  --avatar-1: #edece8; --avatar-2: #c9c8c4; --avatar-3: #a1a1a6; --avatar-fg: #1d1d1f;
+
     --danger: #e5675e;
     --danger-soft: rgb(229 103 94 / 0.14);
     --success: #5fb58a;
     --success-soft: rgb(95 181 138 / 0.14);
     --warning: #d9a441;
     --warning-soft: rgb(217 164 65 / 0.14);
+
     --tag-gray-bg: #333331; --tag-gray-fg: #cfceca;
     --tag-brown-bg: #3b3029; --tag-brown-fg: #d8b8a0;
     --tag-orange-bg: #43301f; --tag-orange-fg: #f2a773;
@@ -136,8 +178,12 @@
     --tag-purple-bg: #332a44; --tag-purple-fg: #bda2e6;
     --tag-pink-bg: #402636; --tag-pink-fg: #e69cc0;
     --tag-red-bg: #452826; --tag-red-fg: #ee9690;
-    --shadow-popover: 0 0 0 1px rgb(255 255 255 / 0.07), 0 8px 24px rgb(0 0 0 / 0.45);
-    --shadow-dialog: 0 0 0 1px rgb(255 255 255 / 0.07), 0 20px 56px rgb(0 0 0 / 0.55);
+
+    --shadow-popover: 0 0 0 1px rgb(255 255 255 / 0.07), 0 12px 32px rgb(0 0 0 / 0.5);
+    --shadow-dialog: 0 0 0 1px rgb(255 255 255 / 0.07), 0 32px 72px rgb(0 0 0 / 0.6);
+    --shadow-card: 0 0 0 1px rgb(255 255 255 / 0.04);
+    --shadow-lift: 0 0 0 1px rgb(255 255 255 / 0.05), 0 32px 64px -40px rgb(0 0 0 / 0.8);
+
     color-scheme: dark;
   }
 }
@@ -151,6 +197,13 @@
   --color-bg-hover: var(--bg-hover);
   --color-bg-active: var(--bg-active);
   --color-bg-popover: var(--bg-popover);
+  --color-surface: var(--surface);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-fg: var(--primary-fg);
+  --color-ring-track: var(--ring-track);
+  --color-ring-link: var(--ring-link);
+  --color-agent: var(--agent-bg);
   --color-overlay: var(--overlay);
   --color-fg: var(--fg);
   --color-fg-muted: var(--fg-muted);
@@ -175,13 +228,15 @@
   --shadow-*: initial;
   --shadow-popover: var(--shadow-popover);
   --shadow-dialog: var(--shadow-dialog);
+  --shadow-card: var(--shadow-card);
+  --shadow-lift: var(--shadow-lift);
 }
 
 @theme {
   /* ── Type ──────────────────────────────────────────────── */
   --font-*: initial;
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: var(--font-plex-mono), ui-monospace, "SF Mono", monospace;
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
 
   --text-*: initial;
   --text-2xs: 0.6875rem; /* 11px: tiny meta */
@@ -200,19 +255,21 @@
   --text-xl--line-height: 1.8rem;
   --text-2xl: 1.75rem; /* 28px */
   --text-2xl--line-height: 2.2rem;
-  --text-title: 2.5rem; /* 40px: page titles */
+  --text-title: 2.75rem; /* 44px: page titles */
   --text-title--line-height: 1.2;
-  --text-title--letter-spacing: -0.02em;
+  --text-title--letter-spacing: -0.03em;
   --text-display: clamp(2.5rem, 6vw, 4.5rem); /* landing only */
   --text-display--line-height: 1.05;
   --text-display--letter-spacing: -0.035em;
 
   /* ── Shape ─────────────────────────────────────────────── */
   --radius-*: initial;
-  --radius-sm: 4px;
-  --radius-md: 6px; /* buttons, inputs, cards */
-  --radius-lg: 8px; /* popovers, dialogs */
-  --radius-full: 9999px; /* avatars only */
+  --radius-sm: 6px; /* chips, small wells */
+  --radius-md: 10px; /* inputs, menu items, rows */
+  --radius-lg: 14px; /* popovers, small cards */
+  --radius-xl: 20px; /* cards */
+  --radius-2xl: 28px; /* the big sheet on a screen */
+  --radius-full: 9999px; /* buttons (pills), avatars */
 
   /* ── Motion: quick and quiet ───────────────────────────── */
   --ease-*: initial;

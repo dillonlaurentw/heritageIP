@@ -2,10 +2,10 @@ import type { ComponentProps, ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
 const field =
-  "w-full rounded-md border border-border bg-bg px-2.5 text-base text-fg outline-none transition-colors duration-(--duration-fast) placeholder:text-fg-subtle hover:border-border-strong focus:border-accent focus:ring-2 focus:ring-accent-soft disabled:opacity-60 aria-invalid:border-danger";
+  "w-full rounded-md border border-border bg-surface px-3 text-base text-fg outline-none transition-colors duration-(--duration-fast) placeholder:text-fg-subtle hover:border-border-strong focus:border-accent focus:ring-2 focus:ring-accent-soft disabled:opacity-60 aria-invalid:border-danger";
 
 export function Input({ className, ...rest }: ComponentProps<"input">) {
-  return <input className={cn(field, "h-8", className)} {...rest} />;
+  return <input className={cn(field, "h-9", className)} {...rest} />;
 }
 
 export function Textarea({ className, ...rest }: ComponentProps<"textarea">) {
@@ -13,7 +13,7 @@ export function Textarea({ className, ...rest }: ComponentProps<"textarea">) {
 }
 
 export function Select({ className, ...rest }: ComponentProps<"select">) {
-  return <select className={cn(field, "h-8 pr-7", className)} {...rest} />;
+  return <select className={cn(field, "h-9 pr-7", className)} {...rest} />;
 }
 
 /** Label + control + hint/error, stacked. */

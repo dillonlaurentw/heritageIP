@@ -80,12 +80,12 @@ export function OnboardingFlow({ initial, startAt }: { initial: FlowValues; star
     <div className="flex min-h-dvh flex-col">
       <div className="h-0.5 w-full bg-bg-inset">
         <div
-          className="h-full bg-accent transition-[width] duration-(--duration-slow) ease-out"
+          className="h-full bg-primary transition-[width] duration-(--duration-slow) ease-out"
           style={{ width: `${(Math.min(index, total) / total) * 100}%` }}
         />
       </div>
       <header className="flex items-center justify-between px-6 py-4">
-        <span className="text-sm font-semibold tracking-tight">SELF</span>
+        <span className="text-[15px] font-semibold tracking-[0.18em]">SELF</span>
         <span className="font-mono text-xs text-fg-subtle">{done ? "Done" : `${index + 1} / ${total}`}</span>
       </header>
 
@@ -176,7 +176,7 @@ function StepInput({
                     <span
                       className={cn(
                         "flex size-4 items-center justify-center rounded-sm border",
-                        on ? "border-accent bg-accent text-accent-fg" : "border-border-strong",
+                        on ? "border-primary bg-primary text-primary-fg" : "border-border-strong",
                       )}
                     >
                       {on && <Check className="size-3" />}

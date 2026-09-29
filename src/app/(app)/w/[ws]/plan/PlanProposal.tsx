@@ -45,7 +45,7 @@ export function PlanProposal({ workspaceId, live, editable, planHref }: { worksp
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="rounded-lg border border-border p-4">
+      <div className="rounded-xl bg-surface shadow-card p-4">
         <AgentStatus name="Game-plan agent" state={state} demo={demo} />
         {planHref && (
           <p className="mt-3 text-sm text-fg-muted">
@@ -75,7 +75,7 @@ export function PlanProposal({ workspaceId, live, editable, planHref }: { worksp
               <h2 className="mb-2 flex items-center gap-2 text-sm font-medium text-fg-muted">
                 <Tag color={stage.color}>{stage.name}</Tag>
               </h2>
-              <ul className="flex flex-col divide-y divide-border rounded-lg border border-border">
+              <ul className="flex flex-col divide-y divide-border rounded-xl bg-surface shadow-card">
                 {inStage.map(({ s, i }) => (
                   <li key={i} className={cn("flex gap-3 px-4 py-3", !s.keep && "opacity-50")}>
                     <button
@@ -84,7 +84,7 @@ export function PlanProposal({ workspaceId, live, editable, planHref }: { worksp
                       onClick={() => update(i, { keep: !s.keep })}
                       className={cn(
                         "mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-sm border",
-                        s.keep ? "border-accent bg-accent text-accent-fg" : "border-border-strong",
+                        s.keep ? "border-primary bg-primary text-primary-fg" : "border-border-strong",
                       )}
                     >
                       {s.keep && <Check className="size-3" />}

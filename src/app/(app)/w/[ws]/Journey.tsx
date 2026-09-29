@@ -66,7 +66,7 @@ export function Journey({
   const next = steps.find((s) => !s.done && s.cta);
 
   return (
-    <section className="mb-10 rounded-lg border border-border">
+    <section className="mb-10 rounded-xl bg-surface shadow-card">
       <ol className="grid grid-cols-2 divide-border sm:grid-cols-4 sm:divide-x">
         {steps.map((s, i) => (
           <li key={s.label}>
@@ -75,7 +75,7 @@ export function Journey({
                 <span
                   className={cn(
                     "flex size-5 items-center justify-center rounded-full text-2xs",
-                    s.done ? "bg-accent text-accent-fg" : "border border-border-strong text-fg-subtle",
+                    s.done ? "bg-primary text-primary-fg" : "border border-border-strong text-fg-subtle",
                   )}
                 >
                   {s.done ? <Check className="size-3" /> : i + 1}
@@ -85,7 +85,7 @@ export function Journey({
               <span className="text-xs text-fg-muted">{s.detail}</span>
               {journey.planHref && s.label === "Game plan" && journey.total > 0 && (
                 <span className="mt-1 h-1 overflow-hidden rounded-full bg-bg-inset">
-                  <span className="block h-full bg-accent" style={{ width: `${(journey.done / journey.total) * 100}%` }} />
+                  <span className="block h-full bg-primary" style={{ width: `${(journey.done / journey.total) * 100}%` }} />
                 </span>
               )}
             </Link>

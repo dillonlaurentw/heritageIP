@@ -59,11 +59,11 @@ export function Sidebar(p: SidebarProps) {
         href={href as Route}
         onClick={closeSidebarOnMobile}
         className={cn(
-          "flex h-7 items-center gap-2 rounded-md px-2 text-sm text-fg-muted hover:bg-bg-hover hover:text-fg",
-          active && "bg-bg-active font-medium text-fg",
+          "flex h-8 items-center gap-2.5 rounded-md px-2.5 text-sm text-fg-muted hover:bg-bg-hover hover:text-fg",
+          active && "bg-surface font-medium text-fg shadow-card hover:bg-surface",
         )}
       >
-        <span className="flex size-4 items-center justify-center [&>svg]:size-4">{icon}</span>
+        <span className="flex size-4 items-center justify-center [&>svg]:size-4 [&>svg]:stroke-[1.6]">{icon}</span>
         <span className="flex-1 truncate">{label}</span>
         {extra}
       </Link>
@@ -84,20 +84,34 @@ export function Sidebar(p: SidebarProps) {
       <aside
         aria-label="Sidebar"
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex w-sidebar shrink-0 flex-col border-r border-border bg-bg-subtle transition-transform duration-(--duration-slow) ease-out md:static md:z-auto",
+          "fixed inset-y-0 left-0 z-40 flex w-sidebar shrink-0 flex-col border-r border-border bg-bg transition-transform duration-(--duration-slow) ease-out md:static md:z-auto",
           sidebarOpen ? "translate-x-0" : "-translate-x-full md:hidden",
         )}
       >
-        <div className="flex items-center gap-1 px-2 pt-2">
+        <div className="flex h-14 items-center justify-between px-4">
+          <Link href="/home" className="text-[15px] font-semibold tracking-[0.18em]" onClick={closeSidebarOnMobile}>
+            SELF
+          </Link>
+          <button
+            type="button"
+            onClick={toggleSidebar}
+            aria-label="Close sidebar"
+            title="Close sidebar (⌘\)"
+            className="flex size-7 items-center justify-center rounded-md text-fg-subtle hover:bg-bg-hover hover:text-fg"
+          >
+            <PanelLeftClose className="size-4" />
+          </button>
+        </div>
+        <div className="flex items-center gap-1 px-2">
           <Menu
             className="w-64"
             trigger={
               <button
                 type="button"
-                className="flex h-8 min-w-0 flex-1 items-center gap-2 rounded-md px-1.5 text-left hover:bg-bg-hover"
+                className="flex h-10 min-w-0 flex-1 items-center gap-2.5 rounded-md px-2 text-left hover:bg-bg-hover"
               >
                 <WorkspaceMark name={p.current?.name ?? p.user.name} icon={p.current?.icon} size="md" />
-                <span className="flex-1 truncate text-sm font-semibold">{p.current?.name ?? "SELF"}</span>
+                <span className="flex-1 truncate text-[15px] font-medium">{p.current?.name ?? "Your companies"}</span>
                 <ChevronsUpDown className="size-3.5 text-fg-subtle" />
               </button>
             }
@@ -139,34 +153,25 @@ export function Sidebar(p: SidebarProps) {
               </MenuItem>
             )}
           </Menu>
-          <button
-            type="button"
-            onClick={toggleSidebar}
-            aria-label="Close sidebar"
-            title="Close sidebar (⌘\)"
-            className="flex size-7 items-center justify-center rounded-md text-fg-subtle hover:bg-bg-hover hover:text-fg"
-          >
-            <PanelLeftClose className="size-4" />
-          </button>
         </div>
 
         <nav aria-label="Main" className="flex flex-col gap-px px-2 pt-2">
           <button
             type="button"
             onClick={() => openPalette()}
-            className="flex h-7 items-center gap-2 rounded-md px-2 text-sm text-fg-muted hover:bg-bg-hover hover:text-fg"
+            className="flex h-8 items-center gap-2.5 rounded-md px-2.5 text-sm text-fg-muted hover:bg-bg-hover hover:text-fg"
           >
-            <Search className="size-4" />
+            <Search className="size-4 stroke-[1.6]" />
             <span className="flex-1 text-left">Search</span>
             <Kbd>⌘K</Kbd>
           </button>
-          {navLink("/home", "Home", <Home />)}
+          {navLink("/home", "You", <Home />)}
           {navLink(
             "/inbox",
             "Inbox",
             <Inbox />,
             p.inboxCount > 0 ? (
-              <span className="rounded-sm bg-accent px-1 text-2xs font-semibold text-accent-fg">{p.inboxCount}</span>
+              <span className="rounded-full bg-accent px-1.5 text-2xs font-semibold text-accent-fg">{p.inboxCount}</span>
             ) : null,
           )}
           {navLink("/network", "Network", <Waypoints />)}
@@ -212,7 +217,7 @@ export function Sidebar(p: SidebarProps) {
 function SectionHead({ label, onAdd }: { label: string; onAdd?: () => void }) {
   return (
     <div className="group flex h-6 items-center justify-between px-2">
-      <span className="truncate text-xs font-medium text-fg-subtle">{label}</span>
+      <span className="truncate text-xs text-fg-subtle">{label}</span>
       {onAdd && (
         <button
           type="button"

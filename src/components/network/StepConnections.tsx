@@ -10,7 +10,7 @@ const KIND: Record<string, string> = { PARTNER_INTRO: "Intro", MENTOR_REQUEST: "
 export function StepConnections({ items }: { items: Item[] }) {
   if (!items.length) return null;
   return (
-    <section className="mb-4 rounded-lg border border-border p-3">
+    <section className="mb-4 rounded-xl bg-surface shadow-card p-3">
       <p className="mb-1.5 text-xs font-medium text-fg-subtle">Connections for this step</p>
       <ul className="flex flex-col gap-1">
         {items.map((i) => (

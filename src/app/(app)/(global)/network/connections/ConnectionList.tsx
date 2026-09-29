@@ -105,7 +105,7 @@ export function ConnectionList({ items }: { items: ConnectionItem[] }) {
       ) : (
         <ul className="flex flex-col gap-3">
           {shown.map((i) => (
-            <li key={i.id} className={cn("rounded-lg border border-border p-4", i.status === "PENDING" && i.received && "border-accent/40")}>
+            <li key={i.id} className={cn("rounded-xl bg-surface shadow-card p-4", i.status === "PENDING" && i.received && "border-accent/40")}>
               <div className="flex items-start gap-3">
                 <Avatar name={i.person.name} size="md" className="mt-0.5" />
                 <div className="min-w-0 flex-1">

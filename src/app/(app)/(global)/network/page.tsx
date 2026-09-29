@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "Network" };
 
 function Door({ href, icon, title, line, meta }: { href: string; icon: ReactNode; title: string; line: string; meta?: string }) {
   return (
-    <Link href={href as Route} className="group flex flex-col gap-2 rounded-lg border border-border p-4 hover:border-border-strong hover:bg-bg-hover">
+    <Link href={href as Route} className="group flex flex-col gap-2 rounded-xl bg-surface shadow-card p-4 hover:border-border-strong hover:bg-bg-hover">
       <span className="flex items-center gap-2 text-md font-semibold">
         <span className="text-fg-muted [&>svg]:size-4">{icon}</span>
         {title}

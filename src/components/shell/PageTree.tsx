@@ -96,8 +96,8 @@ function Row({
           }
         }}
         className={cn(
-          "group relative flex h-7 items-center gap-1 rounded-md pr-1 text-sm text-fg-muted hover:bg-bg-hover",
-          active && "bg-bg-active font-medium text-fg",
+          "group relative flex h-8 items-center gap-1 rounded-md pr-1 text-sm text-fg-muted hover:bg-bg-hover",
+          active && "bg-surface font-medium text-fg shadow-card hover:bg-surface",
           drop === "inside" && "bg-accent-soft",
         )}
         style={{ paddingLeft: 4 + depth * 12 }}

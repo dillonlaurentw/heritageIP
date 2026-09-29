@@ -1,4 +1,91 @@
-# SELF 2: build plan
+# SELF 3: build plan (current)
+
+Self3 keeps everything Self2 built (workspaces, pages, databases, agents,
+network, simulations, live co-editing) and changes what SELF feels like and
+what it centres on. It follows the prototype you approved
+(claude.ai/artifact/YVGqq9CK1tV5Cj3VpG9pLZ): founder first, then the team.
+
+**The idea in one line:** you in the middle, four kinds of people around you
+(co-founders, partners, advisors, capital), and AI that knows you, your team
+and your business.
+
+Status: building Self3 phases 1–8 in order (you asked for the full build).
+Self2's plan is kept below for history.
+
+## How Self3 is built
+- **Same foundations.** Sign-in, data, agents (caps, cost logging, demo mode),
+  signals, contact rules, the hard rules in CLAUDE.md: all unchanged.
+- **New design language.** Quiet and warm, in the spirit of Jony Ive: Geist,
+  a warm off-white, white cards with soft depth, black pill buttons, orange only
+  for "needs you". Swapped through the tokens, so every Self2 screen follows.
+- **The ring is the home.** Your company's people, arranged in four arcs, with
+  open chairs where the plan needs someone.
+- **Three kinds of AI.** Your Self (the AI version of you), team rehearsals,
+  and business help (area specialists and what-if checks).
+- **Capital through a licensed partner, later.** SELF still moves no money.
+  The company page has a clearly marked seam for a licensed partner; nothing
+  about investing is built until that partner exists.
+
+## Self3 phase 1: The new design language
+**Build:** Geist + Geist Mono, warm light and dark palettes, pill buttons,
+rounder cards, soft shadows on cards; a quieter sidebar; the landing page
+rebuilt around the ring. CLAUDE.md design rules rewritten.
+**Click through:** landing, sign-in, any workspace page, `/style-guide`, dark mode.
+
+## Self3 phase 2: The ring
+**Build:** the ring (pure layout rules, tested) drawn from real data: team
+members (co-founders), accepted partner intros (partners), mentors (advisors),
+backers who showed interest (capital), open roles and unmet plan needs (open
+chairs). "You" home: your ring, and what needs you (requests to answer, steps
+missing someone, matches waiting). Each workspace home gets its own ring.
+**Click through:** sign in as Maya → the Tidewater ring → click an open chair.
+
+## Self3 phase 3: Your Self
+**Build:** your Self page: what you believe, why you build, how you decide,
+what gives and drains energy, non-negotiables, what you're building toward.
+Every line shows where it came from and can be edited. "Is this you?"
+suggestions the agent proposes and you accept or reject. Opt-in switch and
+every rehearsal your Self joined. The persona the agent gets is built from
+exactly these lines.
+**Click through:** `/me/self` → edit a line → accept a suggestion → turn opt-in off.
+
+## Self3 phase 4: Idea → questions → thesis → plan
+**Build:** one flow with a step indicator. Questions one at a time (skip, "I
+don't know yet", "enough, draft it"); a thesis draft with "still unproven";
+plan build-out where each step says who it needs, gaps show on the ring, keep
+or drop steps, then "Use this plan". Nothing saved until you use it.
+**Click through:** new idea → 3 questions → thesis → plan → ring shows the gaps.
+
+## Self3 phase 5: Matches and messages
+**Build:** co-founder and advisor matches explained in words (never scored);
+direct messages between connected people; propose a trial week inside the
+conversation; when it's accepted they join the company as a member.
+**Click through:** open chair → match → start a conversation → propose a trial → accept.
+
+## Self3 phase 6: Help by area
+**Build:** eight areas (go-to-market, marketing & brand, sales, product, legal,
+fundraising prep, hiring & team, operations & budget). Each has a specialist
+agent, a working page with sections the agent drafts (use / sharpen / discard),
+the plan steps in that area and the people on SELF who do this work.
+**Click through:** Help by area → Go-to-market → draft channels → use it.
+
+## Self3 phase 7: What-if checks and team rehearsals
+**Build:** business what-ifs: describe something that might happen, see which
+steps slip, which arcs of the ring it touches, what it means for money in
+words, and suggested changes you can add to the plan. Team rehearsals: the
+Self2 simulations restyled, with "take it to <name>" opening a message.
+**Click through:** game plan → "Check a what-if" → add two changes.
+
+## Self3 phase 8: Capital, backers, partners and phone
+**Build:** the company page backers see; a backer home (companies followed,
+interest sent); a partner home (intros waiting, steps they're attached to);
+the licensed-partner seam for investing, off and clearly labelled; a phone
+pass on the main screens.
+**Click through:** sign in as Priya (backer) and as Harbor & Vine (partner); the ring on a phone.
+
+---
+
+# SELF 2: build plan (done, for history)
 
 Self2 turns SELF into one workspace for building a company, from the first
 idea to running the business and the team. It works like Notion (pages, docs,

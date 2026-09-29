@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Inter } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import { ToastProvider } from "@/components/ui/Toast";
 import { TooltipProvider } from "@/components/ui/Tooltip";
 import { themePref } from "@/lib/theme";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
-const plexMono = IBM_Plex_Mono({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-plex-mono", display: "swap" });
+const geist = Geist({ subsets: ["latin"], variable: "--font-geist", display: "swap" });
+const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono", display: "swap" });
 
 export const metadata: Metadata = {
   title: { default: "SELF", template: "%s · SELF" },
@@ -19,7 +19,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html
       lang="en"
       data-theme={pref === "system" ? undefined : pref}
-      className={`${inter.variable} ${plexMono.variable}`}
+      className={`${geist.variable} ${geistMono.variable}`}
       suppressHydrationWarning
     >
       <body>

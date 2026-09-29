@@ -1,9 +1,22 @@
 import { cn } from "@/lib/cn";
-import { colorFor } from "./Tag";
 
-const sizes = { xs: "size-4 text-[9px]", sm: "size-5 text-[10px]", md: "size-6 text-xs", lg: "size-8 text-sm", xl: "size-12 text-lg" };
+const sizes = {
+  xs: "size-4 text-[8px]",
+  sm: "size-5 text-[9px]",
+  md: "size-6 text-[10px]",
+  lg: "size-8 text-xs",
+  ring: "size-11 text-sm",
+  xl: "size-16 text-lg",
+};
 
-/** Initials on a soft tag color. People only; the one round thing in SELF. */
+/** One of three ink tones, stable per name. */
+function toneFor(name: string) {
+  let h = 0;
+  for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return (h % 3) + 1;
+}
+
+/** Initials on an ink tone. People are round; agents are soft squares (AgentMark). */
 export function Avatar({ name, size = "md", className }: { name: string; size?: keyof typeof sizes; className?: string }) {
   const initials =
     name
@@ -12,12 +25,12 @@ export function Avatar({ name, size = "md", className }: { name: string; size?: 
       .slice(0, 2)
       .map((w) => w[0]!.toUpperCase())
       .join("") || "?";
-  const color = colorFor(name);
+  const tone = toneFor(name);
   return (
     <span
       aria-hidden
-      className={cn("inline-flex shrink-0 items-center justify-center rounded-full font-semibold", sizes[size], className)}
-      style={{ background: `var(--tag-${color}-bg)`, color: `var(--tag-${color}-fg)` }}
+      className={cn("inline-flex shrink-0 items-center justify-center rounded-full font-medium", sizes[size], className)}
+      style={{ background: `var(--avatar-${tone})`, color: "var(--avatar-fg)" }}
     >
       {initials}
     </span>

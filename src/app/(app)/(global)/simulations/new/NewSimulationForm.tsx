@@ -32,7 +32,7 @@ export function NewSimulationForm({ people, workspaces }: { people: Person[]; wo
         {people.length === 0 ? (
           <p className="text-sm text-fg-subtle">Nobody to pick yet: invite a teammate, or connect with someone on the Network.</p>
         ) : (
-          <ul className="flex flex-col divide-y divide-border rounded-lg border border-border">
+          <ul className="flex flex-col divide-y divide-border rounded-xl bg-surface shadow-card">
             {people.map((p) => {
               const on = picked.includes(p.id);
               return (
@@ -44,7 +44,7 @@ export function NewSimulationForm({ people, workspaces }: { people: Person[]; wo
                     onClick={() => toggle(p.id)}
                     className="flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-bg-hover disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <span className={cn("flex size-4 shrink-0 items-center justify-center rounded-sm border", on ? "border-accent bg-accent text-accent-fg" : "border-border-strong")}>
+                    <span className={cn("flex size-4 shrink-0 items-center justify-center rounded-sm border", on ? "border-primary bg-primary text-primary-fg" : "border-border-strong")}>
                       {on && <Check className="size-3" />}
                     </span>
                     <Avatar name={p.name} size="md" />

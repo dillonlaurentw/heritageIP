@@ -27,7 +27,7 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
 
   return (
     <div className="flex min-h-dvh flex-col items-center px-6 pt-[12vh] pb-16">
-      <Link href="/" className="mb-8 text-lg font-semibold tracking-tight">
+      <Link href="/" className="mb-8 text-[17px] font-semibold tracking-[0.18em]">
         SELF
       </Link>
       <div className="w-full max-w-sm">

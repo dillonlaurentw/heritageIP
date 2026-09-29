@@ -83,7 +83,7 @@ export default async function TeaserPage({ params }: { params: Promise<{ slug: s
           </section>
         )}
         {contact && (
-          <section className="rounded-lg border border-border p-4 text-sm">
+          <section className="rounded-xl bg-surface shadow-card p-4 text-sm">
             <p className="text-xs font-medium text-fg-subtle">You&apos;re connected</p>
             {contact.email && <p className="mt-1">{contact.email}</p>}
             {contact.link && <p className="text-fg-muted">{contact.link}</p>}

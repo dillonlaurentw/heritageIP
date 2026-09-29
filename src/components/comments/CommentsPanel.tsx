@@ -287,7 +287,7 @@ export function CommentsPanel({
         ) : (
           <ul className="flex flex-col gap-3">
             {shown.map((t) => (
-              <li key={t.id} id={`thread-${t.id}`} className={cn("flex flex-col gap-3 rounded-lg border border-border p-3", focusId === t.id && "border-accent/50")}>
+              <li key={t.id} id={`thread-${t.id}`} className={cn("flex flex-col gap-3 rounded-xl bg-surface shadow-card p-3", focusId === t.id && "border-accent/50")}>
                 {t.quote && (
                   <button type="button" onClick={() => showBlock(t.blockId)} className="border-l-2 border-accent/60 pl-2 text-left text-xs text-fg-muted hover:text-fg">
                     {t.quote}

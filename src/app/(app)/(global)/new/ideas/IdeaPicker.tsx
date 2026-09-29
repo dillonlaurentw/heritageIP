@@ -47,7 +47,7 @@ export function IdeaPicker({ live, hasAnswers }: { live: boolean; hasAnswers: bo
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="rounded-lg border border-border p-4">
+      <div className="rounded-xl bg-surface shadow-card p-4">
         <AgentStatus name="Ideas agent" state={state} demo={demo} />
         {!hasAnswers && (
           <p className="mt-3 text-sm text-fg-muted">
@@ -72,7 +72,7 @@ export function IdeaPicker({ live, hasAnswers }: { live: boolean; hasAnswers: bo
       {ideas && (
         <ul className="flex flex-col gap-3">
           {ideas.map((i) => (
-            <li key={i.name} className="flex flex-col gap-2 rounded-lg border border-border p-4">
+            <li key={i.name} className="flex flex-col gap-2 rounded-xl bg-surface shadow-card p-4">
               <div className="flex items-baseline justify-between gap-3">
                 <span className="text-lg font-semibold">{i.name}</span>
                 <Button size="sm" onClick={() => pick(i)} disabled={busy}>

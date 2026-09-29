@@ -34,7 +34,7 @@ export function TemplateGrid({ workspaceId, templates, editable }: { workspaceId
                       else toast(res.message, "danger");
                     })
                   }
-                  className="flex flex-col gap-2 rounded-lg border border-border p-4 text-left transition-colors hover:border-border-strong hover:bg-bg-hover disabled:opacity-60"
+                  className="flex flex-col gap-2 rounded-xl bg-surface shadow-card p-4 text-left transition-colors hover:border-border-strong hover:bg-bg-hover disabled:opacity-60"
                 >
                   <span className="text-2xl leading-none">{t.icon}</span>
                   <span className="text-base font-semibold">{t.title}</span>

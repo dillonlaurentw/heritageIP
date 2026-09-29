@@ -30,7 +30,7 @@ export function ValueView({ prop, value, names, wrap = false }: { prop: Property
       <span
         className={cn(
           "inline-flex size-4 items-center justify-center rounded-sm border",
-          value ? "border-accent bg-accent text-accent-fg" : "border-border-strong",
+          value ? "border-primary bg-primary text-primary-fg" : "border-border-strong",
         )}
       >
         {value && <Check className="size-3" />}
