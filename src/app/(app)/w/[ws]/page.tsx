@@ -96,7 +96,12 @@ export default async function WorkspaceHome({ params }: { params: Promise<{ ws: 
       {workspace.kind === "TEAM" && (
         <div className="mb-14 grid grid-cols-1 items-center gap-10 lg:grid-cols-[auto_1fr]">
           <div className="flex justify-center">
-            <Ring nodes={ring} size={380} themeHref={themeLinks(workspace.slug)} />
+            <div className="hidden sm:block">
+              <Ring nodes={ring} size={380} themeHref={themeLinks(workspace.slug)} />
+            </div>
+            <div className="sm:hidden">
+              <Ring nodes={ring} size={290} labels={false} />
+            </div>
           </div>
           <div className="flex flex-col gap-3">
             <Journey journey={journey} slug={workspace.slug} editable={canEdit(role)} memberCount={members.length} />

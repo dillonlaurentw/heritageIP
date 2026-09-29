@@ -10,6 +10,7 @@ import { cn } from "@/lib/cn";
 import { AREA_KEYS, AREAS, isAreaKey } from "@/lib/areas";
 import { loadArea } from "@/lib/areas-data";
 import { requireOnboarded } from "@/lib/session";
+import { initials } from "@/lib/ring";
 import { AGENT_COPY } from "@/lib/workspace-agents";
 import { canEdit } from "@/lib/workspace-rules";
 import { getWorkspaceAccess } from "@/lib/workspaces";
@@ -121,7 +122,7 @@ export default async function AreaPage({ params }: { params: Promise<{ ws: strin
                   <Row
                     key={p.slug}
                     href={`/network/partners/${p.slug}?ws=${workspace.slug}`}
-                    lead={<span className="flex size-8 items-center justify-center rounded-[10px] text-[11px] font-medium shadow-[inset_0_0_0_1.5px_var(--ring-link)]">{p.name.split(/\s+/).slice(0, 2).map((w) => w[0]).join("")}</span>}
+                    lead={<span className="flex size-8 items-center justify-center rounded-[10px] text-[11px] font-medium shadow-[inset_0_0_0_1.5px_var(--ring-link)]">{initials(p.name)}</span>}
                     title={p.name}
                     note={`Partner · ${p.tagline}`}
                   />

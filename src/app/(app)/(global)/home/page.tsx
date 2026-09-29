@@ -19,6 +19,7 @@ import { requireOnboarded } from "@/lib/session";
 import { canEdit, ROLE_LABEL } from "@/lib/workspace-rules";
 import { lastWorkspaceSlug, listWorkspaces } from "@/lib/workspaces";
 import { AcceptInviteButton } from "./AcceptInviteButton";
+import { BackerHome, PartnerHome } from "./OtherHomes";
 
 export const metadata: Metadata = { title: "You" };
 
@@ -28,9 +29,9 @@ const greeting = () => {
 };
 
 /** "You": your ring for the company you're working on, and what needs you. */
-export default async function HomePage({ searchParams }: { searchParams: Promise<{ ws?: string }> }) {
+export default async function HomePage({ searchParams }: { searchParams: Promise<{ ws?: string; as?: string }> }) {
   const viewer = await requireOnboarded();
-  const [{ ws }, workspaces, invites, recent] = await Promise.all([
+  const [{ ws, as }, workspaces, invites, recent] = await Promise.all([
     searchParams,
     listWorkspaces(viewer.user.id),
     db.invite.findMany({
@@ -39,6 +40,40 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     }),
     searchPages(viewer, ""),
   ]);
+  // One account, many hats: founders see their ring; backers and partners get their own home.
+  const roles = viewer.profile.roles;
+  const hats = [
+    ...(roles.includes("BUILDER") || workspaces.length ? (["founder"] as const) : []),
+    ...(roles.includes("BACKER") ? (["backer"] as const) : []),
+    ...(roles.includes("PARTNER") ? (["partner"] as const) : []),
+  ];
+  const hat = hats.find((h) => h === as) ?? (workspaces.length ? "founder" : (hats[0] ?? "founder"));
+  const first = viewer.user.name.split(" ")[0];
+  const hatNav =
+    hats.length > 1 ? (
+      <nav aria-label="Which hat" className="flex gap-1.5">
+        {hats.map((h) => (
+          <Link
+            key={h}
+            href={`/home?as=${h}` as Route}
+            className={cn("rounded-full px-3 py-1 text-sm", h === hat ? "bg-surface font-medium shadow-card" : "text-fg-muted hover:text-fg")}
+          >
+            As a {h}
+          </Link>
+        ))}
+      </nav>
+    ) : undefined;
+  if (hat !== "founder") {
+    return (
+      <>
+        <Topbar crumbs={[{ label: "You" }]} actions={hatNav} />
+        <div className="mx-auto w-full max-w-4xl px-6 pt-4 pb-24 md:px-12">
+          {hat === "backer" ? <BackerHome viewerId={viewer.user.id} first={first} /> : <PartnerHome viewerId={viewer.user.id} first={first} />}
+        </div>
+      </>
+    );
+  }
+
   const slug = ws && workspaces.some((w) => w.slug === ws) ? ws : await lastWorkspaceSlug(viewer.user.id);
   const current = workspaces.find((w) => w.slug === slug) ?? null;
   const ring: RingNode[] = current ? await loadRing(current, viewer.user.id) : [];
@@ -47,11 +82,10 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     current ? { id: current.id, slug: current.slug, name: current.name, canEdit: canEdit(current.role) } : null,
     ring,
   );
-  const first = viewer.user.name.split(" ")[0];
 
   return (
     <>
-      <Topbar crumbs={[{ label: "You" }]} />
+      <Topbar crumbs={[{ label: "You" }]} actions={hatNav} />
       <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-start gap-x-16 gap-y-10 px-6 pt-4 pb-24 md:px-12 xl:grid-cols-[auto_1fr]">
         <section aria-label="Your ring" className="flex flex-col items-center gap-5 xl:sticky xl:top-20">
           {workspaces.length > 1 && (
@@ -72,13 +106,20 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
           )}
           {current ? (
             <>
-              <Ring nodes={ring} size={440} themeHref={themeLinks(current.slug)} />
+              <div className="hidden sm:block">
+                <Ring nodes={ring} size={440} themeHref={themeLinks(current.slug)} />
+              </div>
+              <div className="sm:hidden">
+                <Ring nodes={ring} size={290} labels={false} />
+              </div>
               <Link href={`/w/${current.slug}` as Route} className="flex items-center gap-2 text-sm text-fg-muted hover:text-fg">
                 <WorkspaceMark name={current.name} icon={current.icon} /> {current.name} <ArrowRight className="size-3.5" />
               </Link>
             </>
           ) : (
-            <Ring nodes={[]} size={440} />
+            <div className="hidden sm:block">
+              <Ring nodes={[]} size={440} />
+            </div>
           )}
         </section>
 

@@ -9,7 +9,7 @@ what it centres on. It follows the prototype you approved
 (co-founders, partners, advisors, capital), and AI that knows you, your team
 and your business.
 
-Status: building Self3 phases 1–8 in order (you asked for the full build).
+Status: Self3 phases 1–8 built. Next: deploy (see `docs/DEPLOY.md`) and a pass with real users.
 Self2's plan is kept below for history.
 
 ## How Self3 is built

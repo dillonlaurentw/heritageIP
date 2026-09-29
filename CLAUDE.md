@@ -470,6 +470,18 @@ orange fills, KPI cards or donut charts, scores or percentages about people.
   notes, "Take it to <name>" opens Messages. `/simulations/new?with=<id>`
   preselects someone (only if eligible and opted in).
 
+### Capital, backers, partners and phone (Self3 phase 8)
+- `/home` has hats: founders see their ring; `BackerHome` (companies you
+  follow, companies open to backers) and `PartnerHome` (intros waiting, founders
+  you work with) live in `home/OtherHomes.tsx`. `?as=founder|backer|partner`
+  switches when someone has more than one role.
+- The company page backers see (`/network/backers/[slug]`) shows only what the
+  teaser rules allow, plus a team-only ring and plan progress counts. The
+  "Investing through a licensed partner" card says plainly that it's not
+  available; nothing about investing is built. `<NotAnOffer />` stays.
+- Phones: rings render smaller without quarter labels below `sm`
+  (`labels={false}`); every main screen stacks to one column.
+
 ## Running locally
 
 ```
