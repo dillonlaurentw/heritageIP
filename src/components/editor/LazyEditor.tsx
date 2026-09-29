@@ -12,3 +12,13 @@ export const LazyEditor = dynamic(() => import("./Editor"), {
     </div>
   ),
 });
+
+/** The editor with live co-editing (cursors, presence). Browser only. */
+export const LazyCollabEditor = dynamic(() => import("./CollabEditor"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-24 items-center">
+      <Spinner />
+    </div>
+  ),
+});

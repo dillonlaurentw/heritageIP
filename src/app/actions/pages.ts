@@ -15,6 +15,7 @@ import {
   updatePage,
 } from "@/lib/pages";
 import { db } from "@/lib/db";
+import { resetCollab } from "@/lib/collab";
 import { requireOnboarded } from "@/lib/session";
 import { storeImage } from "@/lib/storage";
 import { requireWorkspaceRole } from "@/lib/workspaces";
@@ -159,6 +160,8 @@ export async function restoreVersion(versionId: string): Promise<Result> {
       data: { pageId: page.id, title: page.title, content: (page.content ?? []) as never, createdById: viewer.user.id },
     });
     await updatePage(page.id, { title: v.title, content: (v.content ?? []) as unknown[] }, viewer);
+    // Open editors are holding the old live document; start a fresh one from this version.
+    await resetCollab(page.id);
     revalidatePath("/", "layout");
     return {};
   });

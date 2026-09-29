@@ -17,10 +17,12 @@ import {
   savePage,
 } from "@/app/actions/pages";
 import { AskAIPanel, type AskTarget } from "@/components/ai/AskAIPanel";
-import type { SaveState } from "@/components/editor/Editor";
-import { LazyEditor } from "@/components/editor/LazyEditor";
+import type { EditorProps, SaveState } from "@/components/editor/Editor";
+import type { Peer } from "@/components/editor/collab";
+import { LazyCollabEditor, LazyEditor } from "@/components/editor/LazyEditor";
 import type { SelfEditor } from "@/components/editor/schema";
 import { Topbar, type Crumb } from "@/components/shell/Topbar";
+import { AvatarStack } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Menu, MenuItem, MenuSeparator } from "@/components/ui/Menu";
 import { PageIcon } from "@/components/ui/PageIcon";
@@ -61,6 +63,8 @@ export type PageViewProps = {
   hideChildren?: boolean;
   /** Comments: who's looking, how many open threads, and a thread to open (from ?comment=). */
   comments?: { me: string; canManage: boolean; open: number; focus?: string | null };
+  /** Live co-editing: who you are to the others on this page. Off for databases. */
+  live?: { id: string; name: string };
 };
 
 /** A page: header, body, pages inside it, and page-level actions. */
@@ -111,9 +115,51 @@ export function PageView(p: PageViewProps) {
     setCommentsOpen(true);
   };
   const closeComments = useCallback(() => setCommentsOpen(false), []);
+  const [peers, setPeers] = useState<Peer[]>([]);
   const onMention = (ids: string[]) => {
     void notifyMentions(p.page.id, ids);
     p.onMention?.(ids);
+  };
+
+  const editorProps: EditorProps = {
+    pageId: p.page.id,
+    initialContent: p.page.content,
+    editable: p.editable,
+    people: p.people,
+    onSaveState: setSave,
+    onMention,
+    onAskAI: canAsk ? () => openAsk() : undefined,
+    onComment: p.comments && !p.page.archived ? () => openComments(true) : undefined,
+    onReady: (e) => {
+      editorRef.current = e;
+      p.onEditorReady?.(e);
+    },
+    extraSlashItems: p.editable
+      ? (editor) => [
+          {
+            title: "Ask AI",
+            subtext: "Draft, summarise, or turn this page into tasks",
+            aliases: ["ai", "write", "draft", "self"],
+            group: "SELF",
+            icon: <Sparkles className="size-4" />,
+            onItemClick: () => openAsk(),
+          },
+          {
+            title: "Database",
+            subtext: "A table, board, list or calendar inside this page",
+            aliases: ["table", "board", "db", "calendar", "list"],
+            group: "Advanced",
+            icon: <Database className="size-4" />,
+            onItemClick: async () => {
+              const res = await newDatabase(p.page.workspaceId, p.page.id);
+              if (!res.ok) return toast(res.message, "danger");
+              const at = editor.getTextCursorPosition().block;
+              editor.insertBlocks([{ type: "database", props: { databaseId: res.id } }], at, "after");
+              router.refresh();
+            },
+          },
+        ]
+      : undefined,
   };
 
   const crumbs = [...p.crumbs.slice(0, -1), { label: title || "Untitled", icon: p.page.icon }];
@@ -134,6 +180,12 @@ export function PageView(p: PageViewProps) {
         crumbs={crumbs}
         actions={
           <>
+            {peers.length > 0 && (
+              <span className="mr-1 flex items-center" title={`Also here: ${peers.map((x) => x.name).join(", ")}`}>
+                <AvatarStack names={peers.map((x) => x.name)} size="sm" />
+                <span className="sr-only">Also here: {peers.map((x) => x.name).join(", ")}</span>
+              </span>
+            )}
             <span className="mr-1 hidden text-xs text-fg-subtle sm:inline" aria-live="polite">
               {save === "saving" ? "Saving…" : save === "saved" ? "Saved" : save === "error" ? "Couldn't save" : ""}
             </span>
@@ -230,49 +282,11 @@ export function PageView(p: PageViewProps) {
         {p.aboveEditor}
         {!p.hideEditor && (
           <div className="mt-4">
-            <LazyEditor
-              key={p.page.id}
-              pageId={p.page.id}
-              initialContent={p.page.content}
-              editable={p.editable}
-              people={p.people}
-              onSaveState={setSave}
-              onMention={onMention}
-              onAskAI={canAsk ? () => openAsk() : undefined}
-              onComment={p.comments && !p.page.archived ? () => openComments(true) : undefined}
-              onReady={(e) => {
-                editorRef.current = e;
-                p.onEditorReady?.(e);
-              }}
-              extraSlashItems={
-                p.editable
-                  ? (editor) => [
-                      {
-                        title: "Ask AI",
-                        subtext: "Draft, summarise, or turn this page into tasks",
-                        aliases: ["ai", "write", "draft", "self"],
-                        group: "SELF",
-                        icon: <Sparkles className="size-4" />,
-                        onItemClick: () => openAsk(),
-                      },
-                      {
-                        title: "Database",
-                        subtext: "A table, board, list or calendar inside this page",
-                        aliases: ["table", "board", "db", "calendar", "list"],
-                        group: "Advanced",
-                        icon: <Database className="size-4" />,
-                        onItemClick: async () => {
-                          const res = await newDatabase(p.page.workspaceId, p.page.id);
-                          if (!res.ok) return toast(res.message, "danger");
-                          const at = editor.getTextCursorPosition().block;
-                          editor.insertBlocks([{ type: "database", props: { databaseId: res.id } }], at, "after");
-                          router.refresh();
-                        },
-                      },
-                    ]
-                  : undefined
-              }
-            />
+            {p.live ? (
+              <LazyCollabEditor key={p.page.id} {...editorProps} me={p.live} onPeers={setPeers} />
+            ) : (
+              <LazyEditor key={p.page.id} {...editorProps} />
+            )}
           </div>
         )}
         {p.belowEditor}

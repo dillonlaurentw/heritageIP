@@ -41,6 +41,7 @@ model User {
   partner            Partner?
   simulationsStarted Simulation[]            @relation("SimulationsStarted")
   simulationSeats    SimulationParticipant[]
+  presence           PagePresence[]
 
   @@map("user")
 }
@@ -294,6 +295,14 @@ model Page {
   notifications Notification[]
   activities    Activity[]
 
+  // Live co-editing (Phase 11). The Yjs document is the stored updates for the
+  // current epoch; `content` stays the JSON snapshot everything else reads.
+  // Server-side rewrites of `content` (restore, thesis save) bump the epoch.
+  collabEpoch  Int            @default(0)
+  collabSeeded Boolean        @default(false)
+  updates      PageUpdate[]
+  presence     PagePresence[]
+
   @@unique([workspaceId, systemKey])
   @@index([workspaceId, parentId, position])
   @@index([parentId, kind])
@@ -321,6 +330,35 @@ model DatabaseView {
 }
 
 /// Snapshot of a page, for version history.
+/// One Yjs update for a page's live document (Phase 11). Clients pull the ones
+/// after the last id they've seen; compaction replaces old rows with one state.
+model PageUpdate {
+  id        Int      @id @default(autoincrement())
+  pageId    String
+  page      Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  epoch     Int
+  update    Bytes
+  clientId  String
+  createdAt DateTime @default(now())
+
+  @@index([pageId, epoch, id])
+}
+
+/// Who's on a page right now: their Yjs awareness state (cursor, name,
+/// colour), refreshed on every poll. Rows older than a few seconds are ignored.
+model PagePresence {
+  pageId    String
+  page      Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  clientId  String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  state     Bytes
+  updatedAt DateTime @updatedAt
+
+  @@id([pageId, clientId])
+  @@index([pageId, updatedAt])
+}
+
 model PageVersion {
   id          String   @id @default(cuid())
   pageId      String

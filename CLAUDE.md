@@ -104,7 +104,8 @@ always see and edit the persona summary their agent is built from.
 - **Anthropic SDK** (`@anthropic-ai/sdk`), server-side only
 - **Zod** for input validation, **Resend** for email
 - **Vitest** for logic tests; Playwright smoke tests where a flow matters
-- Later (own phase): **Yjs** for live co-editing and presence
+- **Yjs** (`yjs`, `y-prosemirror`, `y-protocols`; MIT) for live co-editing and
+  presence, synced through SELF's own API and Postgres (no hosted service)
 
 Keep dependencies minimal. Adding a new runtime dependency needs a reason in the
 commit message.
@@ -333,6 +334,23 @@ generic dashboard widgets (donut charts, KPI cards), cinematic type inside the a
   concierge (`setPartnerManager`).
 - AI usage: estimates from `src/lib/agent-cost.ts` by day, person, agent and
   company, plus capped/declined/failed runs. Bars, not KPI cards.
+
+### Live co-editing (Phase 11)
+- Yjs over HTTP, stored in Postgres: `PageUpdate` rows per page and epoch,
+  `PagePresence` for who's here. Server: `src/lib/collab.ts` + the route
+  handler `/api/collab/[pageId]` (GET pull, POST push/seed/compact/leave).
+  Client: `HttpProvider` + `connect()` in `src/components/editor/collab.ts`,
+  mounted by `CollabEditor`.
+- The first editor to open a page seeds the shared doc from `Page.content`
+  (one winner via `collabSeeded`). `Page.content` stays the JSON snapshot that
+  search, agents, versions and everything else read; each editor saves only its
+  own local changes.
+- **Any server-side rewrite of an existing page's `content` must call
+  `resetCollab(pageId)`** (restore version, saving the thesis). It bumps the
+  epoch; open editors reload onto the new content.
+- Guests get a live read-only view; only MEMBER+ can push updates.
+- Polling is adaptive (1s with others present or recent edits, 4s alone, 15s
+  in a hidden tab). Old updates are compacted into one state every ~150.
 
 ## Running locally
 

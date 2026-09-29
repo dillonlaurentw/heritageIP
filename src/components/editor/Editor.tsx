@@ -19,6 +19,10 @@ import {
 import { FileText, MessageSquare, Sparkles } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { savePage, searchPalette, uploadImage } from "@/app/actions/pages";
+import { withCollaboration } from "@blocknote/core/yjs";
+import type { Awareness } from "y-protocols/awareness";
+import type * as Y from "yjs";
+import { FRAGMENT } from "./collab";
 import { schema, type SelfEditor } from "./schema";
 import { useEffectiveTheme } from "./useEffectiveTheme";
 
@@ -27,22 +31,7 @@ export type Person = { id: string; name: string };
 
 const SAVE_DELAY = 700;
 
-/**
- * The page editor. Autosaves the document (debounced) through `savePage`.
- * `onReady` hands the editor to page-level tools (AI, templates).
- */
-export default function Editor({
-  pageId,
-  initialContent,
-  editable,
-  people = [],
-  onSaveState,
-  onReady,
-  onMention,
-  extraSlashItems,
-  onAskAI,
-  onComment,
-}: {
+export type EditorProps = {
   pageId: string;
   initialContent: unknown[] | null;
   editable: boolean;
@@ -56,19 +45,50 @@ export default function Editor({
   onAskAI?: () => void;
   /** Adds "Comment" to the selection toolbar. */
   onComment?: () => void;
-}) {
+  /** Live co-editing: the shared document, its provider (awareness), and how you appear to others. */
+  collab?: { doc: Y.Doc; provider: { awareness: Awareness }; user: { name: string; color: string } };
+};
+
+async function upload(file: File) {
+  const form = new FormData();
+  form.set("file", file);
+  const res = await uploadImage(form);
+  if (!res.ok) throw new Error(res.message);
+  return res.url;
+}
+
+/**
+ * The page editor. Autosaves the document (debounced) through `savePage`.
+ * With `collab`, the document is shared live and only local edits trigger a
+ * save. `onReady` hands the editor to page-level tools (AI, comments).
+ */
+export default function Editor({
+  pageId,
+  initialContent,
+  editable,
+  people = [],
+  onSaveState,
+  onReady,
+  onMention,
+  extraSlashItems,
+  onAskAI,
+  onComment,
+  collab,
+}: EditorProps) {
   const theme = useEffectiveTheme();
-  const editor = useCreateBlockNote({
-    schema,
-    initialContent: initialContent && initialContent.length > 0 ? (initialContent as Block[]) : undefined,
-    uploadFile: async (file: File) => {
-      const form = new FormData();
-      form.set("file", file);
-      const res = await uploadImage(form);
-      if (!res.ok) throw new Error(res.message);
-      return res.url;
-    },
-  }) as unknown as SelfEditor;
+  const editor = useCreateBlockNote(
+    collab
+      ? withCollaboration({
+          schema,
+          uploadFile: upload,
+          collaboration: { fragment: collab.doc.getXmlFragment(FRAGMENT), provider: collab.provider, user: collab.user, showCursorLabels: "activity" },
+        })
+      : {
+          schema,
+          initialContent: initialContent && initialContent.length > 0 ? (initialContent as Block[]) : undefined,
+          uploadFile: upload,
+        },
+  ) as unknown as SelfEditor;
 
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dirty = useRef(false);
@@ -109,8 +129,10 @@ export default function Editor({
       slashMenu={false}
       formattingToolbar={!onAskAI && !onComment}
       className="self-editor -mx-[54px]"
-      onChange={() => {
+      onChange={(_, ctx) => {
         if (!editable) return;
+        // Other people's edits arrive through the shared document; their own editor saves them.
+        if (collab && ctx.getChanges().every((c) => c.source.type === "yjs-remote")) return;
         dirty.current = true;
         onSaveState?.("saving");
         if (timer.current) clearTimeout(timer.current);

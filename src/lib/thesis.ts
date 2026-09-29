@@ -1,6 +1,7 @@
 import "server-only";
 import type { Prisma } from "@/generated/prisma/client";
 import { blocksToText } from "./blocks";
+import { resetCollab } from "./collab";
 import { ensureSystemDb } from "./databases";
 import { db } from "./db";
 import { insertPage } from "./pages";
@@ -36,6 +37,7 @@ export async function saveThesisPage(workspaceId: string, t: ThesisInput, viewer
       data: { content: content as Prisma.InputJsonValue, text: blocksToText(content), archivedAt: null, updatedById: viewer.user.id },
     });
     pageId = existing.id;
+    await resetCollab(existing.id);
   } else {
     const page = await insertPage({ workspaceId, title: "Thesis", icon: "💡", content, systemKey: "thesis" }, viewer.user.id);
     pageId = page.id;

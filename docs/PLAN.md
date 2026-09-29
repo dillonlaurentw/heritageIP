@@ -8,9 +8,10 @@ built in. Self1 (the Project Hub version) is saved on the `self1` branch.
 Each phase ends in something you can click through at `http://localhost:3000`.
 I stop after each phase, tell you what to test, commit, and wait for your go-ahead.
 
-Status: building. Phases 0–10 done.
+Status: all phases (0–11) built. Next: deploy (see `docs/DEPLOY.md`).
 Decisions made: calm design everywhere · first usable version covers everything
-Self1 did and more · live co-editing comes later, as its own phase.
+Self1 did and more · live co-editing comes later, as its own phase · live
+co-editing runs through SELF's own server and database (no extra service).
 
 ---
 
@@ -111,10 +112,16 @@ partners, signals, AI usage and cost, featuring and partner linking.
 **Build:** two or more people editing the same page at once, with cursors and
 "who's here" presence (Yjs plus a hosted sync service). Its own phase because it
 adds a real-time service to run and pay for.
+**As built:** no hosted service. The shared document is stored in Postgres as
+Yjs updates and synced by short HTTP polling (fast while others are on the page,
+slow when you're alone), which works on Vercel with nothing else to sign up for.
+If SELF grows to many people editing at once, swap the provider in
+`src/components/editor/collab.ts` for a hosted one (Liveblocks, y-sweet,
+PartyKit); nothing else changes.
 
 ## After Phase 11
 Vercel + Neon deploy walkthrough, environment checklist, and a smoke test of
-every main flow.
+every main flow: `docs/DEPLOY.md`.
 
 ---
 

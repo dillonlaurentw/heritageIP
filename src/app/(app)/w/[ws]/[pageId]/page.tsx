@@ -79,6 +79,7 @@ export default async function PageRoute({
       editable={editable}
       canDeleteForever={canManage(role)}
       comments={personal || page.kind === "DATABASE" ? undefined : { me: viewer.user.id, canManage: canManage(role), open: openComments, focus: focusComment }}
+      live={page.kind === "DATABASE" || page.archivedAt ? undefined : { id: viewer.user.id, name: viewer.user.name }}
       childPages={children.map((c) => ({ ...c, href: pageHref(ws, c.id) }))}
       people={members.map((m) => m.user).filter((u) => u.id !== viewer.user.id)}
       topActions={
