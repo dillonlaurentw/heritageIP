@@ -95,7 +95,7 @@ export function OnboardingFlow({ initial, startAt }: { initial: FlowValues; star
             <Done name={v.name} />
           ) : (
             <>
-              <h1 className="text-2xl font-semibold tracking-tight text-balance">{step.lines.join(" ")}</h1>
+              <h1 className="text-3xl font-medium text-balance">{step.lines.join(" ")}</h1>
               <p className="mt-2 text-md text-fg-muted">{step.helper}</p>
               <div className="mt-8 flex flex-col gap-5">
                 <StepInput step={step} v={v} set={set} errors={errors} />
@@ -167,8 +167,8 @@ function StepInput({
                   aria-pressed={on}
                   onClick={() => set("roles", on ? v.roles.filter((x) => x !== r) : [...v.roles, r])}
                   className={cn(
-                    "flex flex-col gap-1 rounded-md border p-3 text-left transition-colors duration-(--duration-fast)",
-                    on ? "border-accent bg-accent-soft" : "border-border hover:border-border-strong hover:bg-bg-hover",
+                    "flex flex-col gap-1 rounded-lg bg-surface p-4 text-left shadow-card transition-shadow duration-(--duration-fast)",
+                    on ? "shadow-[0_0_0_1.5px_var(--ring-link)]" : "hover:shadow-lift",
                   )}
                 >
                   <span className="flex items-center justify-between text-base font-medium">
@@ -241,11 +241,11 @@ function Done({ name }: { name: string }) {
   const first = name.split(" ")[0] || "there";
   return (
     <form action={completeOnboarding}>
-      <h1 className="text-2xl font-semibold tracking-tight">Thanks, {first}. What are you building?</h1>
+      <h1 className="text-3xl font-medium">Thanks, {first}. What are you building?</h1>
       <p className="mt-2 text-md text-fg-muted">
         Everything you wrote stays editable on your profile. It also becomes the first draft of your Self, the AI version of you, which you can read and change.
       </p>
-      <Button type="submit" variant="primary" size="md" className="mt-8">
+      <Button type="submit" variant="primary" size="lg" className="mt-8">
         Take me in
       </Button>
     </form>
