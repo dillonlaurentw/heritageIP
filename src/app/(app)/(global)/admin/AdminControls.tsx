@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
-import { featurePartner, featureWorkspace, linkPartnerManager } from "@/app/actions/admin";
+import { answerApplication, featurePartner, featureWorkspace, linkPartnerManager } from "@/app/actions/admin";
+import { Button } from "@/components/ui/Button";
 import { Switch } from "@/components/ui/Switch";
 import { useToast } from "@/components/ui/Toast";
 
@@ -51,5 +52,28 @@ export function ManagerSelect({ partnerId, current, options }: { partnerId: stri
         </option>
       ))}
     </select>
+  );
+}
+
+export function ApplicationAnswer({ id, name }: { id: string; name: string }) {
+  const router = useRouter();
+  const toast = useToast();
+  const [busy, start] = useTransition();
+  const answer = (approve: boolean) =>
+    start(async () => {
+      const res = await answerApplication(id, approve);
+      if (!res.ok) toast(res.message, "danger");
+      else toast(approve ? `${name} is in. They've joined a circle.` : "Answered.");
+      router.refresh();
+    });
+  return (
+    <div className="flex gap-2">
+      <Button variant="primary" size="xs" disabled={busy} onClick={() => answer(true)}>
+        Let them in
+      </Button>
+      <Button variant="ghost" size="xs" disabled={busy} onClick={() => answer(false)}>
+        Not now
+      </Button>
+    </div>
   );
 }

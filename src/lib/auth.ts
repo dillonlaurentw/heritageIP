@@ -2,6 +2,8 @@ import "server-only";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
+import { bearer } from "better-auth/plugins/bearer";
+import { emailOTP } from "better-auth/plugins/email-otp";
 import { magicLink } from "better-auth/plugins/magic-link";
 import { db } from "./db";
 import { demoLoginEnabled } from "./demo";
@@ -13,6 +15,15 @@ import { emailConfigured, sendEmail } from "./email";
  */
 const g = globalThis as unknown as { __selfDevLinks?: Map<string, string> };
 const devLinks = (g.__selfDevLinks ??= new Map());
+
+/** The SELF app signs in with a 6-digit code; without email it's captured here (dev and demo only). */
+const devCodes = ((globalThis as unknown as { __selfDevCodes?: Map<string, string> }).__selfDevCodes ??= new Map());
+
+export function takeDevCode(email: string) {
+  const code = devCodes.get(email.toLowerCase());
+  devCodes.delete(email.toLowerCase());
+  return code;
+}
 
 export function takeDevMagicLink(email: string) {
   const url = devLinks.get(email);
@@ -54,6 +65,24 @@ export const auth = betterAuth({
         });
       },
     }),
+    // The SELF app (mobile/): a 6-digit code by email, then a bearer token.
+    emailOTP({
+      otpLength: 6,
+      expiresIn: 60 * 10,
+      async sendVerificationOTP({ email, otp }) {
+        if (!emailConfigured()) {
+          devCodes.set(email.toLowerCase(), otp);
+          console.log(`[auth:dev] sign-in code for ${email}: ${otp}`);
+          return;
+        }
+        await sendEmail({
+          to: email,
+          subject: `${otp} is your SELF code`,
+          text: `Your code for the SELF app: ${otp}\n\nIt expires in 10 minutes. If you didn't ask for it, ignore this email.`,
+        });
+      },
+    }),
+    bearer(),
     nextCookies(), // must be last: lets server actions set auth cookies
   ],
 });

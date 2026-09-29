@@ -1,4 +1,40 @@
-# SELF 3: build plan (current)
+# SELF app: founding circles (current)
+
+The web platform (Self3) is saved on the `self3` branch. The SELF app is a
+native iPhone/Android app (Expo, in `mobile/`) built around the concept we
+agreed: **start exclusive, by invitation and commitment (never by price or
+pedigree), then open up stage by stage** until SELF is founder
+infrastructure for everyone.
+
+## Stage 1 (building now): the founding circle
+- **Invite-only access.** Get in with an invite code from a member, or apply
+  with two questions ("What are you building?" and "What did you do on it
+  last week?"). Admins approve applications on the web.
+- **Peer circles.** 5–6 founders per circle. Every week each answers three
+  things: what I did, where I'm stuck, what I need. Peers reply "I can help".
+  SELF writes a short weekly summary for the circle (labelled, AI).
+- **Mentors with office hours.** Mentors offer short slots; founders book
+  one against a real problem, with context attached.
+- **Your Self** (the AI version of you), your plan steps, and messages, from
+  the platform.
+- **Invites.** Each member can invite a few people. Quality spreads through
+  people who already show up.
+- Partners, co-founder matching and capital appear as "later" on the ring.
+
+## Later stages (each opens when the one before works)
+2. Invite and apply at scale · 3. Programs run cohorts on SELF · 4. Partners ·
+5. Co-founder matching · 6. Capital through a licensed partner · 7. Open
+infrastructure for every founder.
+
+## How it's built
+- The app talks to the existing SELF server (`/api/m/*`, JSON, bearer tokens
+  from Better Auth; sign-in with a 6-digit email code). One database, one set
+  of rules (contacts, consent, no money).
+- Shared pure logic (the ring layout) is mirrored in `mobile/lib`.
+
+---
+
+# SELF 3: build plan (saved on the self3 branch)
 
 Self3 keeps everything Self2 built (workspaces, pages, databases, agents,
 network, simulations, live co-editing) and changes what SELF feels like and

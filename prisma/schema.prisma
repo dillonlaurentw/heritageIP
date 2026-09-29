@@ -45,6 +45,14 @@ model User {
   conversations      ConversationMember[]
   directMessages     DirectMessage[]
   matchNotes         MatchNote[]
+  application        Application?
+  invitesMade        InviteCode[]            @relation("InviteMadeBy")
+  inviteUsed         InviteCode?             @relation("InviteUsedBy")
+  circleSeat         CircleMember?
+  checkIns           CheckIn[]
+  circleReplies      CircleReply[]
+  hoursOffered       OfficeHour[]            @relation("HoursMentor")
+  hoursBooked        OfficeHour[]            @relation("HoursBooker")
 
   @@map("user")
 }
@@ -146,6 +154,10 @@ model Profile {
   openToMatches     Boolean   @default(false)
   openToMatchesAt   DateTime?
   openToMatchesNote String? // "Brand and story, part-time until something is paid"
+
+  /// The SELF app is invite-only while it's small (stage 1). NONE: signed in,
+  /// no access yet · APPLIED: waiting for review · MEMBER: in.
+  access AccessStatus @default(NONE)
   simOptIn         Boolean   @default(false)
   simOptInAt       DateTime?
   backerNote       String? // what they back. Never amounts or terms.
@@ -166,6 +178,12 @@ model Profile {
 // Workspaces: one company or idea each. Every person also gets a
 // PERSONAL workspace for private pages.
 // ─────────────────────────────────────────────────────────────
+
+enum AccessStatus {
+  NONE
+  APPLIED
+  MEMBER
+}
 
 enum WorkspaceKind {
   PERSONAL
@@ -785,4 +803,122 @@ model MatchNote {
   createdAt   DateTime  @default(now())
 
   @@unique([workspaceId, userId, chairKey])
+}
+
+// ─────────────────────────────────────────────────────────────
+// The SELF app, stage 1: the founding circle. Invite-only access, peer
+// circles with weekly check-ins, and mentor office hours. Chosen for
+// commitment and fit, never price or pedigree.
+// ─────────────────────────────────────────────────────────────
+
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  DECLINED
+}
+
+model Application {
+  id         String            @id @default(cuid())
+  userId     String            @unique
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  building   String // "What are you building?"
+  lastWeek   String // "What did you do on it last week?"
+  status     ApplicationStatus @default(PENDING)
+  createdAt  DateTime          @default(now())
+  reviewedAt DateTime?
+}
+
+/// One code, one person. Members get a few to share.
+model InviteCode {
+  id          String    @id @default(cuid())
+  code        String    @unique
+  createdById String
+  createdBy   User      @relation("InviteMadeBy", fields: [createdById], references: [id], onDelete: Cascade)
+  usedById    String?   @unique
+  usedBy      User?     @relation("InviteUsedBy", fields: [usedById], references: [id], onDelete: SetNull)
+  usedAt      DateTime?
+  createdAt   DateTime  @default(now())
+}
+
+model Circle {
+  id        String          @id @default(cuid())
+  name      String
+  members   CircleMember[]
+  checkIns  CheckIn[]
+  summaries CircleSummary[]
+  createdAt DateTime        @default(now())
+}
+
+model CircleMember {
+  id       String   @id @default(cuid())
+  circleId String
+  circle   Circle   @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  userId   String   @unique // one circle each, for now
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  joinedAt DateTime @default(now())
+
+  @@index([circleId])
+}
+
+/// The weekly check-in: what I did, where I'm stuck, what I need.
+model CheckIn {
+  id        String        @id @default(cuid())
+  circleId  String
+  circle    Circle        @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weekOf    DateTime      @db.Date // the Monday of that week (UTC)
+  did       String
+  stuck     String
+  need      String
+  replies   CircleReply[]
+  createdAt DateTime      @default(now())
+
+  @@unique([userId, weekOf])
+  @@index([circleId, weekOf])
+}
+
+/// A peer answering a check-in: "I can help with that".
+model CircleReply {
+  id        String   @id @default(cuid())
+  checkInId String
+  checkIn   CheckIn  @relation(fields: [checkInId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  text      String
+  createdAt DateTime @default(now())
+
+  @@index([checkInId])
+}
+
+/// SELF's short summary of a circle's week. Written by AI, labelled as such.
+model CircleSummary {
+  id        String   @id @default(cuid())
+  circleId  String
+  circle    Circle   @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  weekOf    DateTime @db.Date
+  text      String
+  /// Who could help whom: [{ from, to, why }] (first names, from the check-ins)
+  helps     Json?
+  demo      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@unique([circleId, weekOf])
+}
+
+/// A short slot a mentor offers. Booked against a real problem, with context.
+model OfficeHour {
+  id         String    @id @default(cuid())
+  mentorId   String
+  mentor     User      @relation("HoursMentor", fields: [mentorId], references: [id], onDelete: Cascade)
+  startsAt   DateTime
+  minutes    Int       @default(20)
+  bookedById String?
+  bookedBy   User?     @relation("HoursBooker", fields: [bookedById], references: [id], onDelete: SetNull)
+  topic      String? // what the founder wants help with
+  bookedAt   DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([mentorId, startsAt])
+  @@index([bookedById])
 }

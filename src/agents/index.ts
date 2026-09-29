@@ -13,4 +13,5 @@ export { selfSuggestAgent, type SelfSuggestCtx } from "./prompts/self";
 export { matchAgent, type MatchCtx } from "./prompts/match";
 export { areaSectionAgent, type AreaSectionCtx } from "./prompts/areaSection";
 export { whatIfAgent, type WhatIfCtx, type WhatIfOutput } from "./prompts/whatIf";
+export { circleSummaryAgent, type CircleSummaryCtx } from "./prompts/circleSummary";
 export { fitReportAgent, simulationTurnAgent, type SimPerson, type SimTurnCtx } from "./prompts/simulation";

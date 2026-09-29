@@ -236,6 +236,15 @@ export const people: Person[] = [
     location: "Remote",
   },
   {
+    // Applied to the app and is waiting for an admin to say yes.
+    key: "leo",
+    name: "Leo Brandt",
+    roles: [],
+    headline: "",
+    location: "",
+    onboarded: false,
+  },
+  {
     // Signs in fresh so you can walk through onboarding.
     key: "new",
     name: "New Builder",

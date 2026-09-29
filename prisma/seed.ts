@@ -17,6 +17,7 @@ import { seedUsage } from "./seed-usage";
 import { seedSelf } from "./seed-self";
 import { seedMessages } from "./seed-messages";
 import { seedAreas, seedWhatIf } from "./seed-areas";
+import { seedCircles } from "./seed-circles";
 
 const db = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }) });
 const DAY = 86_400_000;
@@ -166,6 +167,7 @@ async function main() {
   await seedMessages(db, idOf);
   await seedAreas(db, idOf);
   await seedWhatIf(db, idOf);
+  await seedCircles(db, idOf);
 }
 
 main()
