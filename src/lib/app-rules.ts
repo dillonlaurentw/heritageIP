@@ -29,24 +29,78 @@ export function normaliseCode(input: string): string | null {
   return `SELF-${body.slice(0, 4)}-${body.slice(4)}`;
 }
 
-/** Which circle a new member joins: the fullest one that still has room, else a new one. */
-export function circleToJoin(circles: { id: string; size: number }[], max = CIRCLE_SIZE): string | null {
-  const open = circles.filter((c) => c.size < max).sort((a, b) => b.size - a.size);
-  return open[0]?.id ?? null;
+/** What someone builds in. Only used to match circles; shown as words, never as a label on a person. */
+export const FIELDS = {
+  FOOD: "Food",
+  CLIMATE: "Climate",
+  HEALTH: "Health",
+  MONEY: "Money and fintech",
+  SOFTWARE: "Software",
+  CONSUMER: "Consumer",
+  HARDWARE: "Hardware",
+  OTHER: "Something else",
+} as const;
+export type Field = keyof typeof FIELDS;
+
+/** How far along. Same idea: matching only. */
+export const STAGES = {
+  IDEA: "Shaping the idea",
+  BUILDING: "Building the first version",
+  FIRST_CUSTOMERS: "Finding first customers",
+  GROWING: "Growing",
+} as const;
+export type Stage = keyof typeof STAGES;
+
+const FIELD_NAME: Record<Field, string> = {
+  FOOD: "Food founders",
+  CLIMATE: "Climate founders",
+  HEALTH: "Health founders",
+  MONEY: "Fintech founders",
+  SOFTWARE: "Software founders",
+  CONSUMER: "Consumer founders",
+  HARDWARE: "Hardware founders",
+  OTHER: "Founders",
+};
+const STAGE_NAME: Record<Stage, string> = {
+  IDEA: "early ideas",
+  BUILDING: "first builds",
+  FIRST_CUSTOMERS: "first customers",
+  GROWING: "growing",
+};
+
+export const isField = (v: unknown): v is Field => typeof v === "string" && v in FIELDS;
+export const isStage = (v: unknown): v is Stage => typeof v === "string" && v in STAGES;
+
+/** A circle is named after what its members share: "Food founders · first customers". */
+export function circleName(field: string | null, stage: string | null): string {
+  const f = isField(field) ? FIELD_NAME[field] : "Founders";
+  return isStage(stage) ? `${f} · ${STAGE_NAME[stage]}` : f;
 }
 
-/** Can this person book this office hour? */
-export function bookingProblem(
-  slot: { mentorId: string; startsAt: Date; bookedById: string | null },
-  viewerId: string,
-  now: Date,
-  alreadyBookedWithMentor: boolean,
-): string | null {
-  if (slot.mentorId === viewerId) return "That's your own office hour.";
-  if (slot.bookedById) return slot.bookedById === viewerId ? "You've already booked this one." : "Someone just booked this slot.";
-  if (slot.startsAt.getTime() <= now.getTime()) return "That slot has passed.";
-  if (alreadyBookedWithMentor) return "You already have a slot with this mentor. Keep one at a time, so everyone gets a turn.";
+type CircleSeat = { id: string; field: string | null; stage: string | null; size: number };
+
+/**
+ * Which circle someone joins: the fullest one with room that shares their
+ * field and stage, else their field, else null (start a new one named after
+ * them). Fullest first so circles fill up instead of staying thin.
+ */
+export function circleFor(person: { field: string | null; stage: string | null }, circles: CircleSeat[], max = CIRCLE_SIZE): string | null {
+  if (!person.field) return null;
+  const open = circles.filter((c) => c.size < max && c.field === person.field).sort((a, b) => b.size - a.size);
+  return (open.find((c) => c.stage === person.stage) ?? open[0])?.id ?? null;
+}
+
+/** A request to a mentor has to say what you'd like help with. */
+export function mentorAskProblem(note: string): string | null {
+  const t = note.trim();
+  if (t.length < 20) return "Say a little about what you're building and what you'd like help with.";
+  if (t.length > 1000) return "Keep it under 1,000 characters. You can say more once they say yes.";
   return null;
+}
+
+/** The day a journal entry belongs to (UTC date, midnight). */
+export function dayOf(d: Date): Date {
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
 }
 
 /** Applications are about doing, not status: both answers have to say something. */

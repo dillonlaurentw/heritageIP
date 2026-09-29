@@ -1,28 +1,36 @@
 import "server-only";
 import { randomInt } from "node:crypto";
 import { db } from "../db";
-import { applicationProblem, circleToJoin, INVITES_PER_MEMBER, newInviteCode, normaliseCode } from "../app-rules";
+import { applicationProblem, circleFor, circleName, INVITES_PER_MEMBER, newInviteCode, normaliseCode } from "../app-rules";
 
 type Fail = { ok: false; message: string };
 const rand = () => randomInt(0, 1_000_000) / 1_000_000;
 
-/** Puts a new member in the fullest circle with room, or starts a new one. */
+/**
+ * Puts someone in a circle of founders like them (same field, ideally the
+ * same stage), or starts a new one named after what they'd share. Runs once
+ * we know their field: at the end of onboarding.
+ */
 export async function placeInCircle(userId: string) {
   if (await db.circleMember.findUnique({ where: { userId } })) return;
-  const circles = await db.circle.findMany({ select: { id: true, _count: { select: { members: true } } } });
-  let circleId = circleToJoin(circles.map((c) => ({ id: c.id, size: c._count.members })));
-  if (!circleId) circleId = (await db.circle.create({ data: { name: `Circle ${circles.length + 1}` } })).id;
+  const p = await db.profile.findUniqueOrThrow({ where: { userId }, select: { buildField: true, buildStage: true } });
+  const person = { field: p.buildField ?? "OTHER", stage: p.buildStage };
+  const circles = await db.circle.findMany({ where: { field: person.field }, select: { id: true, field: true, stage: true, _count: { select: { members: true } } } });
+  let circleId = circleFor(person, circles.map((c) => ({ id: c.id, field: c.field, stage: c.stage, size: c._count.members })));
+  if (!circleId) circleId = (await db.circle.create({ data: { name: circleName(person.field, person.stage), field: person.field, stage: person.stage } })).id;
   await db.circleMember.create({ data: { circleId, userId } });
 }
 
-/** Makes someone a member: access, a circle, and invites of their own to share. */
+/** Makes someone a member: access and invites of their own to share. Their circle comes after onboarding. */
 export async function admit(userId: string) {
   const p = await db.profile.findUniqueOrThrow({ where: { userId }, select: { roles: true } });
   await db.profile.update({
     where: { userId },
     data: { access: "MEMBER", ...(p.roles.includes("BUILDER") ? {} : { roles: { push: "BUILDER" } }) },
   });
-  await placeInCircle(userId);
+  // Already onboarded (e.g. an existing web user let in): place them now.
+  const onboarded = await db.profile.count({ where: { userId, onboardedAt: { not: null } } });
+  if (onboarded) await placeInCircle(userId);
   const have = await db.inviteCode.count({ where: { createdById: userId, usedById: null } });
   for (let i = have; i < INVITES_PER_MEMBER; i++) await db.inviteCode.create({ data: { code: newInviteCode(rand), createdById: userId } });
 }

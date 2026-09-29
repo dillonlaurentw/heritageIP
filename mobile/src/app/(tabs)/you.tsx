@@ -1,21 +1,22 @@
-import { useState } from "react";
+import { router } from "expo-router";
 import { Pressable, View } from "react-native";
+import { Ring } from "@/components/Ring";
 import { Avatar, Button, Card, ErrorLine, Eyebrow, Loading, Screen, T, Title } from "@/components/ui";
-import { api, type Invite, type SelfDoc } from "@/lib/api";
+import { api, type Invite, type SelfDoc, type Today } from "@/lib/api";
 import { useSession } from "@/lib/session";
 import { useColors } from "@/lib/theme";
 import { useLoad } from "@/lib/useLoad";
 
-/** You: your Self (the lines your agent is given, and nothing else), your invites, sign out. */
+/** You: your ring, your Self (the lines your agent is given, and nothing else), your invites. */
 export default function You() {
   const col = useColors();
   const { me, signOut } = useSession();
   const { data, error, reload } = useLoad(async () => {
-    const [self, inv] = await Promise.all([api.self(), api.invites()]);
-    return { self, invites: inv.invites };
+    const [self, inv, today] = await Promise.all([api.self(), api.invites(), api.today()]);
+    return { self, invites: inv.invites, today };
   });
   if (!data) return error ? <Screen><ErrorLine>{error}</ErrorLine></Screen> : <Loading />;
-  const { self, invites } = data as { self: SelfDoc; invites: Invite[] };
+  const { self, invites, today } = data as { self: SelfDoc; invites: Invite[]; today: Today };
   const answer = async (type: "accept" | "reject", id: string) => {
     await api.changeSelf({ type, id }).catch(() => {});
     await reload();
@@ -31,6 +32,18 @@ export default function You() {
           {me?.headline && <T tone="muted">{me.headline}</T>}
         </View>
       </View>
+
+      <Ring nodes={today.ring} size={250} onNode={(n) => router.push(n.theme === "ADVISORS" ? "/mentors" : "/circle")} />
+      {today.company && today.company.steps.length > 0 && (
+        <Card style={{ gap: 8 }}>
+          <T size={13} weight="medium" tone="muted">
+            Next on {today.company.name}
+          </T>
+          {today.company.steps.map((s) => (
+            <T key={s}>{s}</T>
+          ))}
+        </Card>
+      )}
 
       <View style={{ gap: 10 }}>
         <Eyebrow>Your Self</Eyebrow>
@@ -95,9 +108,9 @@ export default function You() {
       <View style={{ gap: 10 }}>
         <Eyebrow>Coming later</Eyebrow>
         <Card style={{ gap: 6 }}>
-          <T weight="medium">Partners, co-founders and capital</T>
+          <T weight="medium">Opportunities, partners and capital</T>
           <T size={14} tone="muted">
-            SELF opens these one at a time, once circles and mentors work well. Nothing here moves money.
+            Dinners, trips and introductions come next, then partners and backers. Nothing here moves money.
           </T>
         </Card>
       </View>

@@ -374,8 +374,8 @@ export async function actOnSignal(signalId: string, viewer: Viewer, action: Sign
         sendEmail({ to: signal.toUser.email, subject: `You said yes to ${signal.fromUser.name}`, text: `Here's how to reach ${signal.fromUser.name}:\n\n${card(signal.fromUser)}\n\n${appUrl()}/network/connections` }),
       ]);
     }
-    // A yes to "let's talk" opens the conversation, starting with the note that asked.
-    if (signal.kind === "ROLE_INVITE") await conversationFromYes(signal.fromUserId, signal.toUserId, signal.workspaceId, signal.note);
+    // A yes to "let's talk" or to a mentor request opens the conversation, starting with the note that asked.
+    if (signal.kind === "ROLE_INVITE" || signal.kind === "MENTOR_REQUEST") await conversationFromYes(signal.fromUserId, signal.toUserId, signal.workspaceId, signal.note);
     if (signal.workspaceId) await logActivity(signal.workspaceId, viewer.user.id, "signal.accepted", signal.pageId, { title: signal.page?.title ?? "", with: signal.partner?.name ?? signal.fromUser.name });
   }
   return { ok: true, status: next.status };

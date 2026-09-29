@@ -1,35 +1,27 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { Pressable, View } from "react-native";
-import { Avatar, Button, Card, ErrorLine, Eyebrow, Field, Loading, Screen, T, Title } from "@/components/ui";
+import { View } from "react-native";
+import { Avatar, Button, Card, ErrorLine, Field, Loading, Screen, T, Title } from "@/components/ui";
 import { api } from "@/lib/api";
-import { useColors } from "@/lib/theme";
-import { firstName, when } from "@/lib/time";
+import { ago, firstName } from "@/lib/time";
 import { useLoad } from "@/lib/useLoad";
 
-/** One mentor: what they help with, and their open slots. Booking needs a real question. */
+/** One mentor. Ask with a short note; a yes opens a conversation. */
 export default function MentorScreen() {
-  const col = useColors();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: m, error, reload } = useLoad(() => api.mentor(id));
-  const [slot, setSlot] = useState<string | null>(null);
-  const [topic, setTopic] = useState("");
+  const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
-  const [done, setDone] = useState(false);
   if (!m) return error ? <Screen back><ErrorLine>{error}</ErrorLine></Screen> : <Loading />;
-  const open = m.slots.filter((s) => !s.mine);
-  const mine = m.slots.filter((s) => s.mine);
+  const first = firstName(m.name);
 
-  const book = async () => {
-    if (!slot) return;
+  const ask = async () => {
     setBusy(true);
     setErr("");
     try {
-      await api.book(slot, topic);
-      setDone(true);
-      setSlot(null);
-      setTopic("");
+      await api.askMentor(m.id, note);
+      setNote("");
       await reload();
     } catch (e) {
       setErr((e as Error).message);
@@ -49,76 +41,54 @@ export default function MentorScreen() {
         </View>
       </View>
       {m.note && <T size={16}>{m.note}</T>}
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
+        {m.focus.map((f) => (
+          <T key={f} size={13} tone="muted">
+            {f} ·
+          </T>
+        ))}
+      </View>
 
-      {mine.length > 0 && (
-        <Card style={{ gap: 8 }}>
-          <Eyebrow>{done ? "Booked" : "Your hour"}</Eyebrow>
-          {mine.map((s) => (
-            <View key={s.id} style={{ gap: 2 }}>
-              <T weight="medium">
-                {when(s.at)} · {s.minutes} min
-              </T>
-              {s.topic && (
-                <T size={14} tone="muted">
-                  {s.topic}
-                </T>
-              )}
-            </View>
-          ))}
-          <T size={13} tone="subtle">
-            {firstName(m.name)} has been told. Messages open once you&apos;ve met.
+      {m.ask.status === "yes" ? (
+        <Card style={{ gap: 10 }}>
+          <T weight="medium">{first} is mentoring you</T>
+          <T size={14} tone="muted">
+            Talk directly: how often, how long and about what is up to the two of you.
+          </T>
+          {m.ask.conversationId && (
+            <Button onPress={() => router.push({ pathname: "/thread/[id]", params: { id: (m.ask as { conversationId: string }).conversationId } })}>Message {first}</Button>
+          )}
+        </Card>
+      ) : m.ask.status === "pending" ? (
+        <Card style={{ gap: 6 }}>
+          <T weight="medium">Asked {ago(m.ask.since)}</T>
+          <T size={14} tone="muted">
+            {first} will say yes or not now. If it&apos;s a yes, a conversation opens with your note.
           </T>
         </Card>
-      )}
-
-      {m.open && open.length > 0 && mine.length === 0 && (
-        <View style={{ gap: 10 }}>
-          <Eyebrow>Open slots</Eyebrow>
-          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-            {open.map((s) => (
-              <Pressable
-                key={s.id}
-                onPress={() => setSlot(s.id)}
-                style={{
-                  paddingHorizontal: 14,
-                  paddingVertical: 10,
-                  borderRadius: 14,
-                  backgroundColor: slot === s.id ? col.primary : col.surface,
-                  borderWidth: 1,
-                  borderColor: slot === s.id ? col.primary : col.border,
-                }}
-              >
-                <T size={13} weight="medium" tone={slot === s.id ? "inverse" : "fg"}>
-                  {when(s.at)}
-                </T>
-                <T size={12} tone={slot === s.id ? "inverse" : "subtle"}>
-                  {s.minutes} min
-                </T>
-              </Pressable>
-            ))}
-          </View>
-          {slot && (
-            <Card lift style={{ gap: 14 }}>
-              <Field
-                label="What do you want help with?"
-                value={topic}
-                onChangeText={setTopic}
-                multiline
-                placeholder="One question, with enough context to think about it before you meet."
-                hint={`${firstName(m.name)} reads this before the call.`}
-              />
-              <Button onPress={book} busy={busy} disabled={topic.trim().length < 15}>
-                Book this slot
-              </Button>
-              <ErrorLine>{err}</ErrorLine>
-            </Card>
+      ) : !m.open ? (
+        <T tone="subtle">{first} isn&apos;t taking new requests right now.</T>
+      ) : (
+        <Card lift style={{ gap: 14 }}>
+          {m.ask.status === "not now" && (
+            <T size={13} tone="subtle">
+              {first} said not now last time. You can ask again when things have moved on.
+            </T>
           )}
-        </View>
+          <Field
+            label={`Ask ${first} for mentorship`}
+            value={note}
+            onChangeText={setNote}
+            multiline
+            placeholder="What you're building, where you are, and what you'd like help with."
+            hint={`${first} reads this first. Your contact details stay private until they say yes.`}
+          />
+          <Button onPress={ask} busy={busy} disabled={note.trim().length < 20}>
+            Ask {first}
+          </Button>
+          <ErrorLine>{err}</ErrorLine>
+        </Card>
       )}
-      {(!m.open || open.length === 0) && mine.length === 0 && <T tone="subtle">No open slots right now. Check back next week.</T>}
-      <Button variant="ghost" small onPress={() => router.back()}>
-        Back to mentors
-      </Button>
     </Screen>
   );
 }

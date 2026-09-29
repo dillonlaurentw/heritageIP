@@ -1,21 +1,25 @@
 import "server-only";
+import { weekOf } from "../app-rules";
 import { db } from "../db";
 import type { RingNode } from "../ring";
 import type { Viewer } from "../session";
-import { loadCircle } from "./circles";
-import { myHours } from "./hours";
+import { circleUnread } from "./circles";
+import { wroteToday } from "./journal";
+import { incomingRequests } from "./mentors";
 
-/** The app's home: your ring of peers and advisors, this week, and what needs you. */
-export async function today(viewer: Viewer) {
+/** The app's home: your ring (circle and mentors), what needs you, and whether you've written today. */
+export async function today(viewer: Viewer, now = new Date()) {
   const uid = viewer.user.id;
-  const [circle, hours, mentorsYes, pending, company] = await Promise.all([
-    loadCircle(uid),
-    myHours(uid),
-    db.signal.findMany({
-      where: { kind: "MENTOR_REQUEST", fromUserId: uid, status: "ACCEPTED" },
-      select: { toUser: { select: { id: true, name: true } } },
+  const [seat, unread, wrote, mentorsYes, asks, otherPending, company] = await Promise.all([
+    db.circleMember.findUnique({
+      where: { userId: uid },
+      select: { circle: { select: { name: true, members: { select: { user: { select: { id: true, name: true } } } } } }, circleId: true },
     }),
-    db.signal.count({ where: { toUserId: uid, status: "PENDING" } }),
+    circleUnread(uid),
+    wroteToday(uid, now),
+    db.signal.findMany({ where: { kind: "MENTOR_REQUEST", fromUserId: uid, status: "ACCEPTED" }, select: { toUser: { select: { id: true, name: true } } } }),
+    incomingRequests(uid),
+    db.signal.count({ where: { toUserId: uid, status: "PENDING", kind: { not: "MENTOR_REQUEST" } } }),
     db.workspaceMember.findFirst({
       where: { userId: uid, role: { in: ["OWNER", "ADMIN"] }, workspace: { kind: "TEAM" } },
       orderBy: { joinedAt: "asc" },
@@ -23,41 +27,44 @@ export async function today(viewer: Viewer) {
     }),
   ]);
 
+  // Ring: peers in your circle (dark if they've spoken up this week), and mentors who said yes.
   const nodes: RingNode[] = [];
-  for (const m of circle?.members ?? []) {
-    if (m.id === uid) continue;
-    nodes.push({ id: `p-${m.id}`, theme: "COFOUNDERS", kind: "person", state: m.checkedIn ? "linked" : "pending", name: m.name, note: m.checkedIn ? "checked in" : "not yet this week" });
+  if (seat) {
+    const spoke = await db.circleMessage.findMany({
+      where: { circleId: seat.circleId, authorId: { not: null }, createdAt: { gte: weekOf(now) } },
+      distinct: ["authorId"],
+      select: { authorId: true },
+    });
+    const active = new Set(spoke.map((s) => s.authorId));
+    for (const { user } of seat.circle.members) {
+      if (user.id === uid) continue;
+      nodes.push({ id: `p-${user.id}`, theme: "COFOUNDERS", kind: "person", state: active.has(user.id) ? "linked" : "pending", name: user.name, note: active.has(user.id) ? "talking this week" : "quiet this week" });
+    }
   }
-  const advisors = new Map<string, string>();
-  for (const s of mentorsYes) advisors.set(s.toUser.id, s.toUser.name);
-  for (const h of hours) if (h.role === "founder") advisors.set(h.mentorId, h.with);
-  for (const [id, name] of advisors) nodes.push({ id: `a-${id}`, theme: "ADVISORS", kind: "person", state: "linked", name, note: "advisor" });
+  for (const s of mentorsYes) nodes.push({ id: `a-${s.toUser.id}`, theme: "ADVISORS", kind: "person", state: "linked", name: s.toUser.name, note: "mentor" });
 
-  let steps: { title: string; stage: string | null }[] = [];
+  const needs: { key: string; title: string; detail: string; to: string }[] = [];
+  for (const a of asks.slice(0, 3)) needs.push({ key: `ask-${a.id}`, title: `${a.from.name.split(" ")[0]} asked you to mentor them`, detail: a.note, to: "/requests" });
+  if (unread) needs.push({ key: "circle", title: `${unread} new in ${seat?.circle.name ?? "your circle"}`, detail: "Your circle has been talking.", to: "/circle" });
+  if (otherPending) needs.push({ key: "web", title: `${otherPending} other ${otherPending === 1 ? "request is" : "requests are"} waiting`, detail: "Answer them on the web for now.", to: "/you" });
+
+  let steps: string[] = [];
   if (company) {
     const plan = await db.page.findUnique({ where: { workspaceId_systemKey: { workspaceId: company.workspace.id, systemKey: "gamePlan" } }, select: { id: true } });
     if (plan) {
       const rows = await db.page.findMany({ where: { parentId: plan.id, kind: "ROW", archivedAt: null }, orderBy: { position: "asc" }, select: { title: true, props: true } });
       steps = rows
-        .map((r) => ({ r, p: (r.props ?? {}) as { status?: string; stage?: string } }))
-        .filter(({ p }) => p.status !== "done")
+        .filter((r) => ((r.props ?? {}) as { status?: string }).status !== "done")
         .slice(0, 3)
-        .map(({ r, p }) => ({ title: r.title, stage: p.stage ?? null }));
+        .map((r) => r.title);
     }
   }
 
-  const repliesToMe = circle?.checkIns.find((c) => c.userId === uid)?.replies.filter((r) => r.authorId !== uid) ?? [];
-  const needs: { key: string; title: string; detail: string; to: string }[] = [];
-  if (circle && !circle.mine) needs.push({ key: "checkin", title: "Check in with your circle", detail: "What you did, where you're stuck, what you need.", to: "/checkin" });
-  for (const r of repliesToMe.slice(-2)) needs.push({ key: `r-${r.id}`, title: `${r.author.split(" ")[0]} replied to your check-in`, detail: r.text, to: "/circle" });
-  if (circle && circle.checkIns.length >= 2 && !circle.summary) needs.push({ key: "summary", title: "This week's note is ready to write", detail: `${circle.checkIns.length} people have checked in.`, to: "/circle" });
-  if (pending) needs.push({ key: "requests", title: `${pending} ${pending === 1 ? "request is" : "requests are"} waiting for you`, detail: "Answer them on the web for now.", to: "/you" });
-
   return {
     name: viewer.user.name,
-    circle: circle ? { name: circle.name, members: circle.members.length, checkedIn: circle.checkIns.length, mine: !!circle.mine } : null,
+    wroteToday: wrote,
+    circle: seat ? { name: seat.circle.name, unread } : null,
     ring: nodes,
-    hours,
     needs,
     company: company ? { name: company.workspace.name, steps } : null,
   };

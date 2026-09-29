@@ -59,45 +59,28 @@ export type Me = {
   application: { building: string; lastWeek: string; status: string; createdAt: string } | null;
 };
 export type Need = { key: string; title: string; detail: string; to: string };
-export type Hour = { id: string; at: string; minutes: number; topic: string | null; with: string; mentorId: string; role: "mentor" | "founder" };
 export type Today = {
   name: string;
-  circle: { name: string; members: number; checkedIn: number; mine: boolean } | null;
+  wroteToday: boolean;
+  circle: { name: string; unread: number } | null;
   ring: RingNode[];
-  hours: Hour[];
   needs: Need[];
-  company: { name: string; steps: { title: string; stage: string | null }[] } | null;
+  company: { name: string; steps: string[] } | null;
 };
-export type Reply = { id: string; text: string; at: string; authorId: string; author: string };
-export type CheckIn = { id: string; userId: string; name: string; did: string; stuck: string; need: string; at: string; replies: Reply[] };
+export type JournalLine = { id: string; who: "me" | "self"; text: string; spoken: boolean; demo: boolean; shared: boolean; at: string };
+export type Journal = { today: JournalLine[]; earlier: { day: string; messages: JournalLine[] }[] };
+export type CircleMsg = { id: string; text: string; at: string; fromJournal: boolean; author: { id: string; name: string } | null };
 export type Circle = {
   id: string;
   name: string;
-  weekOf: string;
-  members: { id: string; name: string; headline: string | null; checkedIn: boolean }[];
-  checkIns: CheckIn[];
-  mine: CheckIn | null;
+  members: { id: string; name: string; headline: string | null; activeThisWeek: boolean }[];
+  messages: CircleMsg[];
   summary: { text: string; helps: { from: string; to: string; why: string }[]; demo: boolean } | null;
 };
-export type MentorCard = {
-  id: string;
-  name: string;
-  headline: string | null;
-  focus: string[];
-  note: string | null;
-  openSlots: number;
-  next: { id: string; at: string; minutes: number } | null;
-};
-export type Mentor = {
-  id: string;
-  name: string;
-  headline: string | null;
-  location: string | null;
-  focus: string[];
-  note: string | null;
-  open: boolean;
-  slots: { id: string; at: string; minutes: number; mine: boolean; topic: string | null }[];
-};
+export type Ask = { status: "none" } | { status: "pending"; since: string } | { status: "yes"; conversationId: string | null } | { status: "not now" };
+export type MentorCard = { id: string; name: string; headline: string | null; focus: string[]; note: string | null; open: boolean; ask: Ask };
+export type Mentor = MentorCard & { location: string | null };
+export type Request = { id: string; note: string; at: string; from: { id: string; name: string; headline: string | null }; company: string | null };
 export type ConversationRow = {
   id: string;
   other: { id: string; name: string };
@@ -139,19 +122,25 @@ export const api = {
   demoLogin: (email: string) => request<{ token: string }>("/api/m/demo-login", { body: { email } }),
 
   me: () => request<Me>("/api/m/me"),
-  saveBasics: (b: { name: string; headline: string; beliefs: string; buildingToward: string; gaps: string }) => request<{ ok: true }>("/api/m/me", { body: b }),
+  saveBasics: (b: { name: string; headline: string; beliefs: string; buildingToward: string; gaps: string; field: string; stage: string }) => request<{ ok: true }>("/api/m/me", { body: b }),
   redeem: (code: string) => request<{ ok: true }>("/api/m/access/redeem", { body: { code } }),
   apply: (building: string, lastWeek: string) => request<{ ok: true }>("/api/m/access/apply", { body: { building, lastWeek } }),
 
   today: () => request<Today>("/api/m/today"),
+  journal: () => request<Journal>("/api/m/journal"),
+  write: (text: string, spoken: boolean) => request<{ ok: true; replyError?: string }>("/api/m/journal", { body: { text, spoken } }),
+  deleteEntry: (id: string) => request<{ ok: true }>(`/api/m/journal/${id}`, { method: "DELETE" }),
+  shareEntry: (id: string) => request<{ ok: true }>(`/api/m/journal/${id}/share`, { method: "POST" }),
+
   circle: () => request<{ me: string; circle: Circle | null }>("/api/m/circle"),
-  checkIn: (b: { did: string; stuck: string; need: string }) => request<{ ok: true }>("/api/m/circle/checkin", { body: b }),
-  reply: (checkInId: string, text: string) => request<{ ok: true }>("/api/m/circle/reply", { body: { checkInId, text } }),
-  summarise: () => request<{ ok: true }>("/api/m/circle/summary", { method: "POST" }),
+  say: (text: string) => request<{ ok: true }>("/api/m/circle", { body: { text } }),
+  catchUp: () => request<{ ok: true }>("/api/m/circle/summary", { method: "POST" }),
 
   mentors: () => request<{ mentors: MentorCard[] }>("/api/m/mentors"),
   mentor: (id: string) => request<Mentor>(`/api/m/mentors/${id}`),
-  book: (slotId: string, topic: string) => request<{ ok: true }>(`/api/m/hours/${slotId}/book`, { body: { topic } }),
+  askMentor: (id: string, note: string) => request<{ ok: true }>(`/api/m/mentors/${id}/ask`, { body: { note } }),
+  requests: () => request<{ requests: Request[] }>("/api/m/requests"),
+  answer: (id: string, answer: "yes" | "not now") => request<{ ok: true; conversationId: string | null }>(`/api/m/requests/${id}`, { body: { answer } }),
 
   conversations: () => request<{ conversations: ConversationRow[] }>("/api/m/messages"),
   thread: (id: string) => request<Thread>(`/api/m/messages/${id}`),

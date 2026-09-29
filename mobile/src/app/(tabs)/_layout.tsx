@@ -7,7 +7,7 @@ import { gate, useSession } from "@/lib/session";
 import { font, useColors } from "@/lib/theme";
 
 const TABS: { name: TabIconName; title: string }[] = [
-  { name: "today", title: "Today" },
+  { name: "today", title: "Journal" },
   { name: "circle", title: "Circle" },
   { name: "mentors", title: "Mentors" },
   { name: "messages", title: "Messages" },

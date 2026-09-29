@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applicationProblem, bookingProblem, circleToJoin, newInviteCode, normaliseCode, weekOf } from "../app-rules";
+import { applicationProblem, circleFor, circleName, dayOf, mentorAskProblem, newInviteCode, normaliseCode, weekOf } from "../app-rules";
 
 describe("weekOf", () => {
   it("returns the Monday of the week", () => {
@@ -22,25 +22,41 @@ describe("invite codes", () => {
   });
 });
 
-describe("circleToJoin", () => {
-  it("fills the fullest circle with room first", () => {
-    expect(circleToJoin([{ id: "a", size: 2 }, { id: "b", size: 5 }, { id: "c", size: 6 }])).toBe("b");
-    expect(circleToJoin([{ id: "c", size: 6 }])).toBeNull();
-    expect(circleToJoin([])).toBeNull();
+describe("circleFor", () => {
+  const c = (id: string, field: string | null, stage: string | null, size: number) => ({ id, field, stage, size });
+  it("prefers the same field and stage, fullest first", () => {
+    const circles = [c("a", "FOOD", "IDEA", 2), c("b", "FOOD", "FIRST_CUSTOMERS", 3), c("d", "FOOD", "FIRST_CUSTOMERS", 5)];
+    expect(circleFor({ field: "FOOD", stage: "FIRST_CUSTOMERS" }, circles)).toBe("d");
+  });
+  it("falls back to the same field, then to a new circle", () => {
+    const circles = [c("a", "FOOD", "IDEA", 2), c("x", "HEALTH", "GROWING", 3)];
+    expect(circleFor({ field: "FOOD", stage: "GROWING" }, circles)).toBe("a");
+    expect(circleFor({ field: "CLIMATE", stage: "IDEA" }, circles)).toBeNull();
+    expect(circleFor({ field: null, stage: null }, circles)).toBeNull();
+  });
+  it("never overfills", () => {
+    expect(circleFor({ field: "FOOD", stage: "IDEA" }, [c("a", "FOOD", "IDEA", 6)])).toBeNull();
   });
 });
 
-describe("bookingProblem", () => {
-  const now = new Date("2026-10-01T10:00:00Z");
-  const slot = { mentorId: "m", startsAt: new Date("2026-10-02T10:00:00Z"), bookedById: null };
-  it("allows a free, future slot", () => {
-    expect(bookingProblem(slot, "f", now, false)).toBeNull();
+describe("circleName", () => {
+  it("names a circle after what members share", () => {
+    expect(circleName("FOOD", "FIRST_CUSTOMERS")).toBe("Food founders · first customers");
+    expect(circleName("CLIMATE", null)).toBe("Climate founders");
+    expect(circleName(null, null)).toBe("Founders");
   });
-  it("refuses own, taken, past, and a second slot with the same mentor", () => {
-    expect(bookingProblem(slot, "m", now, false)).toMatch(/own/);
-    expect(bookingProblem({ ...slot, bookedById: "x" }, "f", now, false)).toMatch(/just booked/);
-    expect(bookingProblem({ ...slot, startsAt: now }, "f", now, false)).toMatch(/passed/);
-    expect(bookingProblem(slot, "f", now, true)).toMatch(/one at a time/);
+});
+
+describe("mentorAskProblem", () => {
+  it("asks for a real note", () => {
+    expect(mentorAskProblem("hi")).toMatch(/what you'd like help/);
+    expect(mentorAskProblem("I'm building kelp trays and stuck on pricing.")).toBeNull();
+  });
+});
+
+describe("dayOf", () => {
+  it("is the UTC date", () => {
+    expect(dayOf(new Date("2026-10-01T23:30:00Z")).toISOString()).toBe("2026-10-01T00:00:00.000Z");
   });
 });
 

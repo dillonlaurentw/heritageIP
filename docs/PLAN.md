@@ -1,4 +1,4 @@
-# SELF app: founding circles (current)
+# SELF app: journal, circles, mentors (current)
 
 The web platform (Self3) is saved on the `self3` branch. The SELF app is a
 native iPhone/Android app (Expo, in `mobile/`) built around the concept we
@@ -6,31 +6,40 @@ agreed: **start exclusive, by invitation and commitment (never by price or
 pedigree), then open up stage by stage** until SELF is founder
 infrastructure for everyone.
 
-## Stage 1 (building now): the founding circle
+## Stage 1 (built): the daily journal, circles and mentors
 - **Invite-only access.** Get in with an invite code from a member, or apply
   with two questions ("What are you building?" and "What did you do on it
   last week?"). Admins approve applications on the web.
-- **Peer circles.** 5–6 founders per circle. Every week each answers three
-  things: what I did, where I'm stuck, what I need. Peers reply "I can help".
-  SELF writes a short weekly summary for the circle (labelled, AI).
-- **Mentors with office hours.** Mentors offer short slots; founders book
-  one against a real problem, with context attached.
-- **Your Self** (the AI version of you), your plan steps, and messages, from
-  the platform.
-- **Invites.** Each member can invite a few people. Quality spreads through
-  people who already show up.
-- Partners, co-founder matching and capital appear as "later" on the ring.
+- **A daily journal (home).** Talk or type about your day; SELF answers with
+  one good question and notices patterns across days. Private: only you can
+  read it. You choose to share single entries with your circle.
+- **Matched circles.** A handful of founders in the same field and stage,
+  named after what they share, working like a quiet group chat. SELF posts one
+  optional prompt a week and can "catch you up". No forms, no scores.
+- **Mentors.** Ask a mentor for mentorship with a short note. If they say yes,
+  a conversation opens and the two of you decide how to work together.
+- **Your Self**, messages, and a few invites per member.
 
-## Later stages (each opens when the one before works)
-2. Invite and apply at scale · 3. Programs run cohorts on SELF · 4. Partners ·
-5. Co-founder matching · 6. Capital through a licensed partner · 7. Open
-infrastructure for every founder.
+## Next
+2. **Opportunities**: founder dinners, trips, workshops, a seat at a partner's
+   event. Hosts post them with a few seats and who they're for; members see
+   the ones that fit and say in one line why they'd come; hosts pick. Never
+   pay-to-play, never a ranking, and each invite says in words why you got it.
+   SELF takes no payments (hosts cover costs, or people pay through an outside
+   link).
+3. **Capital**: backers follow what founders choose to share (never the
+   journal). Interest and intros only; no amounts or terms on any feed.
+4. **Partners** and **co-founder matching** as in Self3.
+5. **Funds inside SELF**: only with a licensed partner (funding portal,
+   broker-dealer or registered adviser) and securities counsel. Until then
+   nothing about investing is built; the founder's shared record of building is
+   what it will stand on.
 
 ## How it's built
 - The app talks to the existing SELF server (`/api/m/*`, JSON, bearer tokens
   from Better Auth; sign-in with a 6-digit email code). One database, one set
   of rules (contacts, consent, no money).
-- Shared pure logic (the ring layout) is mirrored in `mobile/lib`.
+- Shared pure logic (the ring layout) is mirrored in `mobile/src/lib`.
 
 ---
 

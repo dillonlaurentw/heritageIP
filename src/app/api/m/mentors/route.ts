@@ -1,8 +1,8 @@
-import { listMentors } from "@/lib/app/hours";
 import { appViewer, ok } from "@/lib/app/http";
+import { listMentors } from "@/lib/app/mentors";
 
 export async function GET() {
-  const { res } = await appViewer({ member: true });
+  const { viewer, res } = await appViewer({ member: true });
   if (res) return res;
-  return ok({ mentors: await listMentors() });
+  return ok({ mentors: await listMentors(viewer.user.id) });
 }

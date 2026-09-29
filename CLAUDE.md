@@ -482,7 +482,7 @@ orange fills, KPI cards or donut charts, scores or percentages about people.
 - Phones: rings render smaller without quarter labels below `sm`
   (`labels={false}`); every main screen stacks to one column.
 
-## The SELF app (stage 1: founding circles)
+## The SELF app (stage 1: journal, circles, mentors)
 
 The current focus (see `docs/PLAN.md`): a native app in `mobile/` (Expo SDK 57,
 Expo Router). Start exclusive, by commitment and fit, never price or pedigree.
@@ -490,16 +490,30 @@ Expo Router). Start exclusive, by commitment and fit, never price or pedigree.
 - **Access.** `Profile.access` is NONE → APPLIED → MEMBER. Get in with a
   member's invite code (`redeemInvite`, each code once) or by applying with two
   answers (`applyForAccess`), approved at `/admin/applications`
-  (`reviewApplication`, answered once). `admit()` sets MEMBER, joins a circle
-  and tops up three invite codes. Existing web users were migrated to MEMBER.
-- **Circles.** Up to six (`CIRCLE_SIZE`); new members join the fullest circle
-  with room (`circleToJoin`). One check-in per person per week (Monday UTC,
-  `weekOf`): did / stuck / need. Replies only inside your circle. The weekly
-  note (`circleSummaryAgent`) needs two check-ins, never ranks or judges, and
-  only suggests who could help whom.
-- **Office hours.** Mentors' 20-minute slots (`OfficeHour`). Booking needs a
-  real question (15+ characters), is guarded against double booking, and
-  notifies the mentor. No contact details are shared by booking.
+  (`reviewApplication`, answered once). `admit()` sets MEMBER and tops up three
+  invite codes. Existing web users were migrated to MEMBER.
+- **The journal (home tab).** Talk or type; `journalAgent` answers with at most
+  one question. **Private**: `JournalMessage` rows are read only by their owner
+  (`src/lib/app/journal.ts`, every query scoped to the viewer). No admin screen,
+  person or other agent reads them; the journal agent sees only that person's
+  journal and approved Self lines. "Share with my circle" copies one of your own
+  entries into the circle chat, once (claimed atomically); delete is for good.
+  Voice uses the phone's speech recognition (`expo-speech-recognition`,
+  on-device when supported) via `mobile/src/lib/voice.ts`; without the native
+  module the app falls back to typing.
+- **Circles.** Matched small groups that work like a quiet group chat
+  (`CircleMessage`). Onboarding asks field and stage (`FIELDS`, `STAGES` in
+  `src/lib/app-rules.ts`); `placeInCircle` runs after onboarding and uses
+  `circleFor` (same field and stage, else same field, fullest first, max six;
+  tested). Circles are named after what members share (`circleName`). SELF posts
+  one optional prompt a week (`authorId` null, unique per circle and week).
+  "Catch me up" (`catchUp`, `circleSummaryAgent`) needs three messages this
+  week, never ranks or judges, and only suggests who could help whom.
+- **Mentors.** No slots or fixed lengths. You ask with a note
+  (`askMentor`, `mentorAskProblem`); it's an ordinary `MENTOR_REQUEST` signal
+  (workspace optional). The mentor answers on `/requests`; `actOnSignal`
+  accepting a MENTOR_REQUEST (or ROLE_INVITE) opens a conversation seeded with
+  the note. Contact details still move only through the accepted signal.
 - **API.** `/api/m/*` route handlers return JSON; every one starts with
   `appViewer()` (`src/lib/app/http.ts`; `member: true` for members-only).
   Server logic lives in `src/lib/app/*`, pure rules in `src/lib/app-rules.ts`
@@ -507,14 +521,18 @@ Expo Router). Start exclusive, by commitment and fit, never price or pedigree.
   a bearer token (`bearer` plugin). `/api/m/demo-login` works only with demo
   login on.
 - **The app.** Screens in `mobile/src/app` (gate in `lib/session.tsx`:
-  welcome → access → waiting → onboarding → tabs). Tokens and primitives in
-  `mobile/src/lib/theme.ts` and `mobile/src/components/ui.tsx` mirror the web
-  design; `mobile/src/lib/ring.ts` is a copy of `src/lib/ring.ts` (keep them in
-  step). Token in SecureStore (localStorage on web).
+  welcome → access → waiting → onboarding → tabs: Journal, Circle, Mentors,
+  Messages, You). Tokens and primitives in `mobile/src/lib/theme.ts` and
+  `mobile/src/components/ui.tsx` mirror the web design; the ring lives on You;
+  `mobile/src/lib/ring.ts` is a copy of `src/lib/ring.ts` (keep them in step).
+  Token in SecureStore (localStorage on web).
 - **Web preview.** `cd mobile && npm run export:web` writes `public/app`,
   served at `/app` by a rewrite in `next.config.ts`. `mobile/` and
   `public/app` are excluded from the web app's lint and typecheck; run
   `npx tsc --noEmit` in `mobile/` for the app.
+- **Next (not built):** opportunities (dinners, trips; selective, never
+  pay-to-play, the reason given in words), then capital views of what founders
+  share. Funds only with a licensed partner and counsel.
 
 ## Running locally
 

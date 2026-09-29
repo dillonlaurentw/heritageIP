@@ -7,10 +7,10 @@ import { useSession } from "@/lib/session";
 import { useColors } from "@/lib/theme";
 
 const DEMO_PEOPLE = [
-  { email: "maya@self.demo", name: "Maya Okonkwo", line: "Founder, in Circle 1" },
+  { email: "maya@self.demo", name: "Maya Okonkwo", line: "Founder, kelp packaging" },
   { email: "new@self.demo", name: "New Builder", line: "No access yet" },
   { email: "leo@self.demo", name: "Leo Brandt", line: "Applied, waiting" },
-  { email: "rosa@self.demo", name: "Rosa Almeida", line: "Mentor" },
+  { email: "rosa@self.demo", name: "Rosa Almeida", line: "Mentor, one request waiting" },
 ];
 
 /** Email, then a 6-digit code. No passwords, no links to tap on another device. */

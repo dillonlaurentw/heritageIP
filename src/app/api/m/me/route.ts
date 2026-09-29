@@ -1,3 +1,5 @@
+import { FIELDS, STAGES, type Field, type Stage } from "@/lib/app-rules";
+import { placeInCircle } from "@/lib/app/access";
 import { z } from "zod";
 import { appViewer, body, fail, ok } from "@/lib/app/http";
 import { db } from "@/lib/db";
@@ -24,9 +26,11 @@ const basics = z.object({
   beliefs: z.string().trim().max(1000),
   buildingToward: z.string().trim().max(1000),
   gaps: z.string().trim().max(1000),
+  field: z.enum(Object.keys(FIELDS) as [Field, ...Field[]]),
+  stage: z.enum(Object.keys(STAGES) as [Stage, ...Stage[]]),
 });
 
-/** The app's short onboarding: name, one line, and three answers your Self starts from. */
+/** The app's short onboarding: name, one line, what you build in (for your circle), and three answers your Self starts from. */
 export async function POST(req: Request) {
   const { viewer, res } = await appViewer();
   if (res) return res;
@@ -35,7 +39,8 @@ export async function POST(req: Request) {
   await db.user.update({ where: { id: viewer.user.id }, data: { name: b.name } });
   await db.profile.update({
     where: { userId: viewer.user.id },
-    data: { headline: b.headline || null, beliefs: b.beliefs || null, buildingToward: b.buildingToward || null, gaps: b.gaps || null, onboardedAt: viewer.profile.onboardedAt ?? new Date() },
+    data: { headline: b.headline || null, beliefs: b.beliefs || null, buildingToward: b.buildingToward || null, gaps: b.gaps || null, buildField: b.field, buildStage: b.stage, onboardedAt: viewer.profile.onboardedAt ?? new Date() },
   });
+  if (viewer.profile.access === "MEMBER") await placeInCircle(viewer.user.id);
   return ok({ ok: true });
 }

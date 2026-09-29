@@ -1,12 +1,18 @@
 /*
- * The SELF app, stage 1 (founding circles). Everyone in the demo is a member
- * except "new" (hasn't asked yet) and "leo" (applied, waiting for a yes).
- * Maya's circle has four check-ins this week (not hers, so the demo can check
- * in), a few replies, and mentors have office hours over the next week.
- * The invite code SELF-DEMO-2026 is always free for the demo.
+ * The SELF app, stage 1. Everyone in the demo is a member except "new"
+ * (hasn't asked yet) and "leo" (applied, waiting for a yes).
+ *
+ * - Circles are matched by field and stage and work like a group chat.
+ *   Maya's circle ("Food founders · first customers") has a week of talk,
+ *   two messages she hasn't read yet, and SELF's Monday prompt.
+ * - Maya's private journal has the last few days; today is empty so the
+ *   demo can write in it.
+ * - Mentors: Rosa said yes to Maya (they already talk); Joana has asked
+ *   Rosa and is waiting, so signing in as Rosa shows a request to answer.
+ * - The invite code SELF-DEMO-2026 is always free for the demo.
  */
 import type { PrismaClient } from "../src/generated/prisma/client";
-import { weekOf } from "../src/lib/app-rules";
+import { circleName, dayOf, weekOf } from "../src/lib/app-rules";
 
 const HOUR = 3_600_000;
 const DAY = 24 * HOUR;
@@ -19,10 +25,10 @@ export async function seedCircles(db: PrismaClient, idOf: (key: string) => strin
   await db.circle.deleteMany({ where: { members: { none: {} } } });
   await db.inviteCode.deleteMany({ where: { OR: [{ createdBy: demo }, { code: DEMO_INVITE }] } });
   await db.application.deleteMany({ where: { user: demo } });
-  await db.officeHour.deleteMany({ where: { mentor: demo } });
+  await db.journalMessage.deleteMany({ where: { user: demo } });
 
   // Access: members, one applicant, one newcomer.
-  await db.profile.updateMany({ where: { user: demo }, data: { access: "MEMBER" } });
+  await db.profile.updateMany({ where: { user: demo }, data: { access: "MEMBER", buildField: null, buildStage: null } });
   await db.profile.update({ where: { userId: idOf("new") }, data: { access: "NONE" } });
   await db.profile.update({ where: { userId: idOf("leo") }, data: { access: "APPLIED" } });
   await db.application.create({
@@ -34,95 +40,100 @@ export async function seedCircles(db: PrismaClient, idOf: (key: string) => strin
     },
   });
 
+  // Circles, matched by what people build and how far along they are.
   const now = new Date();
   const week = weekOf(now);
-  const circle = await db.circle.create({ data: { name: "Circle 1", createdAt: new Date(Date.now() - 40 * DAY) } });
-  const second = await db.circle.create({ data: { name: "Circle 2", createdAt: new Date(Date.now() - 10 * DAY) } });
-  for (const k of ["maya", "dev", "joana", "rui", "lena", "tomas"]) await db.circleMember.create({ data: { circleId: circle.id, userId: idOf(k) } });
-  for (const k of ["ana", "kwame", "admin"]) await db.circleMember.create({ data: { circleId: second.id, userId: idOf(k) } });
-
-  const checkIns: [key: string, did: string, stuck: string, need: string, hoursAgo: number][] = [
-    [
-      "dev",
-      "Got the drying rig's humidity sensor logging every minute. Two full batches dried without a restart.",
-      "The cloud dashboard is eating my evenings. I keep polishing it instead of shipping the order page.",
-      "Someone who has sold to restaurant kitchens, to tell me what they actually look at first.",
-      30,
-    ],
-    [
-      "joana",
-      "Ran three tasting sessions with the label drafts. People remember the wave mark, not the name.",
-      "Can't decide between two printers for the first 2,000 labels. One is cheaper, one is closer.",
-      "A second pair of eyes on the printer quotes, and anyone who has printed on compostable film.",
-      26,
-    ],
-    [
-      "rui",
-      "Wrote the first version of the supplier checklist and sent it to four kelp farms in Galicia.",
-      "Only one farm answered. I don't know if it's the email or the timing.",
-      "A warm intro to anyone who has bought from small seaweed farms.",
-      18,
-    ],
-    [
-      "lena",
-      "Finished usability tests with six farm managers. The map view wins; the table view confuses everyone.",
-      "My co-founder wants to add three features before launch. I think we should cut two.",
-      "Advice on how to have the 'cut scope' conversation without it turning into a fight.",
-      6,
-    ],
+  const circles: { field: string; stage: string; people: string[] }[] = [
+    { field: "FOOD", stage: "FIRST_CUSTOMERS", people: ["maya", "ana", "joana", "rui"] },
+    { field: "CLIMATE", stage: "BUILDING", people: ["kwame", "lena", "dev"] },
+    { field: "HEALTH", stage: "GROWING", people: ["tomas", "admin"] },
   ];
-  const made: Record<string, string> = {};
-  for (const [k, did, stuck, need, h] of checkIns) {
-    const c = await db.checkIn.create({ data: { circleId: circle.id, userId: idOf(k), weekOf: week, did, stuck, need, createdAt: new Date(Date.now() - h * HOUR) } });
-    made[k] = c.id;
+  const circleIds: string[] = [];
+  for (const c of circles) {
+    const row = await db.circle.create({ data: { name: circleName(c.field, c.stage), field: c.field, stage: c.stage, createdAt: new Date(Date.now() - 40 * DAY) } });
+    circleIds.push(row.id);
+    for (const k of c.people) {
+      await db.profile.update({ where: { userId: idOf(k) }, data: { buildField: c.field, buildStage: c.stage } });
+      await db.circleMember.create({ data: { circleId: row.id, userId: idOf(k), lastReadAt: now } });
+    }
   }
-  const replies: [on: string, by: string, text: string, hoursAgo: number][] = [
-    ["joana", "tomas", "Go with the closer printer for the first run. You'll want to stand next to the press at least once.", 20],
-    ["rui", "maya", "Try calling them on a Tuesday morning. I know one of the farms in Arousa, happy to introduce you.", 12],
-    ["dev", "lena", "Ship the order page ugly. Kitchens order by phone anyway at first.", 4],
-  ];
-  for (const [on, by, text, h] of replies) await db.circleReply.create({ data: { checkInId: made[on], authorId: idOf(by), text, createdAt: new Date(Date.now() - h * HOUR) } });
+  const food = circleIds[0]!;
+  const say = (circleId: string, who: string | null, text: string, hoursAgo: number, extra: { weekOf?: Date; fromJournal?: boolean } = {}) =>
+    db.circleMessage.create({ data: { circleId, authorId: who ? idOf(who) : null, text, createdAt: new Date(Date.now() - hoursAgo * HOUR), ...extra } });
 
-  // Circle 2 has a quieter week: one check-in.
-  await db.checkIn.create({
+  // Last week, briefly, so the chat has a history.
+  await say(food, "rui", "Anyone bought from small seaweed farms before? I'm writing to four in Galicia.", 7 * 24 + 5);
+  await say(food, "maya", "Call them on a Tuesday morning. I know one of the farms in Arousa, happy to introduce you.", 7 * 24 + 3);
+  // This week.
+  const sinceMonday = Math.max(1, (now.getTime() - week.getTime()) / HOUR - 8);
+  await say(food, null, "New week. What moved last week, and what's stuck?", sinceMonday, { weekOf: week });
+  await say(food, "joana", "Ran three tasting sessions with the label drafts. People remember the wave mark, not the name. Stuck choosing between two printers for the first 2,000 labels.", 30);
+  await say(food, "ana", "Second hospital signed for night deliveries. Our oven can't keep up with two hospitals, so that's my week.", 26);
+  await say(food, "maya", "Joana, go with the closer printer for the first run. You'll want to stand next to the press at least once.", 24);
+  await say(food, "rui", "One farm answered! Tuesday morning worked, thank you Maya.", 18);
+  // Two Maya hasn't read yet.
+  await say(food, "ana", "Does anyone know someone who has scaled a small bakery without losing the taste?", 3);
+  await say(food, "joana", "Ana, my uncle ran a bakery in Porto for 30 years. I'll ask if he'd talk to you.", 1);
+  await db.circleMember.update({ where: { userId: idOf("maya") }, data: { lastReadAt: new Date(Date.now() - 4 * HOUR) } });
+
+  const climate = circleIds[1]!;
+  await say(climate, null, "New week. What moved last week, and what's stuck?", sinceMonday, { weekOf: week });
+  await say(climate, "lena", "Usability tests with six farm managers: the map view wins, the table view confuses everyone.", 20);
+  await say(climate, "kwame", "That matches what we hear. Cutting the table view for launch.", 12);
+
+  // Maya's private journal: the last three days. Today is left for the demo.
+  const today = dayOf(now);
+  const entry = async (daysAgo: number, lines: [role: "ME" | "SELF", text: string][]) => {
+    const day = new Date(today.getTime() - daysAgo * DAY);
+    let t = day.getTime() + 19 * HOUR;
+    for (const [role, text] of lines) {
+      await db.journalMessage.create({ data: { userId: idOf("maya"), role, text, day, createdAt: new Date((t += 4 * 60_000)), demo: role === "SELF" } });
+    }
+  };
+  await entry(3, [
+    ["ME", "Northloop sent the sample schedule. First run is the second week of November. Relieved, but I haven't told the team the tray spec might change."],
+    ["SELF", "Sounds like the schedule is the easy part and the spec conversation is the hard one. What's stopping you from raising it tomorrow?"],
+    ["ME", "Fear that Dev will want to redo the drying rig. But he'd rather know now. Telling him in the morning."],
+  ]);
+  await entry(2, [
+    ["ME", "Told Dev. He was fine. We found two mismatches with Northloop's spec: wall thickness and the lid seal."],
+    ["SELF", "Good that it came out early. Which of the two could stop the November run if it isn't fixed?"],
+  ]);
+  await entry(1, [
+    ["ME", "Pricing again. A restaurant group asked for a price per tray and I said 'it depends'. Third time this month."],
+    ["SELF", "That's the third time pricing has come up in a week. What would you need to know to say one number, even a rough one?"],
+    ["ME", "Our real cost per tray at 5,000 units. Asking Dev for it."],
+  ]);
+
+  // Mentors: Rosa said yes to Maya; Joana is waiting on Rosa.
+  const tide = await db.workspace.findUniqueOrThrow({ where: { slug: "tidewater-kelp" }, select: { id: true } });
+  await db.signal.deleteMany({ where: { kind: "MENTOR_REQUEST", toUserId: idOf("rosa") } });
+  await db.signal.create({
     data: {
-      circleId: second.id,
-      userId: idOf("ana"),
-      weekOf: week,
-      did: "Signed the second hospital for night deliveries.",
-      stuck: "Our oven can't keep up with two hospitals.",
-      need: "Someone who has scaled a small bakery without losing the taste.",
-      createdAt: new Date(Date.now() - 8 * HOUR),
+      kind: "MENTOR_REQUEST",
+      status: "ACCEPTED",
+      fromUserId: idOf("maya"),
+      toUserId: idOf("rosa"),
+      workspaceId: tide.id,
+      note: "We're a kelp packaging company before revenue. I'd love help working out which EU grants fit and when to start.",
+      createdAt: new Date(Date.now() - 20 * DAY),
+      respondedAt: new Date(Date.now() - 19 * DAY),
     },
   });
+  const ask = await db.signal.create({
+    data: {
+      kind: "MENTOR_REQUEST",
+      fromUserId: idOf("joana"),
+      toUserId: idOf("rosa"),
+      note: "I'm building the brand for a kelp packaging company and thinking about starting my own food label. Could you help me understand grants for small food brands?",
+      createdAt: new Date(Date.now() - 6 * HOUR),
+    },
+  });
+  await db.notification.create({
+    data: { userId: idOf("rosa"), actorId: idOf("joana"), kind: "SIGNAL", text: "Joana Pires asked you to mentor them", href: "/network/connections", signalId: ask.id, createdAt: ask.createdAt },
+  });
 
-  // Office hours: a few 20-minute slots per open mentor over the next week.
-  const at = (daysAhead: number, hourUtc: number) => {
-    const d = new Date(now.getTime() + daysAhead * DAY);
-    d.setUTCHours(hourUtc, 0, 0, 0);
-    return d;
-  };
-  const slots: [mentor: string, days: number, hour: number, minutes?: number][] = [
-    ["ines", 1, 9], ["ines", 1, 9.5], ["ines", 3, 16], ["ines", 6, 10],
-    ["rosa", 2, 8], ["rosa", 2, 8.5], ["rosa", 4, 14],
-    ["tunde", 1, 17], ["tunde", 5, 11], ["tunde", 5, 11.5],
-    ["dev", 3, 19, 30],
-    ["marcus", 4, 15, 30],
-  ];
-  for (const [m, d, h, minutes] of slots) {
-    const start = at(d, Math.floor(h));
-    if (h % 1) start.setUTCMinutes(30);
-    await db.officeHour.create({ data: { mentorId: idOf(m), startsAt: start, minutes: minutes ?? 20 } });
-  }
-  // Two already booked: Maya with Rosa, Joana with Ines.
-  const book = async (mentor: string, days: number, hour: number, by: string, topic: string) =>
-    db.officeHour.create({
-      data: { mentorId: idOf(mentor), startsAt: at(days, hour), minutes: 20, bookedById: idOf(by), topic, bookedAt: new Date(Date.now() - 5 * HOUR) },
-    });
-  await book("rosa", 2, 10, "maya", "Which EU grant fits a kelp company before we have revenue, and how early to start the application.");
-  await book("ines", 4, 13, "joana", "How many labels to order for a first run without getting stuck with boxes of them.");
-
-  // Invites: three each for circle members, one used; plus the demo code.
+  // Invites: three each for a couple of members, one used; plus the demo code.
   const codes: [by: string, code: string, usedBy?: string][] = [
     ["maya", "SELF-WAVE-7K2M"], ["maya", "SELF-SEAS-3HQP"], ["maya", "SELF-RAFT-9XNB", "rui"],
     ["dev", "SELF-GRID-4TWA"], ["dev", "SELF-VAST-8PRE"],
@@ -131,5 +142,5 @@ export async function seedCircles(db: PrismaClient, idOf: (key: string) => strin
   for (const [by, code, usedBy] of codes)
     await db.inviteCode.create({ data: { code, createdById: idOf(by), usedById: usedBy ? idOf(usedBy) : null, usedAt: usedBy ? new Date(Date.now() - 30 * DAY) : null } });
 
-  console.log("Seeded circles, check-ins, office hours and invites.");
+  console.log("Seeded circles, journals, mentor requests and invites.");
 }

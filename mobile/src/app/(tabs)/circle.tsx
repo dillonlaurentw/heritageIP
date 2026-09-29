@@ -1,198 +1,180 @@
-import { router } from "expo-router";
-import { useState } from "react";
-import { Pressable, TextInput, View } from "react-native";
-import { Avatar, Button, Card, Dot, ErrorLine, Eyebrow, Loading, Screen, T, Title } from "@/components/ui";
-import { api, type CheckIn } from "@/lib/api";
+import { useFocusEffect } from "expo-router";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, TextInput, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Avatar, ErrorLine, Loading, T } from "@/components/ui";
+import { api, type Circle } from "@/lib/api";
 import { font, useColors } from "@/lib/theme";
 import { ago, firstName } from "@/lib/time";
-import { useLoad } from "@/lib/useLoad";
 
-/** Your circle's week: who checked in, what they need, replies, and SELF's weekly note. */
+/**
+ * Your circle: a handful of founders like you, talking. SELF only starts one
+ * optional thread a week and, if you ask, catches you up. Polls while open.
+ */
 export default function CircleScreen() {
-  const { data, error, reload } = useLoad(api.circle);
+  const c = useColors();
+  const [me, setMe] = useState("");
+  const [circle, setCircle] = useState<Circle | null | undefined>(undefined);
+  const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState("");
-  if (!data) return error ? <Screen><ErrorLine>{error}</ErrorLine></Screen> : <Loading />;
-  const c = data.circle;
-  if (!c)
-    return (
-      <Screen>
-        <Title>Your circle</Title>
-        <T tone="muted">You&apos;re not in a circle yet. We&apos;ll place you in one soon.</T>
-      </Screen>
-    );
-  const others = c.checkIns.filter((x) => x.userId !== data.me);
-  const summarise = async () => {
-    setBusy(true);
-    setErr("");
+  const [catching, setCatching] = useState(false);
+  const [error, setError] = useState("");
+  const [focused, setFocused] = useState(false);
+  const scroll = useRef<ScrollView>(null);
+
+  const load = useCallback(async () => {
     try {
-      await api.summarise();
-      await reload();
+      const r = await api.circle();
+      setMe(r.me);
+      setCircle(r.circle);
     } catch (e) {
-      setErr((e as Error).message);
+      setError((e as Error).message);
+    }
+  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      setFocused(true);
+      void load();
+      return () => setFocused(false);
+    }, [load]),
+  );
+  useEffect(() => {
+    if (!focused) return;
+    const t = setInterval(load, 5000);
+    return () => clearInterval(t);
+  }, [focused, load]);
+
+  if (circle === undefined) return error ? <SafeAreaView style={{ flex: 1, padding: 20, backgroundColor: c.bg }}><ErrorLine>{error}</ErrorLine></SafeAreaView> : <Loading />;
+  if (circle === null)
+    return (
+      <SafeAreaView style={{ flex: 1, padding: 20, gap: 8, backgroundColor: c.bg }}>
+        <T size={30} weight="medium">
+          Your circle
+        </T>
+        <T tone="muted">You&apos;ll join a small group of founders like you once you&apos;ve finished setting up.</T>
+      </SafeAreaView>
+    );
+
+  const send = async () => {
+    const body = text.trim();
+    if (!body) return;
+    setBusy(true);
+    try {
+      await api.say(body);
+      setText("");
+      await load();
+    } catch (e) {
+      setError((e as Error).message);
     }
     setBusy(false);
   };
+  const catchUp = async () => {
+    setCatching(true);
+    setError("");
+    try {
+      await api.catchUp();
+      await load();
+    } catch (e) {
+      setError((e as Error).message);
+    }
+    setCatching(false);
+  };
 
   return (
-    <Screen>
-      <View style={{ gap: 4 }}>
-        <Title>{c.name}</Title>
-        <T tone="muted">
-          {c.checkIns.length} of {c.members.length} checked in this week
+    <SafeAreaView style={{ flex: 1, backgroundColor: c.bg }} edges={["top", "left", "right"]}>
+      <View style={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: 12, gap: 10, borderBottomWidth: 1, borderColor: c.border }}>
+        <T size={22} weight="medium">
+          {circle.name}
         </T>
-      </View>
-
-      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 14 }}>
-        {c.members.map((m) => (
-          <View key={m.id} style={{ alignItems: "center", gap: 4, width: 52, opacity: m.checkedIn ? 1 : 0.45 }}>
-            <Avatar name={m.name} size={40} />
-            <T size={11} tone="muted" lines={1}>
-              {m.id === data.me ? "You" : firstName(m.name)}
-            </T>
-          </View>
-        ))}
-      </View>
-
-      {!c.mine ? (
-        <Card lift style={{ gap: 12 }}>
-          <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
-            <Dot />
-            <T weight="medium">Your check-in is the one missing</T>
-          </View>
-          <T tone="muted">What you did, where you&apos;re stuck, what would help. Two minutes.</T>
-          <Button onPress={() => router.push("/checkin")}>Check in</Button>
-        </Card>
-      ) : (
-        <CheckInCard ci={c.mine} me={data.me} mine onChange={reload} />
-      )}
-
-      {c.summary ? (
-        <Card style={{ gap: 12 }}>
-          <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-            <Eyebrow>This week&apos;s note</Eyebrow>
-            <T size={11} tone="subtle" mono>
-              SELF{c.summary.demo ? " · DEMO" : ""}
-            </T>
-          </View>
-          <T>{c.summary.text}</T>
-          {c.summary.helps.length > 0 && (
-            <View style={{ gap: 8 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+          {circle.members.map((m) => (
+            <View key={m.id} style={{ opacity: m.activeThisWeek || m.id === me ? 1 : 0.45 }}>
+              <Avatar name={m.name} size={28} />
+            </View>
+          ))}
+          <View style={{ flex: 1 }} />
+          {!circle.summary && (
+            <Pressable onPress={catchUp} disabled={catching} style={{ paddingHorizontal: 12, height: 30, borderRadius: 15, borderWidth: 1, borderColor: c.border, backgroundColor: c.surface, justifyContent: "center" }}>
               <T size={13} weight="medium">
-                Who could help whom
+                {catching ? "Reading…" : "Catch me up"}
               </T>
-              {c.summary.helps.map((h, i) => (
+            </Pressable>
+          )}
+        </View>
+      </View>
+
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+        <ScrollView ref={scroll} onContentSizeChange={() => scroll.current?.scrollToEnd({ animated: false })} contentContainerStyle={{ padding: 20, gap: 14 }}>
+          {circle.messages.map((m, i) => {
+            if (!m.author)
+              return (
+                <View key={m.id} style={{ alignItems: "center", gap: 2, paddingVertical: 6 }}>
+                  <T size={11} tone="subtle" mono>
+                    SELF · THIS WEEK
+                  </T>
+                  <T size={15} tone="muted" center>
+                    {m.text}
+                  </T>
+                </View>
+              );
+            const mine = m.author.id === me;
+            const prev = circle.messages[i - 1];
+            const showName = !mine && prev?.author?.id !== m.author.id;
+            return (
+              <View key={m.id} style={{ alignSelf: mine ? "flex-end" : "flex-start", maxWidth: "84%", gap: 3 }}>
+                {showName && (
+                  <T size={12} tone="subtle" style={{ paddingHorizontal: 4 }}>
+                    {firstName(m.author.name)}
+                  </T>
+                )}
+                <View style={{ backgroundColor: mine ? c.primary : c.surface, borderRadius: 18, paddingHorizontal: 14, paddingVertical: 9 }}>
+                  <T size={15} tone={mine ? "inverse" : "fg"}>
+                    {m.text}
+                  </T>
+                </View>
+                <T size={11} tone="subtle" style={{ alignSelf: mine ? "flex-end" : "flex-start", paddingHorizontal: 6 }}>
+                  {ago(m.at)}
+                  {m.fromJournal ? " · from journal" : ""}
+                </T>
+              </View>
+            );
+          })}
+          {circle.summary && (
+            <View style={{ backgroundColor: c.surface, borderRadius: 20, padding: 16, gap: 8 }}>
+              <T size={11} tone="subtle" mono>
+                SELF · CATCH-UP{circle.summary.demo ? " · DEMO" : ""}
+              </T>
+              <T size={15}>{circle.summary.text}</T>
+              {circle.summary.helps.map((h, i) => (
                 <T key={i} size={14} tone="muted">
-                  {h.from} → {h.to}: {h.why}
+                  {h.from} could help {h.to}: {h.why}
                 </T>
               ))}
             </View>
           )}
-        </Card>
-      ) : (
-        c.checkIns.length >= 2 && (
-          <Card style={{ gap: 10 }}>
-            <T weight="medium">SELF can write this week&apos;s note</T>
-            <T size={14} tone="muted">
-              A short read of the circle&apos;s week and who could help whom. No rankings, nothing about anyone outside the circle.
-            </T>
-            <Button variant="secondary" small busy={busy} style={{ alignSelf: "flex-start" }} onPress={summarise}>
-              Write the note
-            </Button>
-            <ErrorLine>{err}</ErrorLine>
-          </Card>
-        )
-      )}
-
-      {others.length > 0 && <Eyebrow>From your circle</Eyebrow>}
-      {others.map((ci) => (
-        <CheckInCard key={ci.id} ci={ci} me={data.me} onChange={reload} />
-      ))}
-    </Screen>
-  );
-}
-
-function CheckInCard({ ci, me, mine, onChange }: { ci: CheckIn; me: string; mine?: boolean; onChange: () => void }) {
-  const col = useColors();
-  const [text, setText] = useState("");
-  const [open, setOpen] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const send = async () => {
-    setBusy(true);
-    try {
-      await api.reply(ci.id, text);
-      setText("");
-      setOpen(false);
-      onChange();
-    } catch {}
-    setBusy(false);
-  };
-  const Part = ({ label, body }: { label: string; body: string }) =>
-    body ? (
-      <View style={{ gap: 2 }}>
-        <T size={12} tone="subtle">
-          {label}
-        </T>
-        <T>{body}</T>
-      </View>
-    ) : null;
-  return (
-    <Card style={{ gap: 12 }}>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-        <Avatar name={ci.name} size={32} />
-        <T weight="medium" style={{ flex: 1 }}>
-          {mine ? "Your check-in" : ci.name}
-        </T>
-        <T size={12} tone="subtle">
-          {ago(ci.at)}
-        </T>
-      </View>
-      <Part label="Did" body={ci.did} />
-      <Part label="Stuck" body={ci.stuck} />
-      <Part label="Would help" body={ci.need} />
-      {ci.replies.map((r) => (
-        <View key={r.id} style={{ flexDirection: "row", gap: 8, paddingLeft: 10, borderLeftWidth: 2, borderColor: col.border }}>
-          <T size={14} style={{ flex: 1 }}>
-            <T size={14} weight="medium">
-              {r.authorId === me ? "You" : firstName(r.author)}
-            </T>{" "}
-            {r.text}
-          </T>
-        </View>
-      ))}
-      {mine ? (
-        <Pressable onPress={() => router.push("/checkin")}>
-          <T size={13} tone="muted">
-            Edit
-          </T>
-        </Pressable>
-      ) : open ? (
-        <View style={{ gap: 8 }}>
+          <ErrorLine>{error}</ErrorLine>
+        </ScrollView>
+        <View style={{ flexDirection: "row", gap: 8, padding: 12, borderTopWidth: 1, borderColor: c.border, backgroundColor: c.bg, alignItems: "flex-end" }}>
           <TextInput
-            autoFocus
             value={text}
             onChangeText={setText}
-            placeholder={`I can help with…`}
-            placeholderTextColor={col.fgSubtle}
+            placeholder={`Say something to ${circle.name.split(" · ")[0]}`}
+            placeholderTextColor={c.fgSubtle}
             multiline
-            style={{ borderWidth: 1, borderColor: col.border, borderRadius: 14, padding: 12, minHeight: 60, fontFamily: font.regular, fontSize: 15, color: col.fg }}
+            style={{ flex: 1, backgroundColor: c.surface, borderRadius: 20, borderWidth: 1, borderColor: c.border, paddingHorizontal: 14, paddingVertical: 10, fontFamily: font.regular, fontSize: 15, color: c.fg, maxHeight: 120 }}
           />
-          <View style={{ flexDirection: "row", gap: 8 }}>
-            <Button small busy={busy} disabled={text.trim().length < 2} onPress={send}>
-              Reply
-            </Button>
-            <Button small variant="ghost" onPress={() => setOpen(false)}>
-              Cancel
-            </Button>
-          </View>
+          <Pressable
+            accessibilityRole="button"
+            onPress={send}
+            disabled={busy || !text.trim()}
+            style={{ height: 42, paddingHorizontal: 16, borderRadius: 21, backgroundColor: c.primary, justifyContent: "center", opacity: busy || !text.trim() ? 0.4 : 1 }}
+          >
+            <T size={14} weight="medium" tone="inverse">
+              Send
+            </T>
+          </Pressable>
         </View>
-      ) : (
-        <Pressable onPress={() => setOpen(true)}>
-          <T size={13} tone="muted">
-            I can help
-          </T>
-        </Pressable>
-      )}
-    </Card>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }

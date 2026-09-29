@@ -22,10 +22,10 @@ export const APP_LABELS: Record<Theme, { label: string; later?: boolean }> = {
 function summary(t: Theme, nodes: RingNode[]) {
   if (APP_LABELS[t].later) return "later";
   const mine = nodes.filter((n) => n.theme === t);
-  if (!mine.length) return t === "ADVISORS" ? "book an hour" : "your circle";
+  if (!mine.length) return t === "ADVISORS" ? "ask a mentor" : "your circle";
   const linked = mine.filter((n) => n.state === "linked").length;
   const pending = mine.filter((n) => n.state === "pending").length;
-  return [linked && `${linked} with you`, pending && `${pending} not yet`].filter(Boolean).join(" · ");
+  return [linked && `${linked} ${t === "ADVISORS" ? "with you" : "talking"}`, pending && `${pending} quiet`].filter(Boolean).join(" · ");
 }
 
 export function Ring({
