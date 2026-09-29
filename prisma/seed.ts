@@ -16,6 +16,7 @@ import { seedSimulations } from "./seed-sims";
 import { seedUsage } from "./seed-usage";
 import { seedSelf } from "./seed-self";
 import { seedMessages } from "./seed-messages";
+import { seedAreas } from "./seed-areas";
 
 const db = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }) });
 const DAY = 86_400_000;
@@ -163,6 +164,7 @@ async function main() {
   await seedUsage(db, idOf);
   await seedSelf(db, idOf);
   await seedMessages(db, idOf);
+  await seedAreas(db, idOf);
 }
 
 main()

@@ -3,7 +3,7 @@
  * client and server. Prompts live in src/agents.
  */
 
-export const WORKSPACE_AGENTS = ["strategy", "gtm", "ops", "fundraising", "legal"] as const;
+export const WORKSPACE_AGENTS = ["strategy", "gtm", "marketing", "sales", "product", "legal", "fundraising", "hiring", "ops"] as const;
 export type WorkspaceAgentKey = (typeof WORKSPACE_AGENTS)[number];
 
 export const AGENT_COPY: Record<WorkspaceAgentKey, { name: string; line: string; starters: string[] }> = {
@@ -25,8 +25,44 @@ export const AGENT_COPY: Record<WorkspaceAgentKey, { name: string; line: string;
       "What should launch week look like?",
     ],
   },
+  marketing: {
+    name: "Marketing & brand",
+    line: "How you sound, what you say, and the first weeks of launch.",
+    starters: [
+      "Write the first line of our buyer site, three ways.",
+      "What should our brand never sound like?",
+      "Plan the first four weeks of launch content.",
+    ],
+  },
+  sales: {
+    name: "Sales",
+    line: "First buyers, the pipeline, pricing talks and objections.",
+    starters: [
+      "Who exactly signs the first order, and what do they need to hear?",
+      "Write the objections we'll hear, and answers.",
+      "How do we turn letters of intent into a paid pilot?",
+    ],
+  },
+  product: {
+    name: "Product",
+    line: "What you're making, what it must do, and what you're testing.",
+    starters: [
+      "What's the smallest version we could put in a customer's hands?",
+      "Which spec decisions can wait, and which can't?",
+      "Design a test for our riskiest product assumption.",
+    ],
+  },
+  hiring: {
+    name: "Hiring & team",
+    line: "Who you need, how you'll work together, and what to agree early.",
+    starters: [
+      "What should co-founders agree on before anything is signed?",
+      "Write a role that attracts the person we actually need.",
+      "How do we run a good trial week?",
+    ],
+  },
   ops: {
-    name: "Operations",
+    name: "Operations & budget",
     line: "Suppliers, production, hiring process and running the thing.",
     starters: [
       "What should we ask a supplier before a first order?",
@@ -64,8 +100,12 @@ export function routeByKeywords(q: string): WorkspaceAgentKey {
   const s = q.toLowerCase();
   if (/(legal|lawyer|contract|trademark|patent|\bip\b|incorporat|formation|form the company|vesting|licen[cs]e|compliance|gdpr|liabil)/.test(s)) return "legal";
   if (/(investor|pitch|raise|raising|backer|deck|fundrais|grant|seed|angel)/.test(s)) return "fundraising";
-  if (/(supplier|manufactur|production|logistic|inventory|pilot|operations|shipping|warehouse|process|hire|hiring)/.test(s)) return "ops";
-  if (/(customer|marketing|launch|channel|brand|position|sales|sell|message|audience|social)/.test(s)) return "gtm";
+  if (/(hire|hiring|co-?founder|recruit|equity split|trial week|team)/.test(s)) return "hiring";
+  if (/(supplier|manufactur|production|logistic|inventory|operations|shipping|warehouse|budget|cash|runway|bookkeep)/.test(s)) return "ops";
+  if (/(brand|content|social|voice|logo|website copy|newsletter)/.test(s)) return "marketing";
+  if (/(sales|sell|buyer|pipeline|pricing|objection|deal|letter of intent|order)/.test(s)) return "sales";
+  if (/(product|prototype|spec|feature|mvp|design the|test the|user test)/.test(s)) return "product";
+  if (/(customer|marketing|launch|channel|position|message|audience)/.test(s)) return "gtm";
   return "strategy";
 }
 

@@ -11,4 +11,5 @@ export { agentChatAgent, routerAgent, type AgentChatOutput } from "./prompts/wor
 export { defaultPersona, personaAgent } from "./prompts/persona";
 export { selfSuggestAgent, type SelfSuggestCtx } from "./prompts/self";
 export { matchAgent, type MatchCtx } from "./prompts/match";
+export { areaSectionAgent, type AreaSectionCtx } from "./prompts/areaSection";
 export { fitReportAgent, simulationTurnAgent, type SimPerson, type SimTurnCtx } from "./prompts/simulation";

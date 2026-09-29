@@ -56,6 +56,8 @@ export function ShellClient(p: Props) {
       { id: "go-network", label: "Network", group: "Go to", href: "/network", keywords: "co-founders mentors partners backers roles" },
       ...(p.current
         ? [
+            { id: "go-areas", label: "Help by area", group: "Go to", href: `/w/${p.current.slug}/areas`, keywords: "go-to-market marketing sales product legal fundraising hiring operations budget agents" },
+            { id: "go-matches", label: "Matches", group: "Go to", href: `/w/${p.current.slug}/matches`, keywords: "co-founder advisor find people" },
             { id: "go-people", label: `People in ${p.current.name}`, group: "Go to", href: `/w/${p.current.slug}/people` },
             { id: "go-templates", label: "Templates", group: "Go to", href: `/w/${p.current.slug}/templates`, keywords: "new from template gtm meeting weekly" },
             { id: "go-thesis", label: "Write or sharpen the thesis", group: "Actions", href: `/w/${p.current.slug}/thesis`, keywords: "idea problem why now ai" },

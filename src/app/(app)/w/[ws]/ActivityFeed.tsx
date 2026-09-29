@@ -23,6 +23,13 @@ const VERB: Record<string, string> = {
   "row.created": "added",
   "meeting.actions": "sent action items to Tasks from",
   "signal.accepted": "connected with",
+  "page.edited": "updated",
+  "comment.added": "commented on",
+  "thesis.saved": "saved",
+  "plan.generated": "built the game plan",
+  "plan.step_added": "added a step:",
+  "role.posted": "posted a role:",
+  "tasks.added": "added tasks from",
 };
 
 export function ActivityFeed({ items, workspaceSlug }: { items: Item[]; workspaceSlug: string }) {
@@ -35,7 +42,7 @@ export function ActivityFeed({ items, workspaceSlug }: { items: Item[]; workspac
           <li key={a.id} className="flex gap-2.5 text-sm">
             <Avatar name={a.actor} size="sm" className="mt-0.5" />
             <p className="min-w-0 flex-1 text-fg-muted">
-              <span className="font-medium text-fg">{a.actor.split(" ")[0]}</span> {VERB[a.kind] ?? a.kind}{" "}
+              <span className="font-medium text-fg">{a.actor.split(" ")[0]}</span> {VERB[a.kind] ?? "updated"}{" "}
               {a.page ? (
                 <Link href={`/w/${workspaceSlug}/${a.page.id}` as Route} className="font-medium text-fg hover:underline">
                   {title || "Untitled"}

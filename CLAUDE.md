@@ -261,7 +261,8 @@ orange fills, KPI cards or donut charts, scores or percentages about people.
   `AskAIPanel`. `askPage()` proposes Markdown or tasks and saves nothing; the
   editor inserts/replaces blocks only when the person clicks, and
   `addTasksFromPage()` writes Tasks rows linked back to the page.
-- Workspace agents (strategy, gtm, ops, fundraising, legal): roster and keyword
+- Workspace agents (strategy, gtm, marketing, sales, product, legal, fundraising,
+  hiring, ops): roster and keyword
   routing in `src/lib/workspace-agents.ts`, prompts in
   `src/agents/prompts/workspaceAgents.ts`, context from `workspaceBriefing()`
   (`src/agents/briefing.ts`, cached in the system prompt). Threads are per user,
@@ -437,6 +438,23 @@ orange fills, KPI cards or donut charts, scores or percentages about people.
 - A trial week is a `TRIAL_PROPOSAL` message from an owner/admin to someone not
   in the company. Accepting adds them as MEMBER titled "Trial week: …"
   (proposal + consent); answers are guarded to happen once. No money or terms.
+
+### Help by area (Self3 phase 6)
+- Eight areas (`src/lib/areas.ts`, pure): go-to-market, marketing & brand,
+  sales, product, legal, fundraising prep, hiring & team, operations & budget.
+  Each names its agent, the plan needs it covers, partner categories, mentor
+  focus areas, team title words and its sections.
+- An area's working page is an ordinary page with `systemKey: "area:<key>"`:
+  an H2 per section. `readSections` / `writeSection` (`src/lib/area-doc.ts`,
+  tested) read and replace one section, keeping everything else, so edits
+  made on the page count.
+- `areaSectionAgent` drafts or sharpens one section (a proposal). Only "Use
+  this" or "Save" writes (`saveAreaSection`: version snapshot + `resetCollab`).
+  Legal stays "not legal advice"; fundraising stays prep only; no invented
+  numbers (placeholders like [PRICE]).
+- `/w/[ws]/areas` (cards; only the area with the most steps nobody has been
+  asked about is flagged "Needs you") and `/w/[ws]/areas/[area]` (sections,
+  team on this, partners and advisors, plan steps, agent starters).
 
 ## Running locally
 
