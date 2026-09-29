@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ARC_GAP, arcAngles, initials, layoutRing, MAX_PER_ARC, THEME_ARC, themeSummary, THEMES, type RingNode } from "../ring";
+import { ARC_GAP, arcAngles, initials, layoutRing, MAX_OPEN_PER_ARC, MAX_PER_ARC, THEME_ARC, themeSummary, THEMES, type RingNode } from "../ring";
 
 const node = (id: string, theme: RingNode["theme"], state: RingNode["state"] = "linked"): RingNode => ({
   id,
@@ -41,6 +41,14 @@ describe("layoutRing", () => {
     expect(placed).toHaveLength(MAX_PER_ARC);
     expect(overflow.PARTNERS).toBe(3);
     expect(overflow.CAPITAL).toBe(0);
+  });
+  it("shows at most two open chairs per arc, and still makes room for them", () => {
+    const people = Array.from({ length: MAX_PER_ARC }, (_, i) => node(`p${i}`, "PARTNERS"));
+    const chairs = Array.from({ length: 4 }, (_, i) => node(`o${i}`, "PARTNERS", "open"));
+    const { placed, overflow } = layoutRing([...people, ...chairs], 0, 0, 100);
+    expect(placed.filter((p) => p.state === "open")).toHaveLength(MAX_OPEN_PER_ARC);
+    expect(placed).toHaveLength(MAX_PER_ARC);
+    expect(overflow.PARTNERS).toBe(people.length + chairs.length - MAX_PER_ARC);
   });
   it("places co-founders top-left and advisors bottom-right", () => {
     const { placed } = layoutRing([node("c", "COFOUNDERS"), node("a", "ADVISORS")], 0, 0, 100);

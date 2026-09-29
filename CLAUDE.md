@@ -365,6 +365,24 @@ orange fills, KPI cards or donut charts, scores or percentages about people.
 - Polling is adaptive (1s with others present or recent edits, 4s alone, 15s
   in a hidden tab). Old updates are compacted into one state every ~150.
 
+## Self3 conventions (by phase)
+
+### The ring (Self3 phase 2)
+- A company's ring comes from `loadRing(workspace, viewerId)` (`src/lib/ring-data.ts`,
+  server-only), which feeds plain data to `buildRing()` (`src/lib/ring-build.ts`,
+  pure, tested). Rules: members except the viewer (GUEST → advisors, else
+  co-founders); accepted/pending PARTNER_INTRO, MENTOR_REQUEST, BACKER_INTEREST
+  and pending ROLE_INTEREST signals; open roles; one open chair per need on
+  unfinished plan steps nobody has been asked about yet (`NEED_THEME`,
+  `NEED_CHAIR` in `src/lib/needs.ts`). The strongest state wins per person.
+- Callers check workspace access before `loadRing`. The ring shows names and
+  one-line notes only; never contact details.
+- At most two open chairs per arc are drawn (orange means "needs you"); the
+  rest are counted in the quarter's label.
+- `/home` ("You") shows the ring for `?ws=` or the last company, plus
+  `needsYou()` (`src/lib/needs-you.ts`): requests waiting on you, the next step
+  on the path (thesis, plan), and open chairs.
+
 ## Running locally
 
 ```

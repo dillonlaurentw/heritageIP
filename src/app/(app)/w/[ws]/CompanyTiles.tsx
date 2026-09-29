@@ -25,11 +25,11 @@ export function CompanyTiles({ workspaceId, slug, tiles, editable }: { workspace
 
   return (
     <section className="mb-10">
-      <h2 className="mb-3 text-sm font-medium text-fg-muted">Run the company</h2>
-      <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
+      <h2 className="mb-3 text-sm text-fg-subtle">Run the company</h2>
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
         <Link
           href={`/w/${slug}/week` as Route}
-          className="flex flex-col gap-1 rounded-md border border-border px-3 py-2.5 hover:border-border-strong hover:bg-bg-hover"
+          className="flex flex-col gap-1 rounded-lg bg-surface px-4 py-3 shadow-card transition-shadow hover:shadow-lift"
         >
           <span className="flex items-center gap-2 text-base font-medium">
             <CalendarRange className="size-4 text-fg-muted" /> This week
@@ -41,7 +41,7 @@ export function CompanyTiles({ workspaceId, slug, tiles, editable }: { workspace
             <Link
               key={t.key}
               href={t.href as Route}
-              className="flex flex-col gap-1 rounded-md border border-border px-3 py-2.5 hover:border-border-strong hover:bg-bg-hover"
+              className="flex flex-col gap-1 rounded-lg bg-surface px-4 py-3 shadow-card transition-shadow hover:shadow-lift"
             >
               <span className="flex items-center gap-2 text-base font-medium">
                 <PageIcon icon={t.icon} /> {t.title}

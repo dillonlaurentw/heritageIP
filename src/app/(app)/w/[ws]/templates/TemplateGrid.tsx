@@ -18,7 +18,7 @@ export function TemplateGrid({ workspaceId, templates, editable }: { workspaceId
     <div className="flex flex-col gap-10">
       {GROUPS.map((g) => (
         <section key={g}>
-          <h2 className="mb-3 text-sm font-medium text-fg-muted">{g}</h2>
+          <h2 className="mb-3 text-sm text-fg-subtle">{g}</h2>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {templates
               .filter((t) => t.group === g)

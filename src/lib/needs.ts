@@ -44,3 +44,31 @@ export function needHref(need: Need, workspaceSlug: string, stepId?: string) {
   const category = NEED_TO_CATEGORY[need];
   return `/network/partners?${new URLSearchParams({ ...(category ? { c: CATEGORY_COPY[category].slug } : {}), ws: workspaceSlug, ...(stepId ? { step: stepId } : {}) })}`;
 }
+
+/** Which quarter of the ring each need fills. */
+export const NEED_THEME: Record<Need, "COFOUNDERS" | "PARTNERS" | "ADVISORS" | "CAPITAL"> = {
+  COFOUNDER: "COFOUNDERS",
+  SUPPLIER: "PARTNERS",
+  LEGAL: "PARTNERS",
+  MARKETING: "PARTNERS",
+  GTM: "PARTNERS",
+  WEBSITE: "PARTNERS",
+  DESIGN: "PARTNERS",
+  FINANCE: "PARTNERS",
+  MENTOR: "ADVISORS",
+  FUNDING: "CAPITAL",
+};
+
+/** How an open chair for a need reads on the ring ("A legal partner"). */
+export const NEED_CHAIR: Record<Need, string> = {
+  COFOUNDER: "A co-founder",
+  SUPPLIER: "A supplier",
+  LEGAL: "A legal partner",
+  MARKETING: "A marketing partner",
+  GTM: "A go-to-market partner",
+  WEBSITE: "A build studio",
+  DESIGN: "A designer",
+  FINANCE: "A finance partner",
+  MENTOR: "A mentor",
+  FUNDING: "Backers",
+};

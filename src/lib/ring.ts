@@ -46,6 +46,8 @@ export type PlacedNode = RingNode & { angle: number; x: number; y: number };
 
 /** Most nodes one arc shows before it folds the rest into "+N". */
 export const MAX_PER_ARC = 5;
+/** Open chairs are orange, and orange means "needs you": show at most two per arc. */
+export const MAX_OPEN_PER_ARC = 2;
 
 /** Evenly spaced angles for `n` nodes inside a quarter, clear of its gaps. */
 export function arcAngles(theme: Theme, n: number): number[] {
@@ -91,7 +93,9 @@ export function layoutRing(nodes: RingNode[], cx: number, cy: number, r: number)
   const placed: PlacedNode[] = [];
   const overflow = {} as Record<Theme, number>;
   for (const t of THEMES) {
-    const shown = grouped[t].slice(0, MAX_PER_ARC);
+    const people = grouped[t].filter((n) => n.state !== "open");
+    const open = grouped[t].filter((n) => n.state === "open").slice(0, MAX_OPEN_PER_ARC);
+    const shown = [...people.slice(0, MAX_PER_ARC - open.length), ...open];
     overflow[t] = grouped[t].length - shown.length;
     arcAngles(t, shown.length).forEach((angle, i) => {
       placed.push({ ...shown[i]!, angle, ...point(cx, cy, r, angle) });

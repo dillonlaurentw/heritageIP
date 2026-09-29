@@ -15,6 +15,8 @@ import { getWorkspaceAccess } from "@/lib/workspaces";
 import { ActivityFeed } from "./ActivityFeed";
 import { CompanyTiles } from "./CompanyTiles";
 import { TEMPLATES } from "@/lib/templates";
+import { Ring } from "@/components/ring/Ring";
+import { loadRing, themeLinks } from "@/lib/ring-data";
 
 export async function generateMetadata({ params }: { params: Promise<{ ws: string }> }): Promise<Metadata> {
   const ws = await db.workspace.findUnique({ where: { slug: (await params).ws }, select: { name: true } });
@@ -44,6 +46,7 @@ export default async function WorkspaceHome({ params }: { params: Promise<{ ws: 
     }),
     journeyFor(workspace.id, workspace.slug),
   ]);
+  const ring = workspace.kind === "TEAM" ? await loadRing(workspace, viewer.user.id) : [];
   const systems = await db.page.findMany({
     where: { workspaceId: workspace.id, systemKey: { in: ["tasks", "meetings", "goals", "roles", "candidates", "crm"] }, archivedAt: null },
     select: { id: true, systemKey: true },
@@ -71,14 +74,14 @@ export default async function WorkspaceHome({ params }: { params: Promise<{ ws: 
         </>
       }
     >
-      <div className="mb-10 flex items-start gap-4">
+      <div className="mb-10 flex flex-wrap items-start gap-5">
         <WorkspaceMark name={workspace.name} icon={workspace.icon} size="lg" />
         <div className="min-w-0 flex-1">
-          <h1 className="text-2xl font-semibold tracking-tight">{workspace.name}</h1>
-          <p className="mt-1 text-base text-fg-muted">{workspace.oneLiner || "Add a one-liner in settings."}</p>
+          <h1 className="text-title font-medium">{workspace.name}</h1>
+          <p className="mt-2 text-md text-fg-muted">{workspace.oneLiner || "Add a one-liner in settings."}</p>
         </div>
         <div className="hidden items-center gap-3 sm:flex">
-          <Link href={`/w/${workspace.slug}/people` as Route} className="flex items-center gap-2 rounded-md px-2 py-1 hover:bg-bg-hover">
+          <Link href={`/w/${workspace.slug}/people` as Route} className="flex items-center gap-2 rounded-full px-2 py-1 hover:bg-bg-hover">
             <AvatarStack names={members.map((m) => m.user.name)} size="md" />
             <span className="text-sm text-fg-muted">{members.length}</span>
           </Link>
@@ -90,13 +93,20 @@ export default async function WorkspaceHome({ params }: { params: Promise<{ ws: 
         </div>
       </div>
 
-      {workspace.kind === "TEAM" && <Journey journey={journey} slug={workspace.slug} editable={canEdit(role)} memberCount={members.length} />}
+      {workspace.kind === "TEAM" && (
+        <div className="mb-14 grid grid-cols-1 items-center gap-10 lg:grid-cols-[auto_1fr]">
+          <div className="flex justify-center">
+            <Ring nodes={ring} size={380} themeHref={themeLinks(workspace.slug)} />
+          </div>
+          <Journey journey={journey} slug={workspace.slug} editable={canEdit(role)} memberCount={members.length} />
+        </div>
+      )}
 
       {workspace.kind === "TEAM" && <CompanyTiles workspaceId={workspace.id} slug={workspace.slug} tiles={tiles} editable={canEdit(role)} />}
 
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_20rem]">
         <section>
-          <h2 className="mb-3 text-sm font-medium text-fg-muted">Pages</h2>
+          <h2 className="mb-3 text-sm text-fg-subtle">Pages</h2>
           {pages.length === 0 ? (
             <p className="text-sm text-fg-subtle">No pages yet. Add one from the sidebar.</p>
           ) : (
@@ -105,7 +115,7 @@ export default async function WorkspaceHome({ params }: { params: Promise<{ ws: 
                 <Link
                   key={p.id}
                   href={pageHref(workspace.slug, p.id) as Route}
-                  className="flex items-center gap-2.5 rounded-md border border-border px-3 py-2.5 hover:border-border-strong hover:bg-bg-hover"
+                  className="flex items-center gap-2.5 rounded-lg bg-surface px-3.5 py-3 shadow-card hover:shadow-lift"
                 >
                   <PageIcon icon={p.icon} />
                   <span className="min-w-0 flex-1 truncate text-base font-medium">{p.title || "Untitled"}</span>
@@ -116,7 +126,7 @@ export default async function WorkspaceHome({ params }: { params: Promise<{ ws: 
           )}
         </section>
         <section>
-          <h2 className="mb-3 text-sm font-medium text-fg-muted">Recent activity</h2>
+          <h2 className="mb-3 text-sm text-fg-subtle">Recent activity</h2>
           <ActivityFeed
             workspaceSlug={workspace.slug}
             items={activity.map((a) => ({
