@@ -55,7 +55,7 @@ export async function today(viewer: Viewer) {
 
   return {
     name: viewer.user.name,
-    circle: circle ? { name: circle.name, members: circle.members.length, checkedIn: circle.checkIns.length, mine: circle.mine } : null,
+    circle: circle ? { name: circle.name, members: circle.members.length, checkedIn: circle.checkIns.length, mine: !!circle.mine } : null,
     ring: nodes,
     hours,
     needs,

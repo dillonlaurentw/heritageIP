@@ -38,22 +38,24 @@ export async function loadCircle(userId: string, now = new Date()) {
     }),
     db.circleSummary.findUnique({ where: { circleId_weekOf: { circleId, weekOf: week } } }),
   ]);
+  const list = checkIns.map((c) => ({
+    id: c.id,
+    userId: c.userId,
+    name: c.user.name,
+    did: c.did,
+    stuck: c.stuck,
+    need: c.need,
+    at: c.createdAt.toISOString(),
+    replies: c.replies.map((r) => ({ id: r.id, text: r.text, at: r.createdAt.toISOString(), authorId: r.author.id, author: r.author.name })),
+  }));
   return {
     id: circle.id,
     name: circle.name,
     weekOf: week.toISOString(),
     members: circle.members.map((m) => ({ id: m.user.id, name: m.user.name, headline: m.user.profile?.headline ?? null, checkedIn: checkIns.some((c) => c.userId === m.user.id) })),
-    checkIns: checkIns.map((c) => ({
-      id: c.id,
-      userId: c.userId,
-      name: c.user.name,
-      did: c.did,
-      stuck: c.stuck,
-      need: c.need,
-      at: c.createdAt.toISOString(),
-      replies: c.replies.map((r) => ({ id: r.id, text: r.text, at: r.createdAt.toISOString(), authorId: r.author.id, author: r.author.name })),
-    })),
-    mine: checkIns.find((c) => c.userId === userId) ? true : false,
+    checkIns: list,
+    /** Your own check-in this week, or null. */
+    mine: list.find((c) => c.userId === userId) ?? null,
     summary: summary ? { text: summary.text, helps: (summary.helps ?? []) as { from: string; to: string; why: string }[], demo: summary.demo } : null,
   };
 }

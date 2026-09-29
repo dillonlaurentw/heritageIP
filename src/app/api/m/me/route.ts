@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 export async function GET() {
   const { viewer, res } = await appViewer();
   if (res) return res;
-  const app = await db.application.findUnique({ where: { userId: viewer.user.id }, select: { status: true, createdAt: true } });
+  const app = await db.application.findUnique({ where: { userId: viewer.user.id }, select: { status: true, building: true, lastWeek: true, createdAt: true } });
   return ok({
     id: viewer.user.id,
     name: viewer.user.name,
@@ -14,7 +14,7 @@ export async function GET() {
     access: viewer.profile.access,
     onboarded: !!viewer.profile.onboardedAt,
     headline: viewer.profile.headline,
-    application: app ? { status: app.status, at: app.createdAt.toISOString() } : null,
+    application: app ? { status: app.status, building: app.building, lastWeek: app.lastWeek, createdAt: app.createdAt.toISOString() } : null,
   });
 }
 

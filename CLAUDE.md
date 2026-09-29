@@ -482,6 +482,40 @@ orange fills, KPI cards or donut charts, scores or percentages about people.
 - Phones: rings render smaller without quarter labels below `sm`
   (`labels={false}`); every main screen stacks to one column.
 
+## The SELF app (stage 1: founding circles)
+
+The current focus (see `docs/PLAN.md`): a native app in `mobile/` (Expo SDK 57,
+Expo Router). Start exclusive, by commitment and fit, never price or pedigree.
+
+- **Access.** `Profile.access` is NONE → APPLIED → MEMBER. Get in with a
+  member's invite code (`redeemInvite`, each code once) or by applying with two
+  answers (`applyForAccess`), approved at `/admin/applications`
+  (`reviewApplication`, answered once). `admit()` sets MEMBER, joins a circle
+  and tops up three invite codes. Existing web users were migrated to MEMBER.
+- **Circles.** Up to six (`CIRCLE_SIZE`); new members join the fullest circle
+  with room (`circleToJoin`). One check-in per person per week (Monday UTC,
+  `weekOf`): did / stuck / need. Replies only inside your circle. The weekly
+  note (`circleSummaryAgent`) needs two check-ins, never ranks or judges, and
+  only suggests who could help whom.
+- **Office hours.** Mentors' 20-minute slots (`OfficeHour`). Booking needs a
+  real question (15+ characters), is guarded against double booking, and
+  notifies the mentor. No contact details are shared by booking.
+- **API.** `/api/m/*` route handlers return JSON; every one starts with
+  `appViewer()` (`src/lib/app/http.ts`; `member: true` for members-only).
+  Server logic lives in `src/lib/app/*`, pure rules in `src/lib/app-rules.ts`
+  (tested). Sign-in is a 6-digit email code (Better Auth `emailOTP`) traded for
+  a bearer token (`bearer` plugin). `/api/m/demo-login` works only with demo
+  login on.
+- **The app.** Screens in `mobile/src/app` (gate in `lib/session.tsx`:
+  welcome → access → waiting → onboarding → tabs). Tokens and primitives in
+  `mobile/src/lib/theme.ts` and `mobile/src/components/ui.tsx` mirror the web
+  design; `mobile/src/lib/ring.ts` is a copy of `src/lib/ring.ts` (keep them in
+  step). Token in SecureStore (localStorage on web).
+- **Web preview.** `cd mobile && npm run export:web` writes `public/app`,
+  served at `/app` by a rewrite in `next.config.ts`. `mobile/` and
+  `public/app` are excluded from the web app's lint and typecheck; run
+  `npx tsc --noEmit` in `mobile/` for the app.
+
 ## Running locally
 
 ```
