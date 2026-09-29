@@ -94,3 +94,33 @@ me as-is.
   (`src/components/network/NotAnOffer.tsx`), and add terms and privacy pages
   (SELF doesn't have them yet).
 - Turn on Resend domain verification so emails don't land in spam.
+
+---
+
+## A demo site you can send people (separate from the real one)
+
+For showing SELF to people before real users arrive. Visitors land on the
+sign-in page and click "sign in as" Maya, Priya, Harbor & Vine and so on. No
+email, no accounts. Keep it completely separate from any real site.
+
+1. **Neon:** create a new project called `self-demo`. Copy its connection string.
+2. **Tables and demo data**, once, from your Mac in the project folder:
+   ```
+   DATABASE_URL="<self-demo connection string>" npx prisma migrate deploy
+   DATABASE_URL="<self-demo connection string>" npm run db:seed
+   ```
+3. **Vercel:** Add New → Project → import `heritageIP` again, name it `self-demo`.
+   Environment variables:
+   - `DATABASE_URL`: the `self-demo` connection string
+   - `BETTER_AUTH_SECRET`: `openssl rand -base64 32`
+   - `BETTER_AUTH_URL`: the address Vercel gives you, e.g. `https://self-demo.vercel.app`
+   - `DEMO_LOGIN`: `true` (this is what shows "sign in as")
+   - `ANTHROPIC_API_KEY`: optional. Without it, the agents give demo answers.
+     With it, every visitor's click costs real money: set `AGENT_DAILY_RUNS=10`.
+4. **Deploy**, open the address, and send it.
+5. **Reset it** whenever visitors have changed things: run the `db:seed`
+   command from step 2 again. It puts every demo person back as they were.
+
+Everyone who opens the link shares the same demo people, so two visitors can
+see each other's clicks. That's fine for a demo; never put real people or real
+data on this site.
