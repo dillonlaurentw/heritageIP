@@ -23,11 +23,17 @@ export async function generateMetadata({ params }: { params: Promise<{ pageId: s
 }
 
 /** Any page: a document, a database, or a database row. */
-export default async function PageRoute({ params }: { params: Promise<{ ws: string; pageId: string }> }) {
+export default async function PageRoute({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ ws: string; pageId: string }>;
+  searchParams: Promise<{ comment?: string }>;
+}) {
   const viewer = await requireOnboarded();
   const { ws, pageId } = await params;
   const { page, role, editable } = await getPageAccess(ws, pageId, viewer);
-  const [trail, children, members] = await Promise.all([
+  const [trail, children, members, openComments] = await Promise.all([
     ancestors(page.id),
     page.kind === "PAGE"
       ? db.page.findMany({
@@ -37,8 +43,10 @@ export default async function PageRoute({ params }: { params: Promise<{ ws: stri
         })
       : [],
     db.workspaceMember.findMany({ where: { workspaceId: page.workspaceId }, select: { user: { select: { id: true, name: true } } } }),
+    db.comment.count({ where: { pageId: page.id, parentId: null, resolvedAt: null } }),
   ]);
   const personal = page.workspace.kind === "PERSONAL";
+  const focusComment = (await searchParams).comment?.slice(0, 64) ?? null;
   const database = page.kind === "DATABASE" ? await loadDatabase(page.id, viewer) : null;
   const parentDb = page.kind === "ROW" && page.parentId ? await loadDatabase(page.parentId, viewer) : null;
   const parentKey = parentDb?.database.systemKey;
@@ -70,6 +78,7 @@ export default async function PageRoute({ params }: { params: Promise<{ ws: stri
       ]}
       editable={editable}
       canDeleteForever={canManage(role)}
+      comments={personal || page.kind === "DATABASE" ? undefined : { me: viewer.user.id, canManage: canManage(role), open: openComments, focus: focusComment }}
       childPages={children.map((c) => ({ ...c, href: pageHref(ws, c.id) }))}
       people={members.map((m) => m.user).filter((u) => u.id !== viewer.user.id)}
       topActions={

@@ -17,6 +17,7 @@ import {
   type ViewType,
 } from "./db-schema";
 import { db } from "./db";
+import { notifyUsers } from "./notify";
 import { insertPage, pageHref } from "./pages";
 import type { Viewer } from "./session";
 import { SYSTEM_DBS, SYSTEM_RELATIONS, type SystemKey } from "./system-dbs";
@@ -247,6 +248,23 @@ export async function setRowProp(rowId: string, propId: string, raw: unknown, vi
   await db.page.update({ where: { id: rowId }, data: { props: props as Prisma.InputJsonValue, updatedById: viewer.user.id } });
   if ((prop.type === "status" && prop.options?.find((o) => o.id === value)?.group === "done") || (prop.type === "checkbox" && value === true)) {
     await logActivity(row.workspaceId, viewer.user.id, "row.done", row.id, { title: row.title });
+  }
+  // Someone newly put on a row (Assignee, Owner…) hears about it in their inbox.
+  if (prop.type === "person" && Array.isArray(value)) {
+    const before = ((row.props ?? {}) as Record<string, Value>)[propId];
+    const added = (value as string[]).filter((id) => !(Array.isArray(before) && (before as string[]).includes(id)));
+    if (added.length) {
+      const ws = await db.workspace.findUniqueOrThrow({ where: { id: row.workspaceId }, select: { slug: true } });
+      await notifyUsers({
+        userIds: added,
+        actorId: viewer.user.id,
+        kind: "ASSIGNED",
+        text: `${viewer.user.name} put you on “${row.title || "Untitled"}” (${prop.name})`,
+        href: pageHref(ws.slug, row.id),
+        workspaceId: row.workspaceId,
+        pageId: row.id,
+      });
+    }
   }
   return { value, row };
 }

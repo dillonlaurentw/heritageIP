@@ -77,6 +77,29 @@
   text-decoration: underline !important;
   text-underline-offset: 3px;
 }
+/* A block someone commented on, briefly highlighted when you jump to it (an overlay; see CommentsPanel). */
+.self-comment-flash {
+  z-index: 5;
+  pointer-events: none;
+  border-radius: 4px;
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+  animation: self-flash 1800ms ease-out forwards;
+}
+@keyframes self-flash {
+  0%,
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .self-comment-flash {
+    animation: none;
+  }
+}
 
 /* ── Ariakit theme: replace its hard-coded blues and greys with SELF tokens.
    Scoped under .bn-root so these win over the theme's light and .dark rules. */

@@ -1,11 +1,13 @@
 "use client";
 
-import { Check, Copy, Database, History, Link2, Maximize2, MoreHorizontal, Plus, RotateCcw, Sparkles, Trash2 } from "lucide-react";
+import { Check, Copy, Database, History, Link2, Maximize2, MessageSquare, MoreHorizontal, Plus, RotateCcw, Sparkles, Trash2 } from "lucide-react";
+import { notifyMentions } from "@/app/actions/comments";
+import { CommentsPanel, type CommentAnchor } from "@/components/comments/CommentsPanel";
 import { newDatabase } from "@/app/actions/databases";
 import type { Route } from "next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import {
   archivePageAction,
   deleteForeverAction,
@@ -57,6 +59,8 @@ export type PageViewProps = {
   /** Databases use the full width of the screen. */
   wide?: boolean;
   hideChildren?: boolean;
+  /** Comments: who's looking, how many open threads, and a thread to open (from ?comment=). */
+  comments?: { me: string; canManage: boolean; open: number; focus?: string | null };
 };
 
 /** A page: header, body, pages inside it, and page-level actions. */
@@ -93,6 +97,25 @@ export function PageView(p: PageViewProps) {
     return () => window.removeEventListener("keydown", onKey);
   }, [canAsk]);
 
+  // Comments: a side sheet. Opening from the selection toolbar anchors the draft to that block.
+  const [commentsOpen, setCommentsOpen] = useState(Boolean(p.comments?.focus));
+  const [anchor, setAnchor] = useState<CommentAnchor | null>(null);
+  const [openCount, setOpenCount] = useState(p.comments?.open ?? 0);
+  const [sheetKey, setSheetKey] = useState(0);
+  const openComments = (withSelection: boolean) => {
+    const editor = editorRef.current;
+    const block = withSelection ? editor?.getSelection()?.blocks[0] : undefined;
+    const quote = withSelection ? editor?.getSelectedText().trim().slice(0, 280) : "";
+    setAnchor(block && quote ? { blockId: block.id, quote } : null);
+    setSheetKey((k) => k + 1);
+    setCommentsOpen(true);
+  };
+  const closeComments = useCallback(() => setCommentsOpen(false), []);
+  const onMention = (ids: string[]) => {
+    void notifyMentions(p.page.id, ids);
+    p.onMention?.(ids);
+  };
+
   const crumbs = [...p.crumbs.slice(0, -1), { label: title || "Untitled", icon: p.page.icon }];
 
   const act = async (fn: () => Promise<{ ok: boolean; message?: string; href?: string }>, done?: string) => {
@@ -115,6 +138,12 @@ export function PageView(p: PageViewProps) {
               {save === "saving" ? "Saving…" : save === "saved" ? "Saved" : save === "error" ? "Couldn't save" : ""}
             </span>
             {p.topActions}
+            {p.comments && !p.hideEditor && (
+              <Button variant="ghost" onClick={() => (commentsOpen ? setCommentsOpen(false) : openComments(false))} aria-pressed={commentsOpen} aria-label={openCount ? `Comments, ${openCount} open` : "Comments"} title="Comments">
+                <MessageSquare className="size-3.5" />
+                {openCount > 0 ? openCount : <span className="hidden sm:inline">Comment</span>}
+              </Button>
+            )}
             {canAsk && (
               <Button variant="ghost" onClick={() => openAsk()} title="Ask AI (⌘J)">
                 <Sparkles className="size-3.5" /> Ask AI
@@ -195,9 +224,9 @@ export function PageView(p: PageViewProps) {
         placeholder={p.titlePlaceholder}
         onTitleChange={setTitle}
         onEnter={() => editorRef.current?.focus()}
-        widthClass={fullWidth ? "max-w-none" : "max-w-page"}
+        widthClass={cn(fullWidth ? "max-w-none" : "max-w-page", commentsOpen && "xl:mr-[24rem]")}
       />
-      <article className={cn("mx-auto w-full px-6 pb-40 md:px-12", fullWidth ? "max-w-none" : "max-w-page")}>
+      <article className={cn("mx-auto w-full px-6 pb-40 md:px-12", fullWidth ? "max-w-none" : "max-w-page", commentsOpen && "xl:mr-[24rem]")}>
         {p.aboveEditor}
         {!p.hideEditor && (
           <div className="mt-4">
@@ -208,8 +237,9 @@ export function PageView(p: PageViewProps) {
               editable={p.editable}
               people={p.people}
               onSaveState={setSave}
-              onMention={p.onMention}
+              onMention={onMention}
               onAskAI={canAsk ? () => openAsk() : undefined}
+              onComment={p.comments && !p.page.archived ? () => openComments(true) : undefined}
               onReady={(e) => {
                 editorRef.current = e;
                 p.onEditorReady?.(e);
@@ -279,6 +309,20 @@ export function PageView(p: PageViewProps) {
           editor={ask.editor}
           target={ask.target}
           onClose={() => setAsk(null)}
+        />
+      )}
+
+      {p.comments && commentsOpen && (
+        <CommentsPanel
+          key={sheetKey}
+          pageId={p.page.id}
+          me={p.comments.me}
+          canManage={p.comments.canManage}
+          people={p.people}
+          anchor={anchor}
+          focusId={p.comments.focus}
+          onClose={closeComments}
+          onCount={setOpenCount}
         />
       )}
 

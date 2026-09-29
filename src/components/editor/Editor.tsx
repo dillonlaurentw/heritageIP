@@ -16,9 +16,9 @@ import {
   useComponentsContext,
   useCreateBlockNote,
 } from "@blocknote/react";
-import { Sparkles } from "lucide-react";
+import { FileText, MessageSquare, Sparkles } from "lucide-react";
 import { useEffect, useRef } from "react";
-import { savePage, uploadImage } from "@/app/actions/pages";
+import { savePage, searchPalette, uploadImage } from "@/app/actions/pages";
 import { schema, type SelfEditor } from "./schema";
 import { useEffectiveTheme } from "./useEffectiveTheme";
 
@@ -41,6 +41,7 @@ export default function Editor({
   onMention,
   extraSlashItems,
   onAskAI,
+  onComment,
 }: {
   pageId: string;
   initialContent: unknown[] | null;
@@ -53,6 +54,8 @@ export default function Editor({
   extraSlashItems?: (editor: SelfEditor) => DefaultReactSuggestionItem[];
   /** Adds "Ask AI" to the selection toolbar. */
   onAskAI?: () => void;
+  /** Adds "Comment" to the selection toolbar. */
+  onComment?: () => void;
 }) {
   const theme = useEffectiveTheme();
   const editor = useCreateBlockNote({
@@ -104,7 +107,7 @@ export default function Editor({
       editable={editable}
       theme={theme}
       slashMenu={false}
-      formattingToolbar={!onAskAI}
+      formattingToolbar={!onAskAI && !onComment}
       className="self-editor -mx-[54px]"
       onChange={() => {
         if (!editable) return;
@@ -114,11 +117,12 @@ export default function Editor({
         timer.current = setTimeout(() => void flush(), SAVE_DELAY);
       }}
     >
-      {onAskAI && (
+      {(onAskAI || onComment) && (
         <FormattingToolbarController
           formattingToolbar={() => (
             <FormattingToolbar>
-              <AskAIButton onClick={onAskAI} />
+              {onAskAI && <AskAIButton onClick={onAskAI} />}
+              {onComment && <CommentButton onClick={onComment} />}
               {...getFormattingToolbarItems()}
             </FormattingToolbar>
           )}
@@ -130,23 +134,33 @@ export default function Editor({
           filterSuggestionItems([...(extraSlashItems?.(editor) ?? []), ...getDefaultReactSlashMenuItems(editor)], query)
         }
       />
-      {people.length > 0 && (
-        <SuggestionMenuController
-          triggerCharacter="@"
-          getItems={async (query) =>
-            filterSuggestionItems(
-              people.map((p) => ({
-                title: p.name,
-                group: "People",
-                onItemClick: () => {
-                  editor.insertInlineContent([{ type: "mention", props: { userId: p.id, name: p.name } }, " "]);
-                },
-              })),
-              query,
-            )
-          }
-        />
-      )}
+      <SuggestionMenuController
+        triggerCharacter="@"
+        getItems={async (query) => {
+          const personItems = filterSuggestionItems(
+            people.map((p) => ({
+              title: p.name,
+              group: "People",
+              onItemClick: () => {
+                editor.insertInlineContent([{ type: "mention", props: { userId: p.id, name: p.name } }, " "]);
+              },
+            })),
+            query,
+          );
+          // Pages: a link to the page, titled as it is now.
+          const pages = query.trim() ? (await searchPalette(query)).filter((x) => x.href && !x.href.endsWith(`/${pageId}`)).slice(0, 5) : [];
+          const pageItems = pages.map((x) => ({
+            title: x.label,
+            subtext: x.hint,
+            group: "Pages",
+            icon: <FileText className="size-4" />,
+            onItemClick: () => {
+              editor.insertInlineContent([{ type: "link", href: x.href!, content: [{ type: "text", text: x.label, styles: {} }] }, " "]);
+            },
+          }));
+          return [...personItems, ...pageItems];
+        }}
+      />
     </BlockNoteView>
   );
 }
@@ -157,6 +171,16 @@ function AskAIButton({ onClick }: { onClick: () => void }) {
     <Components.FormattingToolbar.Button mainTooltip="Ask AI about the selection" onClick={onClick} className="self-ask-ai">
       <Sparkles className="size-3.5" />
       <span>Ask AI</span>
+    </Components.FormattingToolbar.Button>
+  );
+}
+
+function CommentButton({ onClick }: { onClick: () => void }) {
+  const Components = useComponentsContext()!;
+  return (
+    <Components.FormattingToolbar.Button mainTooltip="Comment on the selection" onClick={onClick} className="self-comment-btn">
+      <MessageSquare className="size-3.5" />
+      <span>Comment</span>
     </Components.FormattingToolbar.Button>
   );
 }

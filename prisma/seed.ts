@@ -11,6 +11,7 @@ import { PrismaClient } from "../src/generated/prisma/client";
 import { hubs, partners, people, plans } from "./seed-data";
 import { seedPrivatePages, seedTidewaterPages, seedWorkspaceContent } from "./seed-content";
 import { seedNetwork } from "./seed-network";
+import { seedComments } from "./seed-comments";
 import { seedSimulations } from "./seed-sims";
 
 const db = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }) });
@@ -153,6 +154,7 @@ async function main() {
 
   await seedNetwork(db, idOf);
   await seedSimulations(db, idOf);
+  await seedComments(db, idOf);
 }
 
 main()

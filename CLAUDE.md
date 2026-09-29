@@ -308,6 +308,21 @@ generic dashboard widgets (donut charts, KPI cards), cinematic type inside the a
 - Routes: `/me/agent`, `/simulations`, `/simulations/new`, `/simulations/[id]`
   (also in the user menu).
 
+### Comments, mentions and notifications (Phase 9)
+- `notifyUsers()` (`src/lib/notify.ts`) is the one way to notify: inbox row,
+  optional email, never the actor, and for workspace things only current
+  members. Email only for mentions, requests and accepted intros.
+- Comments (`src/lib/comments.ts`): threads on a page or anchored to a block
+  (`blockId` + `quote`); replies one level deep; resolve/reopen; delete by the
+  author or an admin. Guests can read and comment.
+- `CommentsPanel` is a side sheet; "Comment" sits in the selection toolbar next
+  to "Ask AI". `?comment=<threadId>` opens the sheet on that thread and flashes
+  the block with an overlay (never mutate the editor's DOM).
+- @mentions: people (mention inline content; `notifyMentions` after save) and
+  pages (inserted as a link). Comment mentions are `@Full Name` in the text.
+- Setting a person property on a row notifies the people newly added (ASSIGNED).
+- `/inbox` lists notifications with filters; the sidebar shows the unread count.
+
 ## Running locally
 
 ```
