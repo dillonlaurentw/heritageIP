@@ -11,11 +11,12 @@ export function pairKey(a: string, b: string) {
 
 /**
  * Two people may message each other when they already work together (a
- * shared TEAM workspace) or one of them said yes to the other (an ACCEPTED
- * signal of any kind). Everything else starts as a request, not a message.
+ * shared TEAM workspace), one of them said yes to the other (an ACCEPTED
+ * signal of any kind), or a host picked the other for an opportunity.
+ * Everything else starts as a request, not a message.
  */
-export function canMessage(facts: { sharedWorkspace: boolean; acceptedSignal: boolean }) {
-  return facts.sharedWorkspace || facts.acceptedSignal;
+export function canMessage(facts: { sharedWorkspace: boolean; acceptedSignal: boolean; pickedGuest?: boolean }) {
+  return facts.sharedWorkspace || facts.acceptedSignal || !!facts.pickedGuest;
 }
 
 export type TrialStatus = "PENDING" | "ACCEPTED" | "DECLINED" | "WITHDRAWN";

@@ -8,10 +8,10 @@ import { logActivity, roleIn } from "./workspaces";
 
 type Fail = { ok: false; message: string };
 
-/** Do these two people work together, or has one said yes to the other? */
+/** Do these two people work together, has one said yes to the other, or did a host pick the other? */
 export async function mayMessage(aId: string, bId: string) {
   if (aId === bId) return false;
-  const [shared, accepted] = await Promise.all([
+  const [shared, accepted, picked] = await Promise.all([
     db.workspace.count({ where: { kind: "TEAM", AND: [{ members: { some: { userId: aId } } }, { members: { some: { userId: bId } } }] } }),
     db.signal.count({
       where: {
@@ -22,8 +22,17 @@ export async function mayMessage(aId: string, bId: string) {
         ],
       },
     }),
+    db.opportunityRequest.count({
+      where: {
+        status: "PICKED",
+        OR: [
+          { userId: aId, opportunity: { hostId: bId } },
+          { userId: bId, opportunity: { hostId: aId } },
+        ],
+      },
+    }),
   ]);
-  return canMessage({ sharedWorkspace: shared > 0, acceptedSignal: accepted > 0 });
+  return canMessage({ sharedWorkspace: shared > 0, acceptedSignal: accepted > 0, pickedGuest: picked > 0 });
 }
 
 /** Opens (or finds) the one conversation between the viewer and someone they may message. */

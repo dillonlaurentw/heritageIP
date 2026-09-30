@@ -33,7 +33,7 @@ export default function You() {
         </View>
       </View>
 
-      <Ring nodes={today.ring} size={250} onNode={(n) => router.push(n.theme === "ADVISORS" ? "/mentors" : "/circle")} />
+      <Ring nodes={today.ring} size={250} onNode={(n) => router.push(n.theme === "COFOUNDERS" ? "/circle" : { pathname: "/network", params: { section: { ADVISORS: "mentors", PARTNERS: "partners", CAPITAL: "capital" }[n.theme] } })} />
       {today.company && today.company.steps.length > 0 && (
         <Card style={{ gap: 8 }}>
           <T size={13} weight="medium" tone="muted">
@@ -106,11 +106,11 @@ export default function You() {
       </View>
 
       <View style={{ gap: 10 }}>
-        <Eyebrow>Coming later</Eyebrow>
-        <Card style={{ gap: 6 }}>
-          <T weight="medium">Opportunities, partners and capital</T>
+        <Eyebrow>Later</Eyebrow>
+        <Card onPress={() => router.push("/funds")} style={{ gap: 6 }}>
+          <T weight="medium">Investing through SELF</T>
           <T size={14} tone="muted">
-            Dinners, trips and introductions come next, then partners and backers. Nothing here moves money.
+            Not available yet: it needs a licensed partner first. Nothing on SELF moves money.
           </T>
         </Card>
       </View>

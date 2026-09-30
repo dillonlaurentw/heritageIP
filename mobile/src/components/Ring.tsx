@@ -4,7 +4,7 @@
  * pending, dashed orange circles for open chairs.
  *
  * In stage 1 the top-left quarter is your circle of peers and the bottom-right
- * your advisors (mentors); partners and capital are drawn but quiet: "later".
+ * your advisors (mentors); partners you asked for intros, and backers interested in you.
  */
 import { Pressable, Text, View } from "react-native";
 import Svg, { Circle, Path } from "react-native-svg";
@@ -14,18 +14,18 @@ import { T } from "./ui";
 
 export const APP_LABELS: Record<Theme, { label: string; later?: boolean }> = {
   COFOUNDERS: { label: "Peers" },
-  PARTNERS: { label: "Partners", later: true },
+  PARTNERS: { label: "Partners" },
   ADVISORS: { label: "Advisors" },
-  CAPITAL: { label: "Capital", later: true },
+  CAPITAL: { label: "Capital" },
 };
 
 function summary(t: Theme, nodes: RingNode[]) {
   if (APP_LABELS[t].later) return "later";
   const mine = nodes.filter((n) => n.theme === t);
-  if (!mine.length) return t === "ADVISORS" ? "ask a mentor" : "your circle";
+  if (!mine.length) return { COFOUNDERS: "your circle", PARTNERS: "ask for an intro", ADVISORS: "ask a mentor", CAPITAL: "share updates" }[t];
   const linked = mine.filter((n) => n.state === "linked").length;
   const pending = mine.filter((n) => n.state === "pending").length;
-  return [linked && `${linked} ${t === "ADVISORS" ? "with you" : "talking"}`, pending && `${pending} quiet`].filter(Boolean).join(" · ");
+  return [linked && `${linked} ${t === "COFOUNDERS" ? "talking" : "with you"}`, pending && `${pending} ${t === "COFOUNDERS" ? "quiet" : "waiting"}`].filter(Boolean).join(" · ");
 }
 
 export function Ring({

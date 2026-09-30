@@ -13,6 +13,7 @@ describe("canMessage", () => {
     expect(canMessage({ sharedWorkspace: false, acceptedSignal: false })).toBe(false);
     expect(canMessage({ sharedWorkspace: true, acceptedSignal: false })).toBe(true);
     expect(canMessage({ sharedWorkspace: false, acceptedSignal: true })).toBe(true);
+    expect(canMessage({ sharedWorkspace: false, acceptedSignal: false, pickedGuest: true })).toBe(true);
   });
 });
 

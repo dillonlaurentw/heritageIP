@@ -24,7 +24,7 @@ export default function Welcome() {
           Build with people who are building.
         </T>
         <T size={16} tone="muted">
-          A private journal you can talk to every day, a small circle of founders like you, and mentors who've done it.
+          A private journal you can talk to every day, a small circle of founders like you, mentors, and invitations to things money can't buy.
         </T>
         <T size={14} tone="subtle">
           Invite-only for now. Not by price or pedigree: by what you did last week.

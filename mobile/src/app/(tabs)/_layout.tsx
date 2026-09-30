@@ -9,7 +9,7 @@ import { font, useColors } from "@/lib/theme";
 const TABS: { name: TabIconName; title: string }[] = [
   { name: "today", title: "Journal" },
   { name: "circle", title: "Circle" },
-  { name: "mentors", title: "Mentors" },
+  { name: "network", title: "Network" },
   { name: "messages", title: "Messages" },
   { name: "you", title: "You" },
 ];

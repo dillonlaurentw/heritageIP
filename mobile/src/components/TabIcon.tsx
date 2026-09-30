@@ -1,7 +1,7 @@
 /** Quiet line icons for the tab bar, drawn with SVG (no icon font to load). */
 import Svg, { Circle, Path } from "react-native-svg";
 
-export type TabIconName = "today" | "circle" | "mentors" | "messages" | "you";
+export type TabIconName = "today" | "circle" | "network" | "messages" | "you";
 
 export function TabIcon({ name, color, size = 22 }: { name: TabIconName; color: string; size?: number }) {
   const s = { stroke: color, strokeWidth: 1.6, fill: "none", strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
@@ -21,10 +21,10 @@ export function TabIcon({ name, color, size = 22 }: { name: TabIconName; color: 
           <Path d="M10.2 7 7 14 M13.8 7 17 14 M8 16.5h8" {...s} />
         </>
       )}
-      {name === "mentors" && (
+      {name === "network" && (
         <>
-          <Circle cx={12} cy={12} r={8.5} {...s} />
-          <Path d="M12 7.5V12l3 2" {...s} />
+          <Circle cx={9} cy={12} r={5.5} {...s} />
+          <Circle cx={15} cy={12} r={5.5} {...s} />
         </>
       )}
       {name === "messages" && <Path d="M4.5 6.5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H10l-4 3.5v-3.5h0.5a2 2 0 0 1-2-2z" {...s} />}

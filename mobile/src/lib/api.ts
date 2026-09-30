@@ -80,7 +80,57 @@ export type Circle = {
 export type Ask = { status: "none" } | { status: "pending"; since: string } | { status: "yes"; conversationId: string | null } | { status: "not now" };
 export type MentorCard = { id: string; name: string; headline: string | null; focus: string[]; note: string | null; open: boolean; ask: Ask };
 export type Mentor = MentorCard & { location: string | null };
-export type Request = { id: string; note: string; at: string; from: { id: string; name: string; headline: string | null }; company: string | null };
+export type Request = { id: string; kind: string; asks: string; concierge: boolean; note: string; at: string; from: { id: string; name: string; headline: string | null }; company: string | null };
+export type OppStatus = "PENDING" | "PICKED" | "NOT_THIS_TIME" | "WITHDRAWN" | null;
+export type Opportunity = {
+  id: string;
+  kind: string;
+  kindLabel: string;
+  title: string;
+  description: string;
+  place: string;
+  startsAt: string;
+  seats: number;
+  forWho: string;
+  costNote: string | null;
+  open: boolean;
+  host: { id: string; name: string; line: string | null };
+  why: string | null;
+  request: OppStatus;
+};
+export type OpportunityDetail = Opportunity & { myWhy: string | null; isHost: boolean };
+export type Hosted = Opportunity & {
+  picked: number;
+  requests: { id: string; why: string; status: string; at: string; who: { id: string; name: string; headline: string | null } }[];
+};
+export type NewOpportunity = {
+  kind: string;
+  title: string;
+  description: string;
+  place: string;
+  startsAt: string;
+  seats: number;
+  forWho: string;
+  fields: string[];
+  stages: string[];
+  buildingOnly: boolean;
+  costNote: string | null;
+};
+export type State = "none" | "pending" | "yes" | "not now";
+export type Update = { id: string; text: string; at: string };
+export type MyCapital = { openToBackers: boolean; updates: Update[]; followers: string[]; interest: { id: string; status: string; note: string; at: string; from: string }[]; isBacker: boolean };
+export type FounderForBacker = {
+  id: string;
+  name: string;
+  headline: string | null;
+  location: string | null;
+  company: { name: string; oneLiner: string | null } | null;
+  following: boolean;
+  interest: State;
+  updates: Update[];
+};
+export type PartnerCard = { id: string; name: string; tagline: string; description: string; categories: string[]; services: string[]; location: string; priceNote: string | null; intro: State };
+export type CoFounder = { id: string; name: string; headline: string | null; location: string | null; strengths: string | null; buildingToward: string | null; lookingFor: string | null; field: string | null; sameField: boolean; hello: State };
 export type ConversationRow = {
   id: string;
   other: { id: string; name: string };
@@ -140,6 +190,29 @@ export const api = {
   mentor: (id: string) => request<Mentor>(`/api/m/mentors/${id}`),
   askMentor: (id: string, note: string) => request<{ ok: true }>(`/api/m/mentors/${id}/ask`, { body: { note } }),
   requests: () => request<{ requests: Request[] }>("/api/m/requests"),
+
+  opportunities: () => request<{ opportunities: Opportunity[]; canHost: boolean }>("/api/m/opportunities"),
+  opportunity: (id: string) => request<OpportunityDetail>(`/api/m/opportunities/${id}`),
+  askSeat: (id: string, why: string) => request<{ ok: true }>(`/api/m/opportunities/${id}/request`, { body: { why } }),
+  withdrawSeat: (id: string) => request<{ ok: true }>(`/api/m/opportunities/${id}/request`, { method: "DELETE" }),
+  hosting: () => request<{ hosting: Hosted[] }>("/api/m/hosting"),
+  host: (o: NewOpportunity) => request<{ ok: true; id: string }>("/api/m/opportunities", { body: o }),
+  answerSeat: (requestId: string, answer: "pick" | "not this time") => request<{ ok: true; conversationId?: string }>(`/api/m/hosting/${requestId}`, { body: { answer } }),
+  closeOpportunity: (id: string) => request<{ ok: true }>(`/api/m/opportunities/${id}/close`, { method: "POST" }),
+
+  capital: () => request<MyCapital>("/api/m/capital"),
+  setOpenToBackers: (openToBackers: boolean) => request<{ ok: true }>("/api/m/capital", { body: { openToBackers } }),
+  postUpdate: (text: string) => request<{ ok: true }>("/api/m/capital/updates", { body: { text } }),
+  deleteUpdate: (id: string) => request<{ ok: true }>(`/api/m/capital/updates/${id}`, { method: "DELETE" }),
+  founders: () => request<{ founders: FounderForBacker[] }>("/api/m/capital/founders"),
+  follow: (id: string, on: boolean) => request<{ ok: true }>(`/api/m/capital/founders/${id}/follow`, { body: { on } }),
+  interest: (id: string, note: string) => request<{ ok: true }>(`/api/m/capital/founders/${id}/interest`, { body: { note } }),
+
+  partners: () => request<{ partners: PartnerCard[] }>("/api/m/partners"),
+  askIntro: (id: string, note: string) => request<{ ok: true }>(`/api/m/partners/${id}/intro`, { body: { note } }),
+  coFounders: () => request<{ people: CoFounder[]; me: { open: boolean; note: string | null } }>("/api/m/cofounders"),
+  setOpenToMatches: (open: boolean, note: string | null) => request<{ ok: true }>("/api/m/cofounders/me", { body: { open, note } }),
+  hello: (id: string, note: string) => request<{ ok: true }>(`/api/m/cofounders/${id}/hello`, { body: { note } }),
   answer: (id: string, answer: "yes" | "not now") => request<{ ok: true; conversationId: string | null }>(`/api/m/requests/${id}`, { body: { answer } }),
 
   conversations: () => request<{ conversations: ConversationRow[] }>("/api/m/messages"),

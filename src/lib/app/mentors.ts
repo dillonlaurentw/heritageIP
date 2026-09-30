@@ -112,15 +112,36 @@ export async function askMentor(viewer: Viewer, mentorId: string, note: string):
   return { ok: true };
 }
 
-/** Requests waiting for you to answer (mentors see who asked them). */
+/** What each kind of request asks, in words, for whoever answers it. */
+const ASKS: Record<string, string> = {
+  MENTOR_REQUEST: "asked you to mentor them",
+  BACKER_INTEREST: "is interested in what you're building",
+  PARTNER_INTRO: "would like an intro",
+  ROLE_INVITE: "would like to talk about building together",
+};
+const APP_KINDS = Object.keys(ASKS) as ("MENTOR_REQUEST" | "BACKER_INTEREST" | "PARTNER_INTRO" | "ROLE_INVITE")[];
+
+/** Every request waiting for your answer: mentorship, backer interest, intros to your firm, hellos. */
 export async function incomingRequests(userId: string) {
   const rows = await db.signal.findMany({
-    where: { kind: "MENTOR_REQUEST", toUserId: userId, status: "PENDING" },
+    where: { kind: { in: APP_KINDS }, toUserId: userId, status: "PENDING" },
     orderBy: { createdAt: "desc" },
-    select: { id: true, note: true, createdAt: true, fromUser: { select: { id: true, name: true, profile: { select: { headline: true } } } }, workspace: { select: { name: true } } },
+    select: {
+      id: true,
+      kind: true,
+      note: true,
+      createdAt: true,
+      partner: { select: { name: true, claimedById: true } },
+      fromUser: { select: { id: true, name: true, profile: { select: { headline: true } } } },
+      workspace: { select: { name: true } },
+    },
   });
   return rows.map((r) => ({
     id: r.id,
+    kind: r.kind,
+    asks: r.kind === "PARTNER_INTRO" && r.partner ? `would like an intro to ${r.partner.name}` : ASKS[r.kind]!,
+    /** SELF's concierge makes intros for firms that haven't claimed their profile: by email, not a chat. */
+    concierge: r.kind === "PARTNER_INTRO" && r.partner?.claimedById !== userId,
     note: r.note,
     at: r.createdAt.toISOString(),
     from: { id: r.fromUser.id, name: r.fromUser.name, headline: r.fromUser.profile?.headline ?? null },
@@ -128,10 +149,10 @@ export async function incomingRequests(userId: string) {
   }));
 }
 
-/** Yes opens a conversation seeded with their note; not now closes it kindly. */
+/** Yes opens a conversation seeded with their note (an email intro via the concierge); not now closes it kindly. */
 export async function answerRequest(viewer: Viewer, signalId: string, yes: boolean): Promise<{ ok: true; conversationId: string | null } | Fail> {
   const sig = await db.signal.findUnique({ where: { id: signalId }, select: { kind: true, toUserId: true, fromUserId: true } });
-  if (!sig || sig.kind !== "MENTOR_REQUEST" || sig.toUserId !== viewer.user.id) return { ok: false, message: "That request isn't yours to answer." };
+  if (!sig || !APP_KINDS.includes(sig.kind as (typeof APP_KINDS)[number]) || sig.toUserId !== viewer.user.id) return { ok: false, message: "That request isn't yours to answer." };
   const res = await actOnSignal(signalId, viewer, yes ? "accept" : "decline");
   if (!res.ok) return res;
   const conv = yes ? await db.conversation.findUnique({ where: { pairKey: pairKey(sig.fromUserId, sig.toUserId) }, select: { id: true } }) : null;

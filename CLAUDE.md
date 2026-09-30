@@ -482,7 +482,7 @@ orange fills, KPI cards or donut charts, scores or percentages about people.
 - Phones: rings render smaller without quarter labels below `sm`
   (`labels={false}`); every main screen stacks to one column.
 
-## The SELF app (stage 1: journal, circles, mentors)
+## The SELF app (journal, circles, mentors, network)
 
 The current focus (see `docs/PLAN.md`): a native app in `mobile/` (Expo SDK 57,
 Expo Router). Start exclusive, by commitment and fit, never price or pedigree.
@@ -530,9 +530,34 @@ Expo Router). Start exclusive, by commitment and fit, never price or pedigree.
   served at `/app` by a rewrite in `next.config.ts`. `mobile/` and
   `public/app` are excluded from the web app's lint and typecheck; run
   `npx tsc --noEmit` in `mobile/` for the app.
-- **Next (not built):** opportunities (dinners, trips; selective, never
-  pay-to-play, the reason given in words), then capital views of what founders
-  share. Funds only with a licensed partner and counsel.
+- **Network tab** (`mobile/src/app/(tabs)/network.tsx`): Opportunities,
+  Mentors, Co-founders, Partners, Capital. Every request has the same shape
+  (`AskInline`: write a note, send); every answer lands on `/requests`
+  (`incomingRequests` / `answerRequest` in `src/lib/app/mentors.ts`). A yes on
+  MENTOR_REQUEST, ROLE_INVITE, BACKER_INTEREST, or a PARTNER_INTRO answered by
+  the firm itself, opens a conversation (`actOnSignal`); concierge intros stay
+  email intros.
+- **Opportunities** (`src/lib/app/opportunities.ts`; rules `opportunityFit`,
+  `fitSentence`, `requestProblem`, `pickProblem`, `opportunityProblem`,
+  `mayHost`, tested). Hosts: MENTOR, PARTNER, BACKER or ADMIN. Members see only
+  what fits them (field, stage, `buildingOnly` = journal or circle activity in
+  14 days) plus anything they've asked about; a non-fitting one 404s even by
+  link. The reason is shown in words, never a score. One request per person;
+  the host picks (never past `seats`) or says not this time, once. A pick lets
+  host and guest message (`canMessage({ pickedGuest })`). SELF takes no
+  payments: `costNote` says who covers what.
+- **Capital** (`src/lib/app/capital.ts`): `FounderUpdate` + `Profile.openToBackers`
+  (off by default; needs one update to switch on). Backers (BACKER/ADMIN) see
+  only founders who switched it on, `Follow` them, and send BACKER_INTEREST.
+  `mentionsTerms()` guards updates and interest notes. The journal is never
+  shown to backers. `/funds` explains why investing isn't available;
+  `docs/FUNDS.md` is the plan. Build none of it without a licensed partner.
+- **Partners and co-founders** (`src/lib/app/people.ts`): partner intros from
+  the app (workspace optional; unclaimed firms go to the concierge);
+  co-founders are `openToMatches` people (opt-in, needs a line on what you're
+  looking for), hello = ROLE_INVITE (workspace optional), one live per pair.
+- The ring (on You) now fills all four quarters: circle peers, partner intros,
+  mentors, and backers interested in you.
 
 ## Running locally
 

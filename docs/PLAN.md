@@ -1,4 +1,4 @@
-# SELF app: journal, circles, mentors (current)
+# SELF app: journal, circles, mentors, network (current)
 
 The web platform (Self3) is saved on the `self3` branch. The SELF app is a
 native iPhone/Android app (Expo, in `mobile/`) built around the concept we
@@ -18,22 +18,29 @@ infrastructure for everyone.
   optional prompt a week and can "catch you up". No forms, no scores.
 - **Mentors.** Ask a mentor for mentorship with a short note. If they say yes,
   a conversation opens and the two of you decide how to work together.
-- **Your Self**, messages, and a few invites per member.
+- **Your Self**, messages, and a few invites per ## Stage 2 (built): the network
+- **Opportunities**: dinners, trips, workshops, intro days and seats at
+  events, hosted by mentors, partners, backers and SELF. Members see only the
+  ones that fit them (field, stage, and for some "building lately"), each with
+  the reason in words. You say in a line why you'd come; the host picks; a
+  pick opens a conversation. Never pay-to-play; SELF takes no payments.
+- **Capital (interest only)**: founders share short updates with backers when
+  they switch "open to backers" on (never the journal). Backers follow and
+  send interest; a yes opens a conversation. No amounts, valuations or terms.
+- **Partners**: the partner directory in the app; ask for an intro. A firm on
+  SELF answers and a yes opens a conversation; otherwise SELF's concierge
+  makes the intro by email.
+- **Co-founders**: an opt-in switch ("open to building with someone") and a
+  list of people who switched it on; say hello, and a yes opens a conversation.
+- **One inbox for answers**: mentorship, interest, intros and hellos all land
+  on the Requests screen.
 
-## Next
-2. **Opportunities**: founder dinners, trips, workshops, a seat at a partner's
-   event. Hosts post them with a few seats and who they're for; members see
-   the ones that fit and say in one line why they'd come; hosts pick. Never
-   pay-to-play, never a ranking, and each invite says in words why you got it.
-   SELF takes no payments (hosts cover costs, or people pay through an outside
-   link).
-3. **Capital**: backers follow what founders choose to share (never the
-   journal). Interest and intros only; no amounts or terms on any feed.
-4. **Partners** and **co-founder matching** as in Self3.
-5. **Funds inside SELF**: only with a licensed partner (funding portal,
-   broker-dealer or registered adviser) and securities counsel. Until then
-   nothing about investing is built; the founder's shared record of building is
-   what it will stand on.
+## Later: funds inside SELF
+Only with a licensed partner (funding portal, broker-dealer or registered
+adviser) and securities counsel. Nothing about investing is built; the plan
+and the open questions are in `docs/FUNDS.md`.
+
+and on.
 
 ## How it's built
 - The app talks to the existing SELF server (`/api/m/*`, JSON, bearer tokens

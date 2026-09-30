@@ -26,9 +26,12 @@ export async function seedCircles(db: PrismaClient, idOf: (key: string) => strin
   await db.inviteCode.deleteMany({ where: { OR: [{ createdBy: demo }, { code: DEMO_INVITE }] } });
   await db.application.deleteMany({ where: { user: demo } });
   await db.journalMessage.deleteMany({ where: { user: demo } });
+  await db.opportunity.deleteMany({ where: { host: demo } });
+  await db.founderUpdate.deleteMany({ where: { author: demo } });
+  await db.follow.deleteMany({ where: { backer: demo } });
 
   // Access: members, one applicant, one newcomer.
-  await db.profile.updateMany({ where: { user: demo }, data: { access: "MEMBER", buildField: null, buildStage: null } });
+  await db.profile.updateMany({ where: { user: demo }, data: { access: "MEMBER", buildField: null, buildStage: null, openToBackers: false } });
   await db.profile.update({ where: { userId: idOf("new") }, data: { access: "NONE" } });
   await db.profile.update({ where: { userId: idOf("leo") }, data: { access: "APPLIED" } });
   await db.application.create({
@@ -133,6 +136,9 @@ export async function seedCircles(db: PrismaClient, idOf: (key: string) => strin
     data: { userId: idOf("rosa"), actorId: idOf("joana"), kind: "SIGNAL", text: "Joana Pires asked you to mentor them", href: "/network/connections", signalId: ask.id, createdAt: ask.createdAt },
   });
 
+  await seedOpportunities(db, idOf);
+  await seedCapital(db, idOf);
+
   // Invites: three each for a couple of members, one used; plus the demo code.
   const codes: [by: string, code: string, usedBy?: string][] = [
     ["maya", "SELF-WAVE-7K2M"], ["maya", "SELF-SEAS-3HQP"], ["maya", "SELF-RAFT-9XNB", "rui"],
@@ -143,4 +149,100 @@ export async function seedCircles(db: PrismaClient, idOf: (key: string) => strin
     await db.inviteCode.create({ data: { code, createdById: idOf(by), usedById: usedBy ? idOf(usedBy) : null, usedAt: usedBy ? new Date(Date.now() - 30 * DAY) : null } });
 
   console.log("Seeded circles, journals, mentor requests and invites.");
+}
+
+/*
+ * Opportunities. Maya (food, first customers, building lately) sees four of
+ * the five: the health workshop isn't for her. She's already in Marcus's
+ * workshop; Rosa's dinner has two requests waiting for Rosa to pick.
+ */
+async function seedOpportunities(db: PrismaClient, idOf: (key: string) => string) {
+  const at = (days: number, hourUtc: number) => {
+    const d = new Date(Date.now() + days * DAY);
+    d.setUTCHours(hourUtc, 0, 0, 0);
+    return d;
+  };
+  const make = (data: Parameters<typeof db.opportunity.create>[0]["data"]) => db.opportunity.create({ data });
+  const dinner = await make({
+    hostId: idOf("rosa"),
+    kind: "DINNER",
+    title: "Food founders dinner",
+    description: "Eight food founders finding their first customers, one long table in Alfama, no pitching. Bring the question you can't answer yet.",
+    place: "Lisbon",
+    startsAt: at(9, 19),
+    seats: 8,
+    forWho: "Food founders finding first customers",
+    fields: ["FOOD"],
+    stages: ["FIRST_CUSTOMERS"],
+    costNote: "Rosa hosts. Dinner is on her.",
+  });
+  await make({
+    hostId: idOf("northloop"),
+    kind: "TRIP",
+    title: "Factory day in Porto",
+    description: "Watch a packaging line run from raw material to pallet, meet the plant manager, and ask what small first orders really cost to set up.",
+    place: "Porto",
+    startsAt: at(16, 8),
+    seats: 6,
+    forWho: "Founders making something physical who've been building lately",
+    fields: ["FOOD", "CONSUMER", "HARDWARE"],
+    buildingOnly: true,
+    costNote: "Northloop covers the visit. You book your own travel.",
+  });
+  const workshop = await make({
+    hostId: idOf("marcus"),
+    kind: "WORKSHOP",
+    title: "How a backer reads a first meeting",
+    description: "An hour on what backers actually listen for, why most first meetings end in a polite pass, and what a pass really means. Practice, not pitching.",
+    place: "Online",
+    startsAt: at(5, 17),
+    seats: 20,
+    forWho: "Any member",
+    costNote: "Free.",
+  });
+  await make({
+    hostId: idOf("admin"),
+    kind: "TRIP",
+    title: "Founder retreat, Sintra",
+    description: "Three days in a house in the hills with eleven other founders. Mornings for your own work, afternoons walking, evenings talking about what's hard.",
+    place: "Sintra",
+    startsAt: at(30, 10),
+    seats: 12,
+    forWho: "Founders with customers who've been building lately",
+    stages: ["FIRST_CUSTOMERS", "GROWING"],
+    buildingOnly: true,
+    costNote: "SELF covers the house. You cover your travel.",
+  });
+  await make({
+    hostId: idOf("hana"),
+    kind: "WORKSHOP",
+    title: "Certification without stalling the product",
+    description: "How to get clinical software certified in Germany while still shipping every week.",
+    place: "Berlin",
+    startsAt: at(12, 15),
+    seats: 10,
+    forWho: "Health founders",
+    fields: ["HEALTH"],
+  });
+  await db.opportunityRequest.create({
+    data: { opportunityId: workshop.id, userId: idOf("maya"), why: "We're about to meet our first backers and I want to hear what a pass means before I get one.", status: "PICKED", answeredAt: new Date(Date.now() - 20 * HOUR), createdAt: new Date(Date.now() - 2 * DAY) },
+  });
+  await db.opportunityRequest.create({ data: { opportunityId: dinner.id, userId: idOf("ana"), why: "Two hospitals signed and our oven can't keep up. I'd love to sit next to someone who has scaled a kitchen.", createdAt: new Date(Date.now() - 5 * HOUR) } });
+  await db.opportunityRequest.create({ data: { opportunityId: dinner.id, userId: idOf("joana"), why: "I'm starting a small food label and want to hear how others found their first shops.", createdAt: new Date(Date.now() - 2 * HOUR) } });
+}
+
+/*
+ * Capital, interest only. Maya and Ana share updates with backers; Priya
+ * follows Maya (her interest waits for Maya's answer, from seed-network).
+ */
+async function seedCapital(db: PrismaClient, idOf: (key: string) => string) {
+  const update = (who: string, text: string, daysAgo: number) =>
+    db.founderUpdate.create({ data: { authorId: idOf(who), text, createdAt: new Date(Date.now() - daysAgo * DAY) } });
+  await update("maya", "First sample run with Northloop is booked for the second week of November. Two spec gaps found early (wall thickness, lid seal) and being fixed now.", 6);
+  await update("maya", "Quoted our first restaurant group a single price per tray. They asked for samples for three of their kitchens.", 1);
+  await update("ana", "Second hospital signed for night deliveries. Now working out how to double the oven without losing the taste.", 3);
+  await db.profile.update({ where: { userId: idOf("maya") }, data: { openToBackers: true } });
+  await db.profile.update({ where: { userId: idOf("ana") }, data: { openToBackers: true } });
+  await db.follow.create({ data: { backerId: idOf("priya"), founderId: idOf("maya") } });
+  await db.follow.create({ data: { backerId: idOf("marcus"), founderId: idOf("ana") } });
 }

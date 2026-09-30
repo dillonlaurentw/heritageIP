@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applicationProblem, circleFor, circleName, dayOf, mentorAskProblem, newInviteCode, normaliseCode, weekOf } from "../app-rules";
+import { applicationProblem, circleFor, circleName, dayOf, fitSentence, mayHost, mentorAskProblem, newInviteCode, normaliseCode, opportunityFit, opportunityProblem, pickProblem, requestProblem, weekOf } from "../app-rules";
 
 describe("weekOf", () => {
   it("returns the Monday of the week", () => {
@@ -65,5 +65,45 @@ describe("applicationProblem", () => {
     expect(applicationProblem({ building: "short", lastWeek: "x".repeat(30) })).toMatch(/building/);
     expect(applicationProblem({ building: "x".repeat(30), lastWeek: "" })).toMatch(/last week/);
     expect(applicationProblem({ building: "x".repeat(30), lastWeek: "y".repeat(30) })).toBeNull();
+  });
+});
+
+describe("opportunityFit", () => {
+  const o = { fields: ["FOOD"], stages: ["FIRST_CUSTOMERS"], buildingOnly: false, hostId: "h" };
+  const maya = { id: "m", field: "FOOD", stage: "FIRST_CUSTOMERS", buildingLately: true };
+  it("fits and says why, in words", () => {
+    expect(opportunityFit(o, maya)).toEqual(["You build in food", "you're finding first customers"]);
+    expect(fitSentence(opportunityFit({ ...o, buildingOnly: true }, maya)!)).toBe("You build in food, you're finding first customers and you've been building these last two weeks.");
+  });
+  it("doesn't fit other fields, stages, quiet members or the host", () => {
+    expect(opportunityFit(o, { ...maya, field: "HEALTH" })).toBeNull();
+    expect(opportunityFit(o, { ...maya, stage: "IDEA" })).toBeNull();
+    expect(opportunityFit({ ...o, buildingOnly: true }, { ...maya, buildingLately: false })).toBeNull();
+    expect(opportunityFit(o, { ...maya, id: "h" })).toBeNull();
+  });
+  it("open ones fit everyone", () => {
+    expect(opportunityFit({ fields: [], stages: [], buildingOnly: false, hostId: "h" }, { id: "x", field: null, stage: null, buildingLately: false })).toEqual(["It's open to every member"]);
+  });
+});
+
+describe("opportunity rules", () => {
+  const now = new Date("2026-10-01T10:00:00Z");
+  it("requests need a reason and an open, future opportunity", () => {
+    const o = { startsAt: new Date("2026-10-10T19:00:00Z"), closedAt: null };
+    expect(requestProblem(o, "I'm pricing trays for restaurants and want to learn.", now)).toBeNull();
+    expect(requestProblem(o, "hi", now)).toMatch(/why/);
+    expect(requestProblem({ ...o, closedAt: now }, "a long enough reason here", now)).toMatch(/isn't taking/);
+    expect(requestProblem({ ...o, startsAt: now }, "a long enough reason here", now)).toMatch(/already happened/);
+  });
+  it("never overfills and never takes payments", () => {
+    expect(pickProblem(8, 7)).toBeNull();
+    expect(pickProblem(8, 8)).toMatch(/Every seat/);
+    const base = { title: "Food founder dinner", description: "Eight food founders, one long table, no pitching.", seats: 8, startsAt: new Date("2026-10-10T19:00:00Z") };
+    expect(opportunityProblem(base, now)).toBeNull();
+    expect(opportunityProblem({ ...base, costNote: "€40, pay through SELF" }, now)).toMatch(/doesn't take payments/);
+  });
+  it("hosts are mentors, partners, backers or admins", () => {
+    expect(mayHost(["MENTOR"])).toBe(true);
+    expect(mayHost(["BUILDER"])).toBe(false);
   });
 });

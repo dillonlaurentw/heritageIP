@@ -4,10 +4,11 @@
  * for "needs you".
  */
 import { router } from "expo-router";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import {
   ActivityIndicator,
   Pressable,
+  Switch,
   ScrollView,
   Text,
   TextInput,
@@ -286,6 +287,102 @@ export function Segmented<K extends string>({ value, options, onChange }: { valu
           </T>
         </Pressable>
       ))}
+    </View>
+  );
+}
+
+/** A selectable pill (filters, chips in forms). Ink when on. */
+export function Chip({ label, on, onPress }: { label: string; on?: boolean; onPress?: () => void }) {
+  const c = useColors();
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ selected: !!on }}
+      onPress={onPress}
+      style={{ paddingHorizontal: 14, height: 34, borderRadius: 17, justifyContent: "center", backgroundColor: on ? c.primary : c.surface, borderWidth: 1, borderColor: on ? c.primary : c.border }}
+    >
+      <T size={13} weight={on ? "medium" : "regular"} tone={on ? "inverse" : "fg"}>
+        {label}
+      </T>
+    </Pressable>
+  );
+}
+
+/** An ink switch with a label and a quiet line under it. */
+export function Toggle({ label, hint, value, onChange, disabled }: { label: string; hint?: string; value: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
+  const c = useColors();
+  return (
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+      <View style={{ flex: 1, gap: 2 }}>
+        <T weight="medium">{label}</T>
+        {hint && (
+          <T size={13} tone="muted">
+            {hint}
+          </T>
+        )}
+      </View>
+      <Switch
+        accessibilityLabel={label}
+        value={value}
+        onValueChange={onChange}
+        disabled={disabled}
+        trackColor={{ true: c.primary, false: c.borderStrong }}
+        thumbColor={c.surface}
+        {...({ activeThumbColor: c.surface } as object)}
+      />
+    </View>
+  );
+}
+
+/**
+ * "Write a note, send it": the one shape every request in SELF takes (ask a
+ * mentor, an intro, a hello, interest). Collapsed to a button until tapped.
+ */
+export function AskInline({ label, placeholder, hint, onSend, done }: { label: string; placeholder: string; hint?: string; onSend: (note: string) => Promise<void>; done?: string | null }) {
+  const [open, setOpen] = useState(false);
+  const [note, setNote] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  if (done)
+    return (
+      <T size={13} tone="subtle">
+        {done}
+      </T>
+    );
+  if (!open)
+    return (
+      <Button small variant="secondary" style={{ alignSelf: "flex-start" }} onPress={() => setOpen(true)}>
+        {label}
+      </Button>
+    );
+  return (
+    <View style={{ gap: 8 }}>
+      <Field autoFocus value={note} onChangeText={setNote} multiline placeholder={placeholder} hint={hint} />
+      <View style={{ flexDirection: "row", gap: 8 }}>
+        <Button
+          small
+          busy={busy}
+          disabled={note.trim().length < 15}
+          onPress={async () => {
+            setBusy(true);
+            setError("");
+            try {
+              await onSend(note);
+              setOpen(false);
+              setNote("");
+            } catch (e) {
+              setError((e as Error).message);
+            }
+            setBusy(false);
+          }}
+        >
+          Send
+        </Button>
+        <Button small variant="ghost" onPress={() => setOpen(false)}>
+          Cancel
+        </Button>
+      </View>
+      <ErrorLine>{error}</ErrorLine>
     </View>
   );
 }

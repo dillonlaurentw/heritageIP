@@ -51,6 +51,11 @@ model User {
   circleSeat         CircleMember?
   circleMessages     CircleMessage[]
   journal            JournalMessage[]
+  hosting            Opportunity[]
+  opportunityAsks    OpportunityRequest[]
+  updates            FounderUpdate[]
+  following          Follow[]                @relation("FollowBacker")
+  followers          Follow[]                @relation("FollowFounder")
 
   @@map("user")
 }
@@ -159,6 +164,8 @@ model Profile {
   /// What they build in and how far along: used only to match circles.
   buildField     String? // FOOD, CLIMATE, HEALTH, MONEY, SOFTWARE, CONSUMER, HARDWARE, OTHER (app-rules FIELDS)
   buildStage     String? // IDEA, BUILDING, FIRST_CUSTOMERS, GROWING (app-rules STAGES)
+  /// Founder chose to let backers on SELF see their shared updates. Off by default.
+  openToBackers  Boolean      @default(false)
   simOptIn       Boolean      @default(false)
   simOptInAt     DateTime?
   backerNote     String? // what they back. Never amounts or terms.
@@ -920,4 +927,93 @@ model JournalMessage {
   createdAt DateTime    @default(now())
 
   @@index([userId, day])
+}
+
+// ─────────────────────────────────────────────────────────────
+// The SELF app, stage 2+: opportunities, capital (interest only).
+// ─────────────────────────────────────────────────────────────
+
+enum OpportunityKind {
+  DINNER
+  TRIP
+  WORKSHOP
+  EVENT
+  INTRO_DAY
+}
+
+/// Something a host offers a few members: a dinner, a trip, a workshop, a
+/// seat at an event. Selective, never pay-to-play; SELF takes no payments
+/// (hosts cover costs, or people pay through an outside link).
+model Opportunity {
+  id           String               @id @default(cuid())
+  hostId       String
+  host         User                 @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  kind         OpportunityKind
+  title        String
+  description  String
+  place        String // "Lisbon" · "Online"
+  startsAt     DateTime
+  seats        Int
+  /// Who it's for, in words ("Food founders finding first customers").
+  forWho       String
+  fields       String[] // empty = any field (app-rules FIELDS)
+  stages       String[] // empty = any stage (app-rules STAGES)
+  /// Only for people who've been building lately (journal or circle, last 14 days).
+  buildingOnly Boolean              @default(false)
+  /// What it costs and who pays, in words. SELF never takes the money.
+  costNote     String?
+  closedAt     DateTime? // host stopped taking requests
+  requests     OpportunityRequest[]
+  createdAt    DateTime             @default(now())
+
+  @@index([startsAt])
+}
+
+enum OpportunityRequestStatus {
+  PENDING
+  PICKED
+  NOT_THIS_TIME
+  WITHDRAWN
+}
+
+/// "I'd like to come": one line on why. The host picks.
+model OpportunityRequest {
+  id            String                   @id @default(cuid())
+  opportunityId String
+  opportunity   Opportunity              @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  why           String
+  status        OpportunityRequestStatus @default(PENDING)
+  answeredAt    DateTime?
+  createdAt     DateTime                 @default(now())
+
+  @@unique([opportunityId, userId])
+  @@index([userId])
+}
+
+/// A progress update a founder chooses to share with backers (never the
+/// journal). Checked with mentionsTerms(): no amounts, valuations or terms.
+model FounderUpdate {
+  id        String   @id @default(cuid())
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  text      String
+  createdAt DateTime @default(now())
+
+  @@index([authorId, createdAt])
+}
+
+/// A backer following a founder's shared updates. Following is not interest:
+/// interest is a BACKER_INTEREST signal the founder answers.
+model Follow {
+  id        String   @id @default(cuid())
+  backerId  String
+  backer    User     @relation("FollowBacker", fields: [backerId], references: [id], onDelete: Cascade)
+  founderId String
+  founder   User     @relation("FollowFounder", fields: [founderId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([backerId, founderId])
+  @@index([founderId])
 }

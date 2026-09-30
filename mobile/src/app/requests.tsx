@@ -6,7 +6,7 @@ import { api } from "@/lib/api";
 import { ago, firstName } from "@/lib/time";
 import { useLoad } from "@/lib/useLoad";
 
-/** For mentors: founders who asked for your help. Yes opens a conversation. */
+/** Everything waiting for your answer: mentorship, backer interest, intros, hellos. Yes opens a conversation. */
 export default function Requests() {
   const { data, error, reload } = useLoad(api.requests);
   const [busy, setBusy] = useState<string | null>(null);
@@ -28,8 +28,8 @@ export default function Requests() {
 
   return (
     <Screen back>
-      <Title>Asked for your help</Title>
-      {data.requests.length === 0 && <T tone="muted">Nothing waiting. When a founder asks you to mentor them, it shows up here.</T>}
+      <Title>Waiting for your answer</Title>
+      {data.requests.length === 0 && <T tone="muted">Nothing waiting. Requests for your help, interest and intros show up here.</T>}
       {data.requests.map((r) => (
         <Card key={r.id} style={{ gap: 12 }}>
           <View style={{ flexDirection: "row", gap: 12, alignItems: "center" }}>
@@ -44,6 +44,9 @@ export default function Requests() {
               {ago(r.at)}
             </T>
           </View>
+          <T size={13} tone="subtle">
+            {firstName(r.from.name)} {r.asks}
+          </T>
           <T>{r.note}</T>
           <View style={{ flexDirection: "row", gap: 8 }}>
             <Button small busy={busy === r.id} onPress={() => answer(r.id, "yes")}>
@@ -54,7 +57,9 @@ export default function Requests() {
             </Button>
           </View>
           <T size={12} tone="subtle">
-            A yes opens a conversation with {firstName(r.from.name)} and shares contact details both ways.
+            {r.concierge
+              ? "As SELF's concierge, a yes emails the intro to both sides."
+              : `A yes opens a conversation with ${firstName(r.from.name)} and shares contact details both ways.`}
           </T>
         </Card>
       ))}

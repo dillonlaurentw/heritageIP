@@ -110,3 +110,77 @@ export function applicationProblem(a: { building: string; lastWeek: string }): s
   if (a.building.length > 1000 || a.lastWeek.length > 1000) return "Keep each answer under 1,000 characters.";
   return null;
 }
+
+// ── Opportunities ────────────────────────────────────────────
+
+export const OPPORTUNITY_KINDS = {
+  DINNER: "Founder dinner",
+  TRIP: "Trip",
+  WORKSHOP: "Workshop",
+  EVENT: "A seat at an event",
+  INTRO_DAY: "Intro day",
+} as const;
+
+/** Who may host: mentors, partners, backers and SELF's admins. Never paid placement. */
+export const mayHost = (roles: string[]) => roles.some((r) => r === "MENTOR" || r === "PARTNER" || r === "BACKER" || r === "ADMIN");
+
+type OppFit = { fields: string[]; stages: string[]; buildingOnly: boolean; hostId: string };
+type Person = { id: string; field: string | null; stage: string | null; buildingLately: boolean };
+
+/**
+ * Does an opportunity fit this person, and why? Returns the reasons in words
+ * (shown to them: "You build in food", …) or null when it isn't for them.
+ * Never a score: it fits or it doesn't, and it says why.
+ */
+export function opportunityFit(o: OppFit, p: Person): string[] | null {
+  if (o.hostId === p.id) return null;
+  const why: string[] = [];
+  if (o.fields.length) {
+    if (!p.field || !o.fields.includes(p.field)) return null;
+    why.push(`You build in ${(FIELDS[p.field as Field] ?? p.field).toLowerCase()}`);
+  }
+  if (o.stages.length) {
+    if (!p.stage || !o.stages.includes(p.stage)) return null;
+    why.push(`you're ${(STAGES[p.stage as Stage] ?? p.stage).toLowerCase()}`);
+  }
+  if (o.buildingOnly) {
+    if (!p.buildingLately) return null;
+    why.push("you've been building these last two weeks");
+  }
+  if (!why.length) why.push("It's open to every member");
+  return why;
+}
+
+/** "You build in food, you're finding first customers and …" */
+export function fitSentence(why: string[]): string {
+  const [first, ...rest] = why;
+  if (!first) return "";
+  const head = first[0]!.toUpperCase() + first.slice(1);
+  if (!rest.length) return `${head}.`;
+  return `${head}${rest.length > 1 ? `, ${rest.slice(0, -1).join(", ")}` : ""} and ${rest[rest.length - 1]}.`;
+}
+
+/** Can this person ask to come? */
+export function requestProblem(o: { startsAt: Date; closedAt: Date | null }, why: string, now: Date): string | null {
+  if (o.closedAt) return "The host isn't taking requests for this one any more.";
+  if (o.startsAt.getTime() <= now.getTime()) return "This one has already happened.";
+  const t = why.trim();
+  if (t.length < 15) return "Say in a line why you'd like to come.";
+  if (t.length > 500) return "Keep it to a few lines.";
+  return null;
+}
+
+/** Can the host pick one more person? */
+export function pickProblem(seats: number, picked: number): string | null {
+  return picked >= seats ? "Every seat is taken. Add a seat, or say not this time." : null;
+}
+
+/** An opportunity the host is creating: sensible, and no money asked through SELF. */
+export function opportunityProblem(o: { title: string; description: string; seats: number; startsAt: Date; costNote?: string | null }, now: Date): string | null {
+  if (o.title.trim().length < 4) return "Give it a short title.";
+  if (o.description.trim().length < 20) return "Say a little about what it is.";
+  if (!Number.isInteger(o.seats) || o.seats < 1 || o.seats > 200) return "Seats should be between 1 and 200.";
+  if (o.startsAt.getTime() <= now.getTime()) return "Pick a date in the future.";
+  if (o.costNote && /pay (via|through|on) self|self (collects|charges)/i.test(o.costNote)) return "SELF doesn't take payments. Say who covers the cost, or link to where people pay.";
+  return null;
+}
