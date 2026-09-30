@@ -1,17 +1,23 @@
 /**
  * Xcode 26 compatibility for Expo SDK 57 (runs after `npm install`).
  *
- * expo-modules-jsi 57.0.5+ marks RuntimeScheduler's constructors with
- * SWIFT_RETURNS_RETAINED so the build is clean on Xcode 27. Xcode 26's Swift
- * compiler rejects that mark on constructors ("'RuntimeScheduler' cannot be
- * annotated with either SWIFT_RETURNS_RETAINED or SWIFT_RETURNS_UNRETAINED"),
- * so the iOS build fails. Xcode 26's compiler also reports "sending '…' risks
- * causing data races" as errors in JavaScriptRuntime.swift under Swift 6 mode.
- * On a Mac whose Xcode is older than 27: remove the mark from those two
- * constructors, and build the ExpoModulesJSI pod in Swift 5 mode (those checks
- * become warnings) with the other Swift 6 features it relies on switched on
- * (bare /regex/ literals, isolated default values, ...). Does nothing anywhere else, and is safe to run twice.
- * After upgrading to Xcode 27, delete node_modules and reinstall.
+ * expo-modules-jsi is written for Xcode 27's Swift compiler. Xcode 26's
+ * compiler trips over it in two places:
+ *
+ * 1. RuntimeScheduler's constructors are marked SWIFT_RETURNS_RETAINED, which
+ *    Xcode 26 rejects on constructors. Remove the mark.
+ * 2. JavaScriptRuntime.swift hands raw JSI pointers into a synchronous
+ *    `assumeIsolated` closure through `nonisolated(unsafe) let` copies. Xcode 26
+ *    still reports "sending '…' risks causing data races" for those. Carry
+ *    them in a small `@unchecked Sendable` box instead (same meaning: the
+ *    pointers never leave the synchronous call).
+ *
+ * The module stays in Swift 6 mode, so it matches ExpoModulesCore exactly.
+ * (Building it in Swift 5 mode compiled, but changed function signatures and
+ * crashed at launch with "Symbol not found".)
+ *
+ * Only on a Mac whose Xcode is older than 27; does nothing anywhere else and is
+ * safe to run twice. After upgrading to Xcode 27, delete node_modules and reinstall.
  */
 const { execSync } = require("node:child_process");
 const fs = require("node:fs");
@@ -45,30 +51,29 @@ function patch(file, from, to) {
   }
 }
 
+// 1. RuntimeScheduler constructors.
 patch(path.join(jsi, "Sources", "ExpoModulesJSI-Cxx", "include", "RuntimeScheduler.h"), /SWIFT_RETURNS_RETAINED (RuntimeScheduler\()/g, "$1");
-patch(path.join(jsi, "ExpoModulesJSI.podspec"), /s\.swift_version(\s*)= '6\.0'/, "s.swift_version$1= '5.0'");
-const FEATURES = [
-  "BareSlashRegexLiterals",
-  "IsolatedDefaultValues",
-  "DisableOutwardActorInference",
-  "GlobalActorIsolatedTypesUsability",
-  "InferSendableFromCaptures",
-  "ConciseMagicFile",
-  "ForwardTrailingClosures",
-  "ImplicitOpenExistentials",
-  "ImportObjcForwardDeclarations",
-  "DeprecateApplicationMain",
-];
-const flags = FEATURES.map((f) => `-enable-upcoming-feature ${f}`).join(" ");
-patch(path.join(jsi, "ExpoModulesJSI.podspec"), /(s\.pod_target_xcconfig = \{\n    'USE_HEADERMAP' => 'YES',\n)(?!    'OTHER_SWIFT_FLAGS')/, `$1    'OTHER_SWIFT_FLAGS' => '$(inherited) ${flags}',\n`);
-// The same two Swift 6 features, fixed in the source too (so it builds whatever the flags do):
-// an extended #/regex/# literal works in Swift 5 mode, and the actor-isolated state is created
-// inside the (actor-isolated) initializers instead of as a default value.
-const src = path.join(jsi, "Sources", "ExpoModulesJSI", "Runtime");
-patch(path.join(src, "JavaScriptRuntime.swift"), "name.wholeMatch(of: /^[a-zA-Z_$][a-zA-Z0-9_$]*$/)", "name.wholeMatch(of: #/^[a-zA-Z_$][a-zA-Z0-9_$]*$/#)");
-const promise = path.join(src, "Values", "JavaScriptPromise.swift");
-patch(promise, "private let longLivedState = LongLivedState()", "private let longLivedState: LongLivedState");
-patch(promise, /(\n    self\.runtime = runtime\n)(?!    self\.longLivedState)/g, "$1    self.longLivedState = LongLivedState()\n");
-patch(path.join(jsi, "Package.swift"), /swiftLanguageModes: \[\.v6\]/, "swiftLanguageModes: [.v5]");
+
+// 2. Box the call-scoped pointers.
+const BOX = "SELFXcode26Box";
+patch(path.join(jsi, "Sources", "ExpoModulesJSI", "Runtime", "JavaScriptRuntime.swift"), /[\s\S]*/, (src) => {
+  if (src.includes(BOX)) return src;
+  return (
+    src
+      .replace(/nonisolated\(unsafe\) let (resultPtr|thisPtr|argumentsPtr) = \1\n/g, `let $1 = ${BOX}($1)\n`)
+      .replace(/writeJSIValue\(to: resultPtr\)/g, "writeJSIValue(to: resultPtr.value)")
+      .replace(/UnsafeMutablePointer\(mutating: thisPtr\)/g, "UnsafeMutablePointer(mutating: thisPtr.value)")
+      .replace(/start: argumentsPtr, count:/g, "start: argumentsPtr.value, count:")
+      .replace(/JavaScriptUnownedValue\(runtime\.pointee, thisPtr\)/g, "JavaScriptUnownedValue(runtime.pointee, thisPtr.value)") +
+    `
+/// Added by SELF's scripts/xcode26-compat.js: carries a call-scoped pointer into the synchronous
+/// \`assumeIsolated\` closure, which Xcode 26's compiler won't accept as a \`nonisolated(unsafe)\` copy.
+private struct ${BOX}<T>: @unchecked Sendable {
+  let value: T
+  init(_ value: T) { self.value = value }
+}
+`
+  );
+});
 
 if (changed) console.log(`SELF: adjusted expo-modules-jsi for Xcode ${major} (see scripts/xcode26-compat.js).`);
