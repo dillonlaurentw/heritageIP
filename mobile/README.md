@@ -22,6 +22,31 @@ falls back to typing (the keyboard's own mic still works). The web server
 (`npm run dev` in the repo root) must be running. In development the sign-in
 screen offers "Demo · sign in as" for the seed people.
 
+## Run it in Xcode on your Mac
+
+You need a Mac with Xcode (free from the Mac App Store; open it once so it
+finishes installing), Node 20.19+ or 22.13+, and CocoaPods (`brew install cocoapods`).
+
+1. The app needs SELF's server. Either run it on the same Mac (repo root:
+   `npm install`, set up `.env`, `npx prisma migrate deploy`, `npm run db:seed`,
+   `npm run dev`), or point the app at your demo site:
+   `export EXPO_PUBLIC_API_URL=https://your-demo-site.vercel.app`.
+2. In `mobile/`: `npm install`, then `npm run xcode`. This creates the `ios/`
+   folder (the Xcode project, not committed) and opens it in Xcode.
+3. In another Terminal window, in `mobile/`: `npx expo start` (it sends the
+   app's code to the phone while you work).
+4. In Xcode, pick an iPhone simulator at the top and press Run (▶).
+
+Shortcut instead of steps 2 to 4: `npm run ios:run` builds and opens the
+simulator in one go.
+
+On your own iPhone: plug it in, pick it at the top of Xcode, and under the
+SELF target → Signing & Capabilities choose your Apple ID as the Team. A free
+Apple ID works (the app lasts 7 days before you run it again). Your phone and
+Mac must be on the same Wi-Fi, and `EXPO_PUBLIC_API_URL` must be your Mac's
+address (like `http://192.168.1.20:3000`) or your demo site, not `localhost`.
+Push notifications need the paid Apple account and the EAS setup below.
+
 ## Web preview
 
 `npm run export:web` builds the app into `../public/app`, so the web server

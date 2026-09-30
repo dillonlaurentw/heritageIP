@@ -44,7 +44,9 @@
     "android": "expo start --android",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
-    "export:web": "EXPO_PUBLIC_DEMO=${EXPO_PUBLIC_DEMO:-1} expo export --platform web --output-dir ../public/app"
+    "export:web": "EXPO_PUBLIC_DEMO=${EXPO_PUBLIC_DEMO:-1} expo export --platform web --output-dir ../public/app",
+    "xcode": "expo prebuild --platform ios && xed ios",
+    "ios:run": "expo run:ios"
   },
   "private": true
 }
