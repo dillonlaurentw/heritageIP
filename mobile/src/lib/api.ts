@@ -2,12 +2,19 @@
  * The app talks to SELF's server at /api/m/* with a bearer token. Everything
  * that matters (who may see what, contact details, caps) is checked there.
  */
+import Constants from "expo-constants";
 import { Platform } from "react-native";
 import type { RingNode } from "./ring";
 import { tokenStore } from "./storage";
 
-/** Same origin on the web preview; set EXPO_PUBLIC_API_URL for phones. */
-export const API_URL = (process.env.EXPO_PUBLIC_API_URL ?? (Platform.OS === "web" ? "" : "http://localhost:3000")).replace(/\/$/, "");
+/** In development on a phone, the computer running Metro (it also runs the server on :3000). */
+function devServer() {
+  const host = Constants.expoConfig?.hostUri?.split(":")[0];
+  return host ? `http://${host}:3000` : "http://localhost:3000";
+}
+
+/** Same origin on the web preview; EXPO_PUBLIC_API_URL wins everywhere else. */
+export const API_URL = (process.env.EXPO_PUBLIC_API_URL ?? (Platform.OS === "web" ? "" : devServer())).replace(/\/$/, "");
 export const DEMO = process.env.EXPO_PUBLIC_DEMO === "1" || __DEV__;
 
 export class ApiError extends Error {
