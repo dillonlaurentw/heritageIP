@@ -61,6 +61,14 @@ const FEATURES = [
 ];
 const flags = FEATURES.map((f) => `-enable-upcoming-feature ${f}`).join(" ");
 patch(path.join(jsi, "ExpoModulesJSI.podspec"), /(s\.pod_target_xcconfig = \{\n    'USE_HEADERMAP' => 'YES',\n)(?!    'OTHER_SWIFT_FLAGS')/, `$1    'OTHER_SWIFT_FLAGS' => '$(inherited) ${flags}',\n`);
+// The same two Swift 6 features, fixed in the source too (so it builds whatever the flags do):
+// an extended #/regex/# literal works in Swift 5 mode, and the actor-isolated state is created
+// inside the (actor-isolated) initializers instead of as a default value.
+const src = path.join(jsi, "Sources", "ExpoModulesJSI", "Runtime");
+patch(path.join(src, "JavaScriptRuntime.swift"), "name.wholeMatch(of: /^[a-zA-Z_$][a-zA-Z0-9_$]*$/)", "name.wholeMatch(of: #/^[a-zA-Z_$][a-zA-Z0-9_$]*$/#)");
+const promise = path.join(src, "Values", "JavaScriptPromise.swift");
+patch(promise, "private let longLivedState = LongLivedState()", "private let longLivedState: LongLivedState");
+patch(promise, /(\n    self\.runtime = runtime\n)(?!    self\.longLivedState)/g, "$1    self.longLivedState = LongLivedState()\n");
 patch(path.join(jsi, "Package.swift"), /swiftLanguageModes: \[\.v6\]/, "swiftLanguageModes: [.v5]");
 
 if (changed) console.log(`SELF: adjusted expo-modules-jsi for Xcode ${major} (see scripts/xcode26-compat.js).`);
