@@ -5,6 +5,7 @@ import { sendEmail } from "../email";
 import { pairKey } from "../message-rules";
 import { actOnSignal } from "../network";
 import type { Viewer } from "../session";
+import { blockedIds, blockedBetween } from "./safety";
 
 type Fail = { ok: false; message: string };
 const appUrl = () => process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
@@ -50,8 +51,9 @@ export async function listMentors(viewerId: string) {
     orderBy: [{ mentorOpen: "desc" }, { updatedAt: "desc" }],
     select: { userId: true, headline: true, focusAreas: true, mentorNote: true, mentorOpen: true, user: { select: { name: true } } },
   });
+  const blocked = await blockedIds(viewerId);
   const states = await askStates(viewerId, mentors.map((m) => m.userId));
-  return mentors.map((m) => ({
+  return mentors.filter((m) => !blocked.has(m.userId)).map((m) => ({
     id: m.userId,
     name: m.user.name,
     headline: m.headline,
@@ -67,7 +69,7 @@ export async function mentorDetail(mentorId: string, viewerId: string) {
     where: { userId: mentorId, roles: { has: "MENTOR" } },
     select: { userId: true, headline: true, location: true, focusAreas: true, mentorNote: true, mentorOpen: true, user: { select: { name: true } } },
   });
-  if (!m) return null;
+  if (!m || (await blockedBetween(viewerId, mentorId))) return null;
   const states = await askStates(viewerId, [mentorId]);
   return {
     id: m.userId,
@@ -88,7 +90,7 @@ export async function askMentor(viewer: Viewer, mentorId: string, note: string):
   if (mentorId === viewer.user.id) return { ok: false, message: "You can't mentor yourself." };
   const mentor = await db.profile.findUnique({ where: { userId: mentorId }, select: { roles: true, mentorOpen: true, user: { select: { name: true, email: true } } } });
   if (!mentor || !mentor.roles.includes("MENTOR")) return { ok: false, message: "That person isn't a mentor on SELF." };
-  if (!mentor.mentorOpen) return { ok: false, message: `${mentor.user.name} isn't taking new requests right now.` };
+  if (!mentor.mentorOpen || (await blockedBetween(viewer.user.id, mentorId))) return { ok: false, message: `${mentor.user.name} isn't taking new requests right now.` };
   const live = await db.signal.count({ where: { kind: "MENTOR_REQUEST", fromUserId: viewer.user.id, toUserId: mentorId, status: { in: ["PENDING", "ACCEPTED"] } } });
   if (live) return { ok: false, message: `You've already asked ${mentor.user.name}.` };
 

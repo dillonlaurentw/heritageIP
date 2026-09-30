@@ -12,11 +12,11 @@ export default function You() {
   const col = useColors();
   const { me, signOut } = useSession();
   const { data, error, reload } = useLoad(async () => {
-    const [self, inv, today] = await Promise.all([api.self(), api.invites(), api.today()]);
-    return { self, invites: inv.invites, today };
+    const [self, inv, today, blocks] = await Promise.all([api.self(), api.invites(), api.today(), api.blocked()]);
+    return { self, invites: inv.invites, today, blocked: blocks.blocked };
   });
   if (!data) return error ? <Screen><ErrorLine>{error}</ErrorLine></Screen> : <Loading />;
-  const { self, invites, today } = data as { self: SelfDoc; invites: Invite[]; today: Today };
+  const { self, invites, today, blocked } = data as { self: SelfDoc; invites: Invite[]; today: Today; blocked: { id: string; name: string }[] };
   const answer = async (type: "accept" | "reject", id: string) => {
     await api.changeSelf({ type, id }).catch(() => {});
     await reload();
@@ -115,9 +115,32 @@ export default function You() {
         </Card>
       </View>
 
+      {blocked.length > 0 && (
+        <View style={{ gap: 10 }}>
+          <Eyebrow>Blocked</Eyebrow>
+          <Card style={{ padding: 0 }}>
+            {blocked.map((b, n) => (
+              <View key={b.id} style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 14, borderTopWidth: n ? 1 : 0, borderColor: col.border }}>
+                <T>{b.name}</T>
+                <Pressable onPress={async () => { await api.setBlock(b.id, false).catch(() => {}); await reload(); }}>
+                  <T size={13} tone="muted">
+                    Unblock
+                  </T>
+                </Pressable>
+              </View>
+            ))}
+          </Card>
+        </View>
+      )}
+
       <Button variant="secondary" onPress={signOut}>
         Sign out
       </Button>
+      <Pressable onPress={() => router.push("/delete-account")} style={{ alignSelf: "center", padding: 8 }}>
+        <T size={13} tone="subtle">
+          Delete my account
+        </T>
+      </Pressable>
     </Screen>
   );
 }

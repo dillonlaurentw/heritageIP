@@ -5,6 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { ErrorLine, Loading, Screen, T } from "@/components/ui";
 import { api, type Thread } from "@/lib/api";
 import { font, useColors } from "@/lib/theme";
+import { openReport } from "@/lib/report";
 import { ago } from "@/lib/time";
 
 /** One conversation. Polls every 4 seconds while open, like the web. */
@@ -49,7 +50,18 @@ export default function ThreadScreen() {
   };
 
   return (
-    <Screen back title={t.other.name} scroll={false}>
+    <Screen
+      back
+      title={t.other.name}
+      scroll={false}
+      right={
+        <Pressable accessibilityRole="button" accessibilityLabel={`Report or block ${t.other.name}`} hitSlop={10} onPress={() => openReport({ kind: "PERSON", name: t.other.name, userId: t.other.id })}>
+          <T size={13} tone="subtle">
+            Report
+          </T>
+        </Pressable>
+      }
+    >
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <ScrollView ref={scroll} onContentSizeChange={() => scroll.current?.scrollToEnd({ animated: false })} contentContainerStyle={{ padding: 20, gap: 8 }}>
           {t.other.headline && (
@@ -60,7 +72,7 @@ export default function ThreadScreen() {
           {t.messages.map((m) => {
             const mine = m.authorId === t.me;
             return (
-              <View key={m.id} style={{ alignSelf: mine ? "flex-end" : "flex-start", maxWidth: "82%", gap: 2 }}>
+              <Pressable key={m.id} onLongPress={mine ? undefined : () => openReport({ kind: "MESSAGE", name: t.other.name, targetId: m.id })} style={{ alignSelf: mine ? "flex-end" : "flex-start", maxWidth: "82%", gap: 2 }}>
                 <View style={{ backgroundColor: mine ? c.primary : c.surface, borderRadius: 18, paddingHorizontal: 14, paddingVertical: 9 }}>
                   <T size={15} tone={mine ? "inverse" : "fg"}>
                     {m.kind === "TEXT" ? m.text : m.text || "Proposed a trial week"}
@@ -69,7 +81,7 @@ export default function ThreadScreen() {
                 <T size={11} tone="subtle" style={{ alignSelf: mine ? "flex-end" : "flex-start", paddingHorizontal: 6 }}>
                   {ago(m.at)}
                 </T>
-              </View>
+              </Pressable>
             );
           })}
           <ErrorLine>{error}</ErrorLine>

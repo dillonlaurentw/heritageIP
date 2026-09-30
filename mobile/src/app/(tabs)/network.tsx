@@ -1,9 +1,10 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { ScrollView, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 import { AskInline, Avatar, Button, Card, Chip, ErrorLine, Eyebrow, Field, Loading, Screen, T, Title, Toggle } from "@/components/ui";
 import { api, type State } from "@/lib/api";
 import { useColors } from "@/lib/theme";
+import { openReport } from "@/lib/report";
 import { ago, firstName, when } from "@/lib/time";
 import { useLoad } from "@/lib/useLoad";
 
@@ -190,6 +191,7 @@ function CoFounders() {
               await reload();
             }}
           />
+          <ReportLink onPress={() => openReport({ kind: "PERSON", name: p.name, userId: p.id })} />
         </Card>
       ))}
     </View>
@@ -362,8 +364,17 @@ function BackerView() {
               await reload();
             }}
           />
+          <ReportLink onPress={() => openReport(f.updates[0] ? { kind: "UPDATE", name: f.name, targetId: f.updates[0].id } : { kind: "PERSON", name: f.name, userId: f.id })} />
         </Card>
       ))}
     </>
   );
 }
+
+const ReportLink = ({ onPress }: { onPress: () => void }) => (
+  <Pressable onPress={onPress} hitSlop={8} style={{ alignSelf: "flex-end" }}>
+    <T size={12} tone="subtle">
+      Report
+    </T>
+  </Pressable>
+);

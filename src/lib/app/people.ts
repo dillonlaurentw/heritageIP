@@ -5,6 +5,7 @@ import { sendEmail } from "../email";
 import { conciergeUserId } from "../network";
 import { CATEGORY_COPY, type PartnerCategory } from "../partner-categories";
 import type { Viewer } from "../session";
+import { blockedBetween, blockedIds } from "./safety";
 
 type Fail = { ok: false; message: string };
 const appUrl = () => process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
@@ -56,6 +57,7 @@ export async function askPartner(viewer: Viewer, partnerId: string, note: string
   const firm = await db.partner.findUnique({ where: { id: partnerId }, select: { id: true, name: true, claimedById: true } });
   if (!firm) return { ok: false, message: "That partner doesn't exist." };
   if (firm.claimedById === viewer.user.id) return { ok: false, message: "That's your own firm." };
+  if (firm.claimedById && (await blockedBetween(viewer.user.id, firm.claimedById))) return { ok: false, message: `${firm.name} isn't taking intros right now.` };
   const live = await db.signal.count({ where: { kind: "PARTNER_INTRO", fromUserId: viewer.user.id, partnerId, status: { in: ["PENDING", "ACCEPTED"] } } });
   if (live) return { ok: false, message: `You've already asked for an intro to ${firm.name}.` };
   const toUserId = firm.claimedById ?? (await conciergeUserId());
@@ -102,7 +104,9 @@ export async function coFounders(viewer: Viewer) {
     select: { fromUserId: true, toUserId: true, status: true },
   });
   const mine = viewer.profile.buildField;
+  const blocked = await blockedIds(uid);
   return people
+    .filter((p) => !blocked.has(p.userId))
     .map((p) => ({
       id: p.userId,
       name: p.user.name,
@@ -124,7 +128,7 @@ export async function sayHello(viewer: Viewer, personId: string, note: string): 
   if (body.length < 20) return { ok: false, message: "Say what you're building and why you'd like to talk." };
   if (personId === viewer.user.id) return { ok: false, message: "That's you." };
   const p = await db.profile.findUnique({ where: { userId: personId }, select: { openToMatches: true, user: { select: { name: true, email: true } } } });
-  if (!p?.openToMatches) return { ok: false, message: "They aren't open to new conversations right now." };
+  if (!p?.openToMatches || (await blockedBetween(viewer.user.id, personId))) return { ok: false, message: "They aren't open to new conversations right now." };
   const live = await db.signal.count({
     where: {
       kind: "ROLE_INVITE",

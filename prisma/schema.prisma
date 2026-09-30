@@ -55,6 +55,11 @@ model User {
   opportunityAsks    OpportunityRequest[]
   updates            FounderUpdate[]
   following          Follow[]                @relation("FollowBacker")
+  blocking           Block[]                 @relation("Blocker")
+  blockedBy          Block[]                 @relation("Blocked")
+  reportsMade        Report[]                @relation("Reporter")
+  reportsAbout       Report[]                @relation("ReportedUser")
+  pushTokens         PushToken[]
   followers          Follow[]                @relation("FollowFounder")
 
   @@map("user")
@@ -1016,4 +1021,71 @@ model Follow {
 
   @@unique([backerId, founderId])
   @@index([founderId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Safety: block, report, and push tokens.
+// ─────────────────────────────────────────────────────────────
+
+/// One person blocking another. Either direction stops messages and requests
+/// between them and hides each from the other's lists. Never shown to the
+/// blocked person.
+model Block {
+  id        String   @id @default(cuid())
+  blockerId String
+  blocker   User     @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blockedId String
+  blocked   User     @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([blockerId, blockedId])
+  @@index([blockedId])
+}
+
+enum ReportKind {
+  PERSON
+  MESSAGE
+  CIRCLE_MESSAGE
+  OPPORTUNITY
+  UPDATE
+}
+
+enum ReportStatus {
+  OPEN
+  RESOLVED
+}
+
+/// Someone reported a person or something they wrote. `excerpt` is a copy of
+/// the reported text at the time (so admins can judge it; journals can never
+/// be reported, they're private).
+model Report {
+  id           String       @id @default(cuid())
+  reporterId   String
+  reporter     User         @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  targetUserId String
+  targetUser   User         @relation("ReportedUser", fields: [targetUserId], references: [id], onDelete: Cascade)
+  kind         ReportKind
+  targetId     String? // the message / opportunity / update id
+  excerpt      String?
+  reason       String // HARASSMENT, SPAM, SCAM, INAPPROPRIATE, MONEY, OTHER
+  note         String?
+  status       ReportStatus @default(OPEN)
+  resolution   String? // what the admin did, in words
+  resolvedAt   DateTime?
+  createdAt    DateTime     @default(now())
+
+  @@index([status, createdAt])
+}
+
+/// An Expo push token for one of someone's phones.
+model PushToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  platform  String? // ios | android
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }

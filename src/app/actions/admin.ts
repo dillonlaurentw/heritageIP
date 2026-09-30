@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAdmin, setPartnerFeatured, setPartnerManager, setWorkspaceFeatured } from "@/lib/admin";
 import { reviewApplication } from "@/lib/app/access";
+import { resolveReport } from "@/lib/app/safety";
 
 const id = z.string().min(1).max(64);
 
@@ -33,5 +34,14 @@ export async function answerApplication(applicationId: string, approve: boolean)
   await requireAdmin();
   const res = await reviewApplication(id.parse(applicationId), z.boolean().parse(approve));
   revalidatePath("/admin/applications");
+  return res;
+}
+
+/** Close a report: optionally remove the content and/or suspend the person. */
+export async function answerReport(reportId: string, input: { removeContent: boolean; suspend: boolean; resolution: string }) {
+  await requireAdmin();
+  const b = z.object({ removeContent: z.boolean(), suspend: z.boolean(), resolution: z.string().max(500) }).parse(input);
+  const res = await resolveReport(id.parse(reportId), b);
+  revalidatePath("/admin/reports");
   return res;
 }

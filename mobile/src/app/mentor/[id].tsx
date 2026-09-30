@@ -3,6 +3,7 @@ import { useState } from "react";
 import { View } from "react-native";
 import { Avatar, Button, Card, ErrorLine, Field, Loading, Screen, T, Title } from "@/components/ui";
 import { api } from "@/lib/api";
+import { openReport } from "@/lib/report";
 import { ago, firstName } from "@/lib/time";
 import { useLoad } from "@/lib/useLoad";
 
@@ -89,6 +90,9 @@ export default function MentorScreen() {
           <ErrorLine>{err}</ErrorLine>
         </Card>
       )}
+      <Button variant="ghost" small style={{ alignSelf: "center" }} onPress={() => openReport({ kind: "PERSON", name: m.name, userId: m.id })}>
+        Report or block
+      </Button>
     </Screen>
   );
 }

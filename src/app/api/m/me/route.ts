@@ -1,5 +1,6 @@
 import { FIELDS, STAGES, type Field, type Stage } from "@/lib/app-rules";
 import { placeInCircle } from "@/lib/app/access";
+import { deleteAccount } from "@/lib/app/safety";
 import { z } from "zod";
 import { appViewer, body, fail, ok } from "@/lib/app/http";
 import { db } from "@/lib/db";
@@ -42,5 +43,18 @@ export async function POST(req: Request) {
     data: { headline: b.headline || null, beliefs: b.beliefs || null, buildingToward: b.buildingToward || null, gaps: b.gaps || null, buildField: b.field, buildStage: b.stage, onboardedAt: viewer.profile.onboardedAt ?? new Date() },
   });
   if (viewer.profile.access === "MEMBER") await placeInCircle(viewer.user.id);
+  return ok({ ok: true });
+}
+
+/**
+ * Delete my account, for good. Companies shared with others pass to the next
+ * teammate first; everything that was only yours is removed.
+ */
+export async function DELETE(req: Request) {
+  const { viewer, res } = await appViewer();
+  if (res) return res;
+  const b = await body(req, z.object({ confirm: z.literal("DELETE") }));
+  if (!b) return fail("Type DELETE to confirm.");
+  await deleteAccount(viewer.user.id);
   return ok({ ok: true });
 }

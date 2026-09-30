@@ -4,6 +4,7 @@ import { fitSentence, mayHost, OPPORTUNITY_KINDS, opportunityFit, opportunityPro
 import { db } from "../db";
 import { conversationFromYes } from "../messages";
 import type { Viewer } from "../session";
+import { blockedBetween, blockedIds } from "./safety";
 
 type Fail = { ok: false; message: string };
 const DAY = 86_400_000;
@@ -58,13 +59,14 @@ function shape(o: {
 /** The ones that fit you (with why), and the ones you've asked about. Nothing else is shown. */
 export async function opportunitiesFor(viewer: Viewer, now = new Date()) {
   const uid = viewer.user.id;
-  const [rows, lately] = await Promise.all([
+  const [rows, lately, blocked] = await Promise.all([
     db.opportunity.findMany({
       where: { startsAt: { gt: now } },
       orderBy: { startsAt: "asc" },
       include: { host: { select: hostSelect }, requests: { where: { userId: uid }, select: { status: true } } },
     }),
     buildingLately(uid, now),
+    blockedIds(uid),
   ]);
   const person = { id: uid, field: viewer.profile.buildField, stage: viewer.profile.buildStage, buildingLately: lately };
   const out = [];
@@ -72,7 +74,7 @@ export async function opportunitiesFor(viewer: Viewer, now = new Date()) {
     const mine = o.requests[0]?.status ?? null;
     const why = opportunityFit(o, person);
     // You always see ones you've asked about; otherwise only open ones that fit.
-    if (!mine && (!why || o.closedAt)) continue;
+    if (!mine && (!why || o.closedAt || blocked.has(o.hostId))) continue;
     out.push({ ...shape(o), why: why ? fitSentence(why) : null, request: mine });
   }
   return out;
@@ -98,6 +100,7 @@ export async function opportunityDetail(viewer: Viewer, id: string, now = new Da
 export async function requestSeat(viewer: Viewer, id: string, why: string, now = new Date()): Promise<{ ok: true } | Fail> {
   const o = await db.opportunity.findUnique({ where: { id } });
   if (!o) return { ok: false, message: "That opportunity doesn't exist." };
+  if (await blockedBetween(viewer.user.id, o.hostId)) return { ok: false, message: "This one isn't open to you." };
   const fits = opportunityFit(o, { id: viewer.user.id, field: viewer.profile.buildField, stage: viewer.profile.buildStage, buildingLately: await buildingLately(viewer.user.id, now) });
   if (!fits) return { ok: false, message: "This one isn't open to you." };
   const problem = requestProblem(o, why, now);
@@ -123,6 +126,7 @@ export async function withdrawSeat(viewer: Viewer, id: string): Promise<{ ok: tr
 // ── Hosts ─────────────────────────────────────────────────────
 
 export async function hosting(viewer: Viewer) {
+  const blocked = await blockedIds(viewer.user.id);
   const rows = await db.opportunity.findMany({
     where: { hostId: viewer.user.id },
     orderBy: { startsAt: "asc" },
@@ -138,7 +142,7 @@ export async function hosting(viewer: Viewer) {
   return rows.map((o) => ({
     ...shape(o),
     picked: o.requests.filter((r) => r.status === "PICKED").length,
-    requests: o.requests.map((r) => ({ id: r.id, why: r.why, status: r.status, at: r.createdAt.toISOString(), who: { id: r.user.id, name: r.user.name, headline: r.user.profile?.headline ?? null } })),
+    requests: o.requests.filter((r) => !blocked.has(r.user.id)).map((r) => ({ id: r.id, why: r.why, status: r.status, at: r.createdAt.toISOString(), who: { id: r.user.id, name: r.user.name, headline: r.user.profile?.headline ?? null } })),
   }));
 }
 

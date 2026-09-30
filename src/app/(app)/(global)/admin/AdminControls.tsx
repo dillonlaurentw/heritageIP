@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
-import { answerApplication, featurePartner, featureWorkspace, linkPartnerManager } from "@/app/actions/admin";
+import { answerApplication, answerReport, featurePartner, featureWorkspace, linkPartnerManager } from "@/app/actions/admin";
 import { Button } from "@/components/ui/Button";
 import { Switch } from "@/components/ui/Switch";
 import { useToast } from "@/components/ui/Toast";
@@ -73,6 +73,34 @@ export function ApplicationAnswer({ id, name }: { id: string; name: string }) {
       </Button>
       <Button variant="ghost" size="xs" disabled={busy} onClick={() => answer(false)}>
         Not now
+      </Button>
+    </div>
+  );
+}
+
+export function ReportAnswer({ id, canRemove }: { id: string; canRemove: boolean }) {
+  const router = useRouter();
+  const toast = useToast();
+  const [busy, start] = useTransition();
+  const answer = (removeContent: boolean, suspend: boolean, resolution: string) =>
+    start(async () => {
+      const res = await answerReport(id, { removeContent, suspend, resolution });
+      if (!res.ok) toast(res.message, "danger");
+      else toast("Resolved.");
+      router.refresh();
+    });
+  return (
+    <div className="flex flex-wrap gap-2">
+      {canRemove && (
+        <Button size="xs" disabled={busy} onClick={() => answer(true, false, "")}>
+          Remove it
+        </Button>
+      )}
+      <Button size="xs" variant="primary" disabled={busy} onClick={() => answer(canRemove, true, "")}>
+        {canRemove ? "Remove and suspend" : "Suspend"}
+      </Button>
+      <Button size="xs" variant="ghost" disabled={busy} onClick={() => answer(false, false, "Looked at it: no action needed.")}>
+        No action
       </Button>
     </div>
   );

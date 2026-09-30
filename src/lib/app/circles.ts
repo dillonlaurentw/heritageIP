@@ -3,6 +3,7 @@ import { circleSummaryAgent, runAgent } from "@/agents";
 import type { Prisma } from "@/generated/prisma/client";
 import { weekOf } from "../app-rules";
 import { db } from "../db";
+import { blockedIds } from "./safety";
 
 type Fail = { ok: false; message: string };
 
@@ -35,7 +36,7 @@ export async function loadCircle(userId: string, now = new Date()) {
   const circleId = await circleOf(userId);
   if (!circleId) return null;
   await ensureWeeklyPrompt(circleId, now);
-  const [circle, messages, summary] = await Promise.all([
+  const [circle, messages, summary, blocked] = await Promise.all([
     db.circle.findUniqueOrThrow({
       where: { id: circleId },
       select: { id: true, name: true, members: { orderBy: { joinedAt: "asc" }, select: { user: { select: { id: true, name: true, profile: { select: { headline: true } } } } } } },
@@ -47,6 +48,7 @@ export async function loadCircle(userId: string, now = new Date()) {
       select: { id: true, text: true, createdAt: true, fromJournal: true, author: { select: { id: true, name: true } } },
     }),
     db.circleSummary.findUnique({ where: { circleId_weekOf: { circleId, weekOf: weekOf(now) } } }),
+    blockedIds(userId),
   ]);
   await db.circleMember.update({ where: { userId }, data: { lastReadAt: now } });
   const week = weekOf(now).getTime();
@@ -55,7 +57,8 @@ export async function loadCircle(userId: string, now = new Date()) {
     id: circle.id,
     name: circle.name,
     members: circle.members.map((m) => ({ id: m.user.id, name: m.user.name, headline: m.user.profile?.headline ?? null, activeThisWeek: talkedThisWeek.has(m.user.id) })),
-    messages: messages.reverse().map((m) => ({
+    // People you blocked (or who blocked you) are quiet here.
+    messages: messages.reverse().filter((m) => !m.author || !blocked.has(m.author.id)).map((m) => ({
       id: m.id,
       text: m.text,
       at: m.createdAt.toISOString(),

@@ -223,4 +223,9 @@ export const api = {
   self: () => request<SelfDoc>("/api/m/self"),
   changeSelf: (op: { type: "accept" | "reject" | "remove"; id: string } | { type: "add"; facet: string; text: string }) => request<{ ok: true }>("/api/m/self", { body: op }),
   invites: () => request<{ invites: Invite[] }>("/api/m/invites"),
+
+  report: (r: { kind: string; targetId?: string; userId?: string; reason: string; note?: string; alsoBlock?: boolean }) => request<{ ok: true }>("/api/m/safety/report", { body: r }),
+  blocked: () => request<{ blocked: { id: string; name: string }[] }>("/api/m/safety/block"),
+  setBlock: (userId: string, on: boolean) => request<{ ok: true }>("/api/m/safety/block", { body: { userId, on } }),
+  deleteAccount: () => request<{ ok: true }>("/api/m/me", { method: "DELETE", body: { confirm: "DELETE" } }),
 };

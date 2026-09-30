@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applicationProblem, circleFor, circleName, dayOf, fitSentence, mayHost, mentorAskProblem, newInviteCode, normaliseCode, opportunityFit, opportunityProblem, pickProblem, requestProblem, weekOf } from "../app-rules";
+import { applicationProblem, circleFor, hasOtherOwner, heirFor, circleName, dayOf, fitSentence, mayHost, mentorAskProblem, newInviteCode, normaliseCode, opportunityFit, opportunityProblem, pickProblem, requestProblem, weekOf } from "../app-rules";
 
 describe("weekOf", () => {
   it("returns the Monday of the week", () => {
@@ -105,5 +105,23 @@ describe("opportunity rules", () => {
   it("hosts are mentors, partners, backers or admins", () => {
     expect(mayHost(["MENTOR"])).toBe(true);
     expect(mayHost(["BUILDER"])).toBe(false);
+  });
+});
+
+describe("heirFor", () => {
+  const d = (n: number) => new Date(2026, 0, n);
+  it("prefers owners, then admins, then members; oldest first; never guests", () => {
+    const m = [
+      { userId: "me", role: "OWNER", joinedAt: d(1) },
+      { userId: "g", role: "GUEST", joinedAt: d(2) },
+      { userId: "m1", role: "MEMBER", joinedAt: d(3) },
+      { userId: "a2", role: "ADMIN", joinedAt: d(5) },
+      { userId: "a1", role: "ADMIN", joinedAt: d(4) },
+    ];
+    expect(heirFor(m, "me")).toBe("a1");
+    expect(heirFor(m.filter((x) => !x.userId.startsWith("a")), "me")).toBe("m1");
+    expect(heirFor([m[0]!, m[1]!], "me")).toBeNull();
+    expect(hasOtherOwner([...m, { userId: "o2", role: "OWNER", joinedAt: d(9) }], "me")).toBe(true);
+    expect(hasOtherOwner(m, "me")).toBe(false);
   });
 });

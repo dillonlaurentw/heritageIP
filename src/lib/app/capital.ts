@@ -3,6 +3,7 @@ import { db } from "../db";
 import { sendEmail } from "../email";
 import { mentionsTerms, NO_TERMS_MESSAGE } from "../no-terms";
 import type { Viewer } from "../session";
+import { blockedBetween, blockedIds } from "./safety";
 
 type Fail = { ok: false; message: string };
 
@@ -85,14 +86,16 @@ export async function foundersForBacker(viewer: Viewer) {
       user: { select: { name: true, updates: { orderBy: { createdAt: "desc" }, take: 3, select: { id: true, text: true, createdAt: true } } } },
     },
   });
-  const ids = founders.map((f) => f.userId);
+  const blocked = await blockedIds(uid);
+  const visible = founders.filter((f) => !blocked.has(f.userId));
+  const ids = visible.map((f) => f.userId);
   const [follows, sigs, companies] = await Promise.all([
     db.follow.findMany({ where: { backerId: uid, founderId: { in: ids } }, select: { founderId: true } }),
     db.signal.findMany({ where: { kind: "BACKER_INTEREST", fromUserId: uid, toUserId: { in: ids } }, orderBy: { createdAt: "desc" }, select: { toUserId: true, status: true } }),
     Promise.all(ids.map((id) => companyOf(id))),
   ]);
   const following = new Set(follows.map((f) => f.founderId));
-  return founders
+  return visible
     .map((f, i) => {
       const s = sigs.find((x) => x.toUserId === f.userId);
       return {
@@ -112,7 +115,7 @@ export async function foundersForBacker(viewer: Viewer) {
 export async function follow(viewer: Viewer, founderId: string, on: boolean): Promise<{ ok: true } | Fail> {
   if (!isBacker(viewer)) return { ok: false, message: "Only backers follow founders' updates." };
   const open = await db.profile.count({ where: { userId: founderId, openToBackers: true } });
-  if (on && !open) return { ok: false, message: "They aren't sharing updates with backers right now." };
+  if (on && (!open || (await blockedBetween(viewer.user.id, founderId)))) return { ok: false, message: "They aren't sharing updates with backers right now." };
   if (on) await db.follow.upsert({ where: { backerId_founderId: { backerId: viewer.user.id, founderId } }, create: { backerId: viewer.user.id, founderId }, update: {} });
   else await db.follow.deleteMany({ where: { backerId: viewer.user.id, founderId } });
   return { ok: true };
@@ -126,7 +129,7 @@ export async function sendInterest(viewer: Viewer, founderId: string, note: stri
   const terms = mentionsTerms(body);
   if (terms) return { ok: false, message: NO_TERMS_MESSAGE(terms) };
   const founder = await db.profile.findUnique({ where: { userId: founderId }, select: { openToBackers: true, user: { select: { name: true, email: true } } } });
-  if (!founder?.openToBackers) return { ok: false, message: "They aren't open to backers right now." };
+  if (!founder?.openToBackers || (await blockedBetween(viewer.user.id, founderId))) return { ok: false, message: "They aren't open to backers right now." };
   const live = await db.signal.count({ where: { kind: "BACKER_INTEREST", fromUserId: viewer.user.id, toUserId: founderId, status: { in: ["PENDING", "ACCEPTED"] } } });
   if (live) return { ok: false, message: `You've already told ${founder.user.name} you're interested.` };
   const company = await companyOf(founderId);

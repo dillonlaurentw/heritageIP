@@ -2,6 +2,7 @@ import "server-only";
 import type { Prisma } from "@/generated/prisma/client";
 import { db } from "./db";
 import { answerTrial, canMessage, canProposeTrial, pairKey, trialTitle, type TrialData } from "./message-rules";
+import { blockedBetween } from "./app/safety";
 import { notifyUsers } from "./notify";
 import type { Viewer } from "./session";
 import { logActivity, roleIn } from "./workspaces";
@@ -11,6 +12,7 @@ type Fail = { ok: false; message: string };
 /** Do these two people work together, has one said yes to the other, or did a host pick the other? */
 export async function mayMessage(aId: string, bId: string) {
   if (aId === bId) return false;
+  if (await blockedBetween(aId, bId)) return false;
   const [shared, accepted, picked] = await Promise.all([
     db.workspace.count({ where: { kind: "TEAM", AND: [{ members: { some: { userId: aId } } }, { members: { some: { userId: bId } } }] } }),
     db.signal.count({

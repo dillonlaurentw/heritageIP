@@ -5,6 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Avatar, ErrorLine, Loading, T } from "@/components/ui";
 import { api, type Circle } from "@/lib/api";
 import { font, useColors } from "@/lib/theme";
+import { openReport } from "@/lib/report";
 import { ago, firstName } from "@/lib/time";
 
 /**
@@ -121,7 +122,7 @@ export default function CircleScreen() {
             const prev = circle.messages[i - 1];
             const showName = !mine && prev?.author?.id !== m.author.id;
             return (
-              <View key={m.id} style={{ alignSelf: mine ? "flex-end" : "flex-start", maxWidth: "84%", gap: 3 }}>
+              <Pressable key={m.id} onLongPress={mine ? undefined : () => openReport({ kind: "CIRCLE_MESSAGE", name: m.author!.name, targetId: m.id })} style={{ alignSelf: mine ? "flex-end" : "flex-start", maxWidth: "84%", gap: 3 }}>
                 {showName && (
                   <T size={12} tone="subtle" style={{ paddingHorizontal: 4 }}>
                     {firstName(m.author.name)}
@@ -136,7 +137,7 @@ export default function CircleScreen() {
                   {ago(m.at)}
                   {m.fromJournal ? " · from journal" : ""}
                 </T>
-              </View>
+              </Pressable>
             );
           })}
           {circle.summary && (

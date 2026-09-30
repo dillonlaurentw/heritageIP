@@ -184,3 +184,33 @@ export function opportunityProblem(o: { title: string; description: string; seat
   if (o.costNote && /pay (via|through|on) self|self (collects|charges)/i.test(o.costNote)) return "SELF doesn't take payments. Say who covers the cost, or link to where people pay.";
   return null;
 }
+
+// ── Safety and leaving ───────────────────────────────────────
+
+export const REPORT_REASONS = {
+  HARASSMENT: "Harassment or bullying",
+  SPAM: "Spam or selling",
+  SCAM: "A scam or fraud",
+  MONEY: "Asking for money or investment",
+  INAPPROPRIATE: "Inappropriate content",
+  OTHER: "Something else",
+} as const;
+export type ReportReason = keyof typeof REPORT_REASONS;
+
+const ROLE_RANK: Record<string, number> = { OWNER: 0, ADMIN: 1, MEMBER: 2, GUEST: 3 };
+
+/**
+ * When someone deletes their account, who takes over a company they're in?
+ * The longest-standing person with the highest role (owners, then admins,
+ * then members). Guests never inherit. null = nobody else, so the company
+ * goes with them.
+ */
+export function heirFor(members: { userId: string; role: string; joinedAt: Date }[], leavingId: string): string | null {
+  const others = members
+    .filter((m) => m.userId !== leavingId && m.role !== "GUEST")
+    .sort((a, b) => (ROLE_RANK[a.role] ?? 9) - (ROLE_RANK[b.role] ?? 9) || a.joinedAt.getTime() - b.joinedAt.getTime());
+  return others[0]?.userId ?? null;
+}
+
+/** Has another owner already, so no promotion is needed? */
+export const hasOtherOwner = (members: { userId: string; role: string }[], leavingId: string) => members.some((m) => m.userId !== leavingId && m.role === "OWNER");

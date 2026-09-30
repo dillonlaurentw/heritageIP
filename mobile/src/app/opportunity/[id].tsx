@@ -2,6 +2,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { View } from "react-native";
 import { AskInline, Button, Card, ErrorLine, Loading, Screen, T, Title } from "@/components/ui";
 import { api } from "@/lib/api";
+import { openReport } from "@/lib/report";
 import { firstName, when } from "@/lib/time";
 import { useLoad } from "@/lib/useLoad";
 
@@ -68,6 +69,11 @@ export default function OpportunityScreen() {
         </View>
       ) : (
         <T tone="subtle">{host} isn&apos;t taking requests for this one any more.</T>
+      )}
+      {!o.isHost && (
+        <Button variant="ghost" small style={{ alignSelf: "center" }} onPress={() => openReport({ kind: "OPPORTUNITY", name: o.host.name, targetId: o.id })}>
+          Report this
+        </Button>
       )}
     </Screen>
   );
