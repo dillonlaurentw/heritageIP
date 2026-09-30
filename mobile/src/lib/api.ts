@@ -227,5 +227,7 @@ export const api = {
   report: (r: { kind: string; targetId?: string; userId?: string; reason: string; note?: string; alsoBlock?: boolean }) => request<{ ok: true }>("/api/m/safety/report", { body: r }),
   blocked: () => request<{ blocked: { id: string; name: string }[] }>("/api/m/safety/block"),
   setBlock: (userId: string, on: boolean) => request<{ ok: true }>("/api/m/safety/block", { body: { userId, on } }),
+  pushToken: (token: string, platform: string) => request<{ ok: true }>("/api/m/push", { body: { token, platform } }),
+  forgetPushToken: (token: string) => request<{ ok: true }>("/api/m/push", { method: "DELETE", body: { token } }),
   deleteAccount: () => request<{ ok: true }>("/api/m/me", { method: "DELETE", body: { confirm: "DELETE" } }),
 };

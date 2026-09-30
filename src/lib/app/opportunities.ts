@@ -5,6 +5,7 @@ import { db } from "../db";
 import { conversationFromYes } from "../messages";
 import type { Viewer } from "../session";
 import { blockedBetween, blockedIds } from "./safety";
+import { appNotify } from "./push";
 
 type Fail = { ok: false; message: string };
 const DAY = 86_400_000;
@@ -112,9 +113,7 @@ export async function requestSeat(viewer: Viewer, id: string, why: string, now =
     create: { opportunityId: id, userId: viewer.user.id, why: why.trim() },
     update: { why: why.trim(), status: "PENDING", answeredAt: null, createdAt: now },
   });
-  await db.notification.create({
-    data: { userId: o.hostId, actorId: viewer.user.id, kind: "SIGNAL", text: `${viewer.user.name} would like to come to “${o.title}”`, href: "/network" },
-  });
+  await appNotify({ userId: o.hostId, actorId: viewer.user.id, kind: "SIGNAL", text: `${viewer.user.name} would like to come to “${o.title}”`, href: "/network" }, "/hosting");
   return { ok: true };
 }
 
@@ -171,15 +170,16 @@ export async function answerSeat(viewer: Viewer, requestId: string, pick: boolea
   }
   const { count } = await db.opportunityRequest.updateMany({ where: { id: requestId, status: "PENDING" }, data: { status: pick ? "PICKED" : "NOT_THIS_TIME", answeredAt: new Date() } });
   if (!count) return { ok: false, message: "This one has already been answered." };
-  await db.notification.create({
-    data: {
+  await appNotify(
+    {
       userId: r.userId,
       actorId: viewer.user.id,
       kind: "SIGNAL_ANSWERED",
       text: pick ? `You're in: “${r.opportunity.title}”` : `Not this time for “${r.opportunity.title}”. There'll be others.`,
       href: "/network",
     },
-  });
+    `/opportunity/${r.opportunityId}`,
+  );
   if (!pick) return { ok: true };
   const conversationId = await conversationFromYes(viewer.user.id, r.userId, null, `You're in for “${r.opportunity.title}”. Looking forward to it.`);
   return { ok: true, conversationId };

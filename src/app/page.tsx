@@ -69,6 +69,14 @@ export default async function Landing() {
       <footer className="mx-auto flex w-full max-w-6xl flex-wrap justify-between gap-3 px-6 py-8 text-sm text-fg-subtle md:px-16">
         <span>Every relationship starts with a request and becomes real with a yes.</span>
         <span>SELF connects people. It doesn&apos;t move money or offer investments.</span>
+        <span className="flex gap-4">
+          <Link href="/privacy" className="hover:text-fg">
+            Privacy
+          </Link>
+          <Link href="/terms" className="hover:text-fg">
+            Terms
+          </Link>
+        </span>
       </footer>
     </div>
   );

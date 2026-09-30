@@ -5,6 +5,7 @@ import { sendEmail } from "../email";
 import { conciergeUserId } from "../network";
 import { CATEGORY_COPY, type PartnerCategory } from "../partner-categories";
 import type { Viewer } from "../session";
+import { appNotify } from "./push";
 import { blockedBetween, blockedIds } from "./safety";
 
 type Fail = { ok: false; message: string };
@@ -67,9 +68,7 @@ export async function askPartner(viewer: Viewer, partnerId: string, note: string
     data: { kind: "PARTNER_INTRO", fromUserId: viewer.user.id, toUserId, partnerId, workspaceId: company?.id ?? null, note: body },
     include: { toUser: { select: { email: true } } },
   });
-  await db.notification.create({
-    data: { userId: toUserId, actorId: viewer.user.id, kind: "SIGNAL", text: `${viewer.user.name} would like an intro to ${firm.name}`, href: "/network/connections", signalId: s.id },
-  });
+  await appNotify({ userId: toUserId, actorId: viewer.user.id, kind: "SIGNAL", text: `${viewer.user.name} would like an intro to ${firm.name}`, href: "/network/connections", signalId: s.id }, "/requests");
   await sendEmail({
     to: s.toUser.email,
     subject: `Intro request: ${viewer.user.name} → ${firm.name}`,
@@ -142,7 +141,7 @@ export async function sayHello(viewer: Viewer, personId: string, note: string): 
   if (live) return { ok: false, message: `You and ${p.user.name} are already in touch.` };
   const company = await companyOf(viewer.user.id);
   const s = await db.signal.create({ data: { kind: "ROLE_INVITE", fromUserId: viewer.user.id, toUserId: personId, workspaceId: company?.id ?? null, note: body } });
-  await db.notification.create({ data: { userId: personId, actorId: viewer.user.id, kind: "SIGNAL", text: `${viewer.user.name} would like to talk about building together`, href: "/network/connections", signalId: s.id } });
+  await appNotify({ userId: personId, actorId: viewer.user.id, kind: "SIGNAL", text: `${viewer.user.name} would like to talk about building together`, href: "/network/connections", signalId: s.id }, "/requests");
   await sendEmail({ to: p.user.email, subject: `${viewer.user.name} would like to talk`, text: `"${body}"\n\nSay yes (a conversation opens) or not now in the SELF app.` });
   return { ok: true };
 }

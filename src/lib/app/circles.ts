@@ -3,6 +3,7 @@ import { circleSummaryAgent, runAgent } from "@/agents";
 import type { Prisma } from "@/generated/prisma/client";
 import { weekOf } from "../app-rules";
 import { db } from "../db";
+import { push } from "./push";
 import { blockedIds } from "./safety";
 
 type Fail = { ok: false; message: string };
@@ -83,6 +84,13 @@ export async function postToCircle(userId: string, text: string, opts: { fromJou
   const body = text.trim().slice(0, 2000);
   if (!body) return { ok: false, message: "Write something first." };
   await db.circleMessage.create({ data: { circleId, authorId: userId, text: body, fromJournal: !!opts.fromJournal } });
+  const [others, circle, author] = await Promise.all([
+    db.circleMember.findMany({ where: { circleId, userId: { not: userId } }, select: { userId: true } }),
+    db.circle.findUniqueOrThrow({ where: { id: circleId }, select: { name: true } }),
+    db.user.findUniqueOrThrow({ where: { id: userId }, select: { name: true } }),
+  ]);
+  const blocked = await blockedIds(userId);
+  await push(others.map((o) => o.userId).filter((id) => !blocked.has(id)), { title: circle.name, body: `${author.name.split(" ")[0]}: ${body}`, to: "/circle" });
   await db.circleMember.update({ where: { userId }, data: { lastReadAt: new Date() } });
   return { ok: true };
 }

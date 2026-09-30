@@ -3,6 +3,7 @@ import type { Prisma } from "@/generated/prisma/client";
 import { B } from "./blocks";
 import { ensureSystemDb } from "./databases";
 import { db } from "./db";
+import { push } from "./app/push";
 import { conversationFromYes } from "./messages";
 import { sendEmail } from "./email";
 import { insertPage } from "./pages";
@@ -72,6 +73,8 @@ export async function conciergeUserId() {
 
 async function notify(data: { userId: string; actorId: string; kind: "SIGNAL" | "SIGNAL_ANSWERED"; text: string; href: string; signalId: string; workspaceId?: string | null; pageId?: string | null }) {
   await db.notification.create({ data });
+  // Phones: a new request opens the answers screen; an answer opens Messages.
+  await push([data.userId], { title: "SELF", body: data.text, to: data.kind === "SIGNAL" ? "/requests" : "/messages" });
 }
 
 /** A workspace the viewer can act for (MEMBER or above), and a step in its game plan if given. */

@@ -5,6 +5,7 @@
 import { router } from "expo-router";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { api, setSignedOutHandler, type Me } from "./api";
+import { forgetPush, listenForTaps, registerForPush } from "./push";
 import { tokenStore } from "./storage";
 
 type Session = {
@@ -39,6 +40,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       const m = await api.me();
       setMe(m);
       setStatus("in");
+      if (m.access === "MEMBER" && m.onboarded) void registerForPush();
       return m;
     } catch {
       setMe(null);
@@ -54,6 +56,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       router.replace("/welcome");
     });
     void refresh();
+    return listenForTaps();
   }, [refresh]);
 
   const value = useMemo<Session>(
@@ -66,6 +69,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         return refresh();
       },
       signOut: async () => {
+        await forgetPush();
         await tokenStore.clear();
         setMe(null);
         setStatus("out");

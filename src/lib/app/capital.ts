@@ -3,6 +3,7 @@ import { db } from "../db";
 import { sendEmail } from "../email";
 import { mentionsTerms, NO_TERMS_MESSAGE } from "../no-terms";
 import type { Viewer } from "../session";
+import { appNotify } from "./push";
 import { blockedBetween, blockedIds } from "./safety";
 
 type Fail = { ok: false; message: string };
@@ -134,7 +135,7 @@ export async function sendInterest(viewer: Viewer, founderId: string, note: stri
   if (live) return { ok: false, message: `You've already told ${founder.user.name} you're interested.` };
   const company = await companyOf(founderId);
   const s = await db.signal.create({ data: { kind: "BACKER_INTEREST", fromUserId: viewer.user.id, toUserId: founderId, workspaceId: company?.id ?? null, note: body } });
-  await db.notification.create({ data: { userId: founderId, actorId: viewer.user.id, kind: "SIGNAL", text: `A backer, ${viewer.user.name}, is interested in what you're building`, href: "/network/connections", signalId: s.id } });
+  await appNotify({ userId: founderId, actorId: viewer.user.id, kind: "SIGNAL", text: `A backer, ${viewer.user.name}, is interested in what you're building`, href: "/network/connections", signalId: s.id }, "/requests");
   await sendEmail({
     to: founder.user.email,
     subject: `${viewer.user.name} is interested in what you're building`,

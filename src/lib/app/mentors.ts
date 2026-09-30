@@ -6,6 +6,7 @@ import { pairKey } from "../message-rules";
 import { actOnSignal } from "../network";
 import type { Viewer } from "../session";
 import { blockedIds, blockedBetween } from "./safety";
+import { appNotify } from "./push";
 
 type Fail = { ok: false; message: string };
 const appUrl = () => process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
@@ -103,9 +104,7 @@ export async function askMentor(viewer: Viewer, mentorId: string, note: string):
   const signal = await db.signal.create({
     data: { kind: "MENTOR_REQUEST", fromUserId: viewer.user.id, toUserId: mentorId, workspaceId: company?.workspace.id ?? null, note: note.trim() },
   });
-  await db.notification.create({
-    data: { userId: mentorId, actorId: viewer.user.id, kind: "SIGNAL", text: `${viewer.user.name} asked you to mentor them`, href: "/network/connections", signalId: signal.id },
-  });
+  await appNotify({ userId: mentorId, actorId: viewer.user.id, kind: "SIGNAL", text: `${viewer.user.name} asked you to mentor them`, href: "/network/connections", signalId: signal.id }, "/requests");
   await sendEmail({
     to: mentor.user.email,
     subject: `${viewer.user.name} would like you to mentor them`,

@@ -2,6 +2,7 @@ import "server-only";
 import type { Prisma } from "@/generated/prisma/client";
 import { db } from "./db";
 import { answerTrial, canMessage, canProposeTrial, pairKey, trialTitle, type TrialData } from "./message-rules";
+import { push } from "./app/push";
 import { blockedBetween } from "./app/safety";
 import { notifyUsers } from "./notify";
 import type { Viewer } from "./session";
@@ -147,6 +148,7 @@ export async function sendMessage(viewer: Viewer, conversationId: string, text: 
   if (!other || !(await mayMessage(viewer.user.id, other.userId))) return { ok: false, message: "You can't message this person any more." };
   await db.directMessage.create({ data: { conversationId, authorId: viewer.user.id, text: body } });
   await db.conversation.update({ where: { id: conversationId }, data: { updatedAt: new Date() } });
+  await push([other.userId], { title: viewer.user.name, body, to: `/thread/${conversationId}` });
   await db.conversationMember.update({ where: { conversationId_userId: { conversationId, userId: viewer.user.id } }, data: { lastReadAt: new Date() } });
   return { ok: true };
 }
