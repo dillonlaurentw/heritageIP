@@ -45,6 +45,12 @@ export const googleEnabled = Boolean(google);
 
 export const auth = betterAuth({
   database: prismaAdapter(db, { provider: "postgresql" }),
+  // In development, a phone on the same Wi-Fi reaches the server by the
+  // computer's local address; trust private network addresses there only.
+  trustedOrigins:
+    process.env.NODE_ENV === "production"
+      ? undefined
+      : ["http://192.168.*", "http://10.*", "http://172.*", "http://*.local:3000"],
   socialProviders: google,
   plugins: [
     magicLink({
