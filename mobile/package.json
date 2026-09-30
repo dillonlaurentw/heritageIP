@@ -46,7 +46,8 @@
     "typecheck": "tsc --noEmit",
     "export:web": "EXPO_PUBLIC_DEMO=${EXPO_PUBLIC_DEMO:-1} expo export --platform web --output-dir ../public/app",
     "xcode": "expo prebuild --platform ios && xed ios",
-    "ios:run": "expo run:ios"
+    "ios:run": "expo run:ios",
+    "postinstall": "node scripts/xcode26-compat.js"
   },
   "private": true
 }
