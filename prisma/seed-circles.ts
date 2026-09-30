@@ -83,6 +83,12 @@ export async function seedCircles(db: PrismaClient, idOf: (key: string) => strin
   await say(climate, null, "New week. What moved last week, and what's stuck?", sinceMonday, { weekOf: week });
   await say(climate, "lena", "Usability tests with six farm managers: the map view wins, the table view confuses everyone.", 20);
   await say(climate, "kwame", "That matches what we hear. Cutting the table view for launch.", 12);
+  // One report waiting in the admin queue: a sales pitch posted into a circle.
+  const pitch = await say(climate, "dev", "Anyone want my paid course on fundraising? 50% off this week, DM me.", 9);
+  await db.report.deleteMany({ where: { reporter: demo } });
+  await db.report.create({
+    data: { reporterId: idOf("lena"), targetUserId: idOf("dev"), kind: "CIRCLE_MESSAGE", targetId: pitch.id, excerpt: pitch.text, reason: "SPAM", note: "Selling in the circle.", createdAt: new Date(Date.now() - 8 * HOUR) },
+  });
 
   // Maya's private journal: the last three days. Today is left for the demo.
   const today = dayOf(now);

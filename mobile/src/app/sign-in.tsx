@@ -12,6 +12,7 @@ const DEMO_PEOPLE = [
   { email: "leo@self.demo", name: "Leo Brandt", line: "Applied, waiting" },
   { email: "rosa@self.demo", name: "Rosa Almeida", line: "Mentor and host" },
   { email: "priya@self.demo", name: "Priya Nair", line: "Backer" },
+  { email: "lena@self.demo", name: "Lena Fischer", line: "Founder, farm software" },
 ];
 
 /** Email, then a 6-digit code. No passwords, no links to tap on another device. */

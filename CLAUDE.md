@@ -559,6 +559,32 @@ Expo Router). Start exclusive, by commitment and fit, never price or pedigree.
 - The ring (on You) now fills all four quarters: circle peers, partner intros,
   mentors, and backers interested in you.
 
+### Safety, push, stores and web (app)
+- **Block** (`Block`, `src/lib/app/safety.ts`) works both ways: `mayMessage`
+  refuses, lists (mentors, co-founders, founders for backers, opportunities,
+  hosting requests, circle messages) hide the other person, pending signals
+  are withdrawn, and asks to someone who blocked you get the ordinary "not
+  taking requests" message. Never tell the blocked person.
+- **Report** a person, message, circle message, opportunity or backer update;
+  `resolveTarget` only accepts things the reporter can see. Journals can't be
+  reported. The report stores a copy of the text (`excerpt`) for
+  `/admin/reports`, the one place admins read reported content. Resolving can
+  remove the content and/or suspend (access NONE, sessions deleted).
+- **Delete my account** (`deleteAccount`): every shared TEAM workspace passes to
+  `heirFor()` (tested) first, with ownership, pages, `updatedById` and page
+  versions; then the user row is deleted (everything else cascades). Relations
+  to User cascade, so never delete a user any other way.
+- **Push** (`src/lib/app/push.ts`): `appNotify()` = inbox row + push; the
+  network's `notify()`, direct messages and circle posts push too. Short text,
+  never journal lines or contacts, 4s limit, failures swallowed, dead tokens
+  dropped. Phones register after onboarding (`mobile/src/lib/push.ts`, needs
+  `expo.extra.eas.projectId`).
+- **Stores**: `mobile/eas.json`, store steps in `mobile/README.md`; `/privacy`
+  and `/terms` are plain-language drafts that must match what the product does.
+- **Web parity**: `/journal`, `/circle`, `/opportunities` (with hosting),
+  `/capital` use the same `src/lib/app/*` logic through
+  `src/app/actions/founder.ts` (members only; others see `MembersOnly`).
+
 ## Running locally
 
 ```

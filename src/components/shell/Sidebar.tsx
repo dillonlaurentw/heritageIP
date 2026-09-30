@@ -1,6 +1,10 @@
 "use client";
 
 import {
+  CalendarDays,
+  NotebookPen,
+  Sprout,
+  UsersRound,
   Bot,
   Check,
   ChevronsUpDown,
@@ -169,7 +173,9 @@ export function Sidebar(p: SidebarProps) {
             <Kbd>⌘K</Kbd>
           </button>
           {navLink("/home", "You", <Home />)}
+          {navLink("/journal", "Journal", <NotebookPen />)}
           {navLink("/me/self", "Your Self", <Fingerprint />)}
+          {navLink("/circle", "Circle", <UsersRound />)}
           {navLink(
             "/inbox",
             "Inbox",
@@ -187,6 +193,8 @@ export function Sidebar(p: SidebarProps) {
             ) : null,
           )}
           {navLink("/network", "Network", <Waypoints />)}
+          {navLink("/opportunities", "Opportunities", <CalendarDays />)}
+          {navLink("/capital", "Capital", <Sprout />)}
           {p.current && navLink(`/w/${p.current.slug}/areas`, "Help by area", <Sparkles />)}
           {p.current && navLink(`/w/${p.current.slug}/people`, "People", <Users />)}
           {p.current && navLink(`/w/${p.current.slug}/settings`, "Settings", <Settings />)}
