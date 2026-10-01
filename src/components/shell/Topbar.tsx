@@ -1,8 +1,9 @@
 "use client";
 
-import { PanelLeftOpen } from "lucide-react";
+import { NotebookText } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Fragment, type ReactNode } from "react";
 import { PageIcon } from "@/components/ui/PageIcon";
 import { cn } from "@/lib/cn";
@@ -13,20 +14,20 @@ export type Crumb = { label: string; href?: string; icon?: string | null };
 /** Breadcrumbs on the left, page actions on the right. Sticky over the content. */
 export function Topbar({ crumbs, actions, className }: { crumbs: Crumb[]; actions?: ReactNode; className?: string }) {
   const { sidebarOpen, toggleSidebar } = useShell();
+  // Only a company has notes (pages and databases); elsewhere the top bar is all you need.
+  const inCompany = usePathname().startsWith("/w/");
   return (
     <header className={cn("sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 bg-bg/95 px-4 backdrop-blur-sm", className)}>
-      <button
-        type="button"
-        onClick={toggleSidebar}
-        aria-label="Open sidebar"
-        title="Open sidebar (⌘\)"
-        className={cn(
-          "flex size-7 items-center justify-center rounded-md text-fg-muted hover:bg-bg-hover",
-          sidebarOpen && "md:hidden",
-        )}
-      >
-        <PanelLeftOpen className="size-4" />
-      </button>
+      {inCompany && !sidebarOpen && (
+        <button
+          type="button"
+          onClick={toggleSidebar}
+          title="Notes (⌘\)"
+          className="flex h-8 items-center gap-1.5 rounded-full px-3 text-sm text-fg-muted hover:bg-bg-hover hover:text-fg"
+        >
+          <NotebookText className="size-4 stroke-[1.6]" /> Notes
+        </button>
+      )}
       <nav aria-label="Breadcrumb" className="flex min-w-0 flex-1 items-center gap-1 text-sm">
         {crumbs.map((c, i) => {
           const last = i === crumbs.length - 1;

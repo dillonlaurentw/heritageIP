@@ -241,9 +241,9 @@ function Done({ name }: { name: string }) {
   const first = name.split(" ")[0] || "there";
   return (
     <form action={completeOnboarding}>
-      <h1 className="text-3xl font-medium">Thanks, {first}. What are you building?</h1>
+      <h1 className="text-3xl font-medium">Thanks, {first}. That&apos;s all we need.</h1>
       <p className="mt-2 text-md text-fg-muted">
-        Everything you wrote stays editable on your profile. It also becomes the first draft of your Self, the AI version of you, which you can read and change.
+        SELF learns the rest as you go, from your journal and the work itself. You can read and change everything it knows about you.
       </p>
       <Button type="submit" variant="primary" size="lg" className="mt-8">
         Take me in

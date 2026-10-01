@@ -482,6 +482,26 @@ orange fills, KPI cards or donut charts, scores or percentages about people.
 - Phones: rings render smaller without quarter labels below `sm`
   (`labels={false}`); every main screen stacks to one column.
 
+## Self5: less Notion, less friction (current direction)
+
+Self4 (everything up to the app and store work) is saved on the `self4` branch.
+Self5 keeps every feature but changes the front door and the look:
+
+- **Type**: big type (`text-title`, `text-display`, `text-3xl`) is a warm serif,
+  Instrument Serif (`--font-display`, set in `globals.css`); UI stays Geist at 15px.
+- **Shell**: no sidebar. `TopNav` (`src/components/shell/TopNav.tsx`) has four
+  places, Today · Circle · People · Company, a company switcher, search,
+  messages, inbox and a "You" menu (Your Self, journal, opportunities, capital,
+  rehearsals, profile). Phones get the same four tabs at the bottom.
+- **Notes**: pages, databases and private notes live in the `Sidebar`, now a
+  "Notes" drawer shown only inside a company (`/w/...`), closed by default.
+- **Today** (`/home`): the next one to three things (`needsYou`), today's
+  journal, and the ring. No page lists or company grids.
+- **Onboarding**: three screens for a builder (name, what brings you, what
+  you're building). The answer prefills the idea on `/new`, where a builder
+  lands next. The rest of their Self is learned later; contact email defaults
+  to the sign-in email.
+
 ## The SELF app (journal, circles, mentors, network)
 
 The current focus (see `docs/PLAN.md`): a native app in `mobile/` (Expo SDK 57,

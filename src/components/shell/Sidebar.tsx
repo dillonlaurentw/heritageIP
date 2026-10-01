@@ -1,41 +1,13 @@
 "use client";
 
-import {
-  CalendarDays,
-  NotebookPen,
-  Sprout,
-  UsersRound,
-  Bot,
-  Check,
-  ChevronsUpDown,
-  Fingerprint,
-  Home,
-  Inbox,
-  LogOut,
-  MessageCircle,
-  Plus,
-  Search,
-  Settings,
-  Shield,
-  Sparkles,
-  Theater,
-  Trash2,
-  User,
-  Users,
-  Waypoints,
-  PanelLeftClose,
-} from "lucide-react";
+import { Home, PanelLeftClose, Plus, Settings, Sparkles, Trash2, Users } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { Kbd } from "@/components/ui/Kbd";
-import { Menu, MenuItem, MenuLabel, MenuSeparator } from "@/components/ui/Menu";
-import { WorkspaceMark } from "@/components/ui/PageIcon";
 import { cn } from "@/lib/cn";
 import { PageTree, type TreeHandlers } from "./PageTree";
 import { useShell } from "./ShellContext";
-import { ThemeToggle } from "./ThemeToggle";
 import type { ShellWorkspace, TreeNode } from "./types";
 
 export type SidebarProps = {
@@ -54,9 +26,9 @@ export type SidebarProps = {
   footer?: ReactNode;
 };
 
-/** The left rail: workspace switcher, search, navigation and the page tree. */
+/** Self5: the Notes drawer inside a company: its pages, databases and private notes. Closed until asked for. */
 export function Sidebar(p: SidebarProps) {
-  const { sidebarOpen, toggleSidebar, openPalette, closeSidebarOnMobile } = useShell();
+  const { sidebarOpen, toggleSidebar, closeSidebarOnMobile } = useShell();
   const pathname = usePathname();
 
   const navLink = (href: string, label: string, icon: ReactNode, extra?: ReactNode) => {
@@ -95,110 +67,27 @@ export function Sidebar(p: SidebarProps) {
           sidebarOpen ? "translate-x-0" : "-translate-x-full md:hidden",
         )}
       >
-        <div className="flex h-14 items-center justify-between px-4">
-          <Link href="/home" className="text-[15px] font-semibold tracking-[0.18em]" onClick={closeSidebarOnMobile}>
-            SELF
-          </Link>
+        <div className="flex h-12 items-center justify-between px-4">
+          <span className="text-sm font-medium">Notes</span>
           <button
             type="button"
             onClick={toggleSidebar}
-            aria-label="Close sidebar"
-            title="Close sidebar (⌘\)"
+            aria-label="Close notes"
+            title="Close notes (⌘\\)"
             className="flex size-7 items-center justify-center rounded-md text-fg-subtle hover:bg-bg-hover hover:text-fg"
           >
             <PanelLeftClose className="size-4" />
           </button>
         </div>
-        <div className="flex items-center gap-1 px-2">
-          <Menu
-            className="w-64"
-            trigger={
-              <button
-                type="button"
-                className="flex h-10 min-w-0 flex-1 items-center gap-2.5 rounded-md px-2 text-left hover:bg-bg-hover"
-              >
-                <WorkspaceMark name={p.current?.name ?? p.user.name} icon={p.current?.icon} size="md" />
-                <span className="flex-1 truncate text-[15px] font-medium">{p.current?.name ?? "Your companies"}</span>
-                <ChevronsUpDown className="size-3.5 text-fg-subtle" />
-              </button>
-            }
-          >
-            <MenuLabel>{p.user.email}</MenuLabel>
-            {p.workspaces.map((w) => (
-              <MenuItem
-                key={w.slug}
-                icon={<WorkspaceMark name={w.name} icon={w.icon} />}
-                render={<Link href={`/w/${w.slug}` as Route} />}
-              >
-                <span className="flex items-center gap-2">
-                  {w.name}
-                  {p.current?.slug === w.slug && <Check className="size-3.5 text-accent-text" />}
-                </span>
-              </MenuItem>
-            ))}
-            <MenuItem icon={<Plus />} render={<Link href="/new" />}>
-              New workspace
-            </MenuItem>
-            <MenuSeparator />
-            <MenuItem icon={<User />} render={<Link href="/me" />}>
-              Your profile
-            </MenuItem>
-            <MenuItem icon={<Bot />} render={<Link href="/me/self" />}>
-              Your Self
-            </MenuItem>
-            <MenuItem icon={<Theater />} render={<Link href="/simulations" />}>
-              Rehearsals
-            </MenuItem>
-            {p.user.isAdmin && (
-              <MenuItem icon={<Shield />} render={<Link href="/admin" />}>
-                Admin
-              </MenuItem>
-            )}
-            {p.signOut && (
-              <MenuItem icon={<LogOut />} onClick={() => p.signOut?.()}>
-                Sign out
-              </MenuItem>
-            )}
-          </Menu>
-        </div>
 
-        <nav aria-label="Main" className="flex flex-col gap-px px-2 pt-2">
-          <button
-            type="button"
-            onClick={() => openPalette()}
-            className="flex h-8 items-center gap-2.5 rounded-md px-2.5 text-sm text-fg-muted hover:bg-bg-hover hover:text-fg"
-          >
-            <Search className="size-4 stroke-[1.6]" />
-            <span className="flex-1 text-left">Search</span>
-            <Kbd>⌘K</Kbd>
-          </button>
-          {navLink("/home", "You", <Home />)}
-          {navLink("/journal", "Journal", <NotebookPen />)}
-          {navLink("/me/self", "Your Self", <Fingerprint />)}
-          {navLink("/circle", "Circle", <UsersRound />)}
-          {navLink(
-            "/inbox",
-            "Inbox",
-            <Inbox />,
-            p.inboxCount > 0 ? (
-              <span className="rounded-full bg-accent px-1.5 text-2xs font-semibold text-accent-fg">{p.inboxCount}</span>
-            ) : null,
-          )}
-          {navLink(
-            "/messages",
-            "Messages",
-            <MessageCircle />,
-            p.messagesCount > 0 ? (
-              <span className="rounded-full bg-accent px-1.5 text-2xs font-semibold text-accent-fg">{p.messagesCount}</span>
-            ) : null,
-          )}
-          {navLink("/network", "Network", <Waypoints />)}
-          {navLink("/opportunities", "Opportunities", <CalendarDays />)}
-          {navLink("/capital", "Capital", <Sprout />)}
-          {p.current && navLink(`/w/${p.current.slug}/areas`, "Help by area", <Sparkles />)}
-          {p.current && navLink(`/w/${p.current.slug}/people`, "People", <Users />)}
-          {p.current && navLink(`/w/${p.current.slug}/settings`, "Settings", <Settings />)}
-        </nav>
+        {p.current && (
+          <nav aria-label={p.current.name} className="flex flex-col gap-px px-2">
+            {navLink(`/w/${p.current.slug}`, p.current.name, <Home />)}
+            {navLink(`/w/${p.current.slug}/areas`, "Help by area", <Sparkles />)}
+            {navLink(`/w/${p.current.slug}/people`, "People", <Users />)}
+            {navLink(`/w/${p.current.slug}/settings`, "Settings", <Settings />)}
+          </nav>
+        )}
 
         <div className="scroll-quiet mt-4 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-2 pb-4">
           {p.current && (
@@ -224,10 +113,6 @@ export function Sidebar(p: SidebarProps) {
 
         <div className="flex flex-col gap-2 border-t border-border px-2 py-2">
           {p.current && navLink(`/w/${p.current.slug}/trash`, "Trash", <Trash2 />)}
-          <div className="flex items-center justify-between px-1">
-            <ThemeToggle />
-            {p.footer}
-          </div>
         </div>
       </aside>
     </>

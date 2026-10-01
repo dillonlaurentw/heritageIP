@@ -16,8 +16,8 @@ const Ctx = createContext<Shell | null>(null);
 const KEY = "self-sidebar";
 
 export function ShellProvider({ children }: { children: ReactNode }) {
-  // Closed on phones; open on larger screens unless the person closed it.
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  // Self5: the Notes drawer is closed until someone opens it (then remembered on larger screens).
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [paletteQuery, setPaletteQuery] = useState("");
 
@@ -25,7 +25,7 @@ export function ShellProvider({ children }: { children: ReactNode }) {
     const mobile = window.matchMedia("(max-width: 767px)").matches;
     const saved = localStorage.getItem(KEY);
     // eslint-disable-next-line react-hooks/set-state-in-effect -- read browser-only prefs once on mount
-    setSidebarOpen(mobile ? false : saved !== "closed");
+    setSidebarOpen(mobile ? false : saved === "open");
   }, []);
 
   const toggleSidebar = useCallback(() => {

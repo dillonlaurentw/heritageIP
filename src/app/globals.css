@@ -16,6 +16,13 @@
     min-height: 100dvh;
     background: var(--bg);
   }
+  /* Self5: big type is a warm serif. It is what makes SELF read as a conversation, not a document tool. */
+  .text-title,
+  .text-display,
+  .text-3xl {
+    font-family: var(--font-display);
+    font-weight: 400;
+  }
   ::selection {
     background: var(--accent-soft);
   }

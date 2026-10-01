@@ -6,6 +6,20 @@ agreed: **start exclusive, by invitation and commitment (never by price or
 pedigree), then open up stage by stage** until SELF is founder
 infrastructure for everyone.
 
+## Self5 (in progress): less Notion, less friction
+
+Feedback: the platform looked too close to Notion and asked too much of new
+people. Self4 is saved on the `self4` branch.
+
+- **Phase 1 (built):** serif headlines; a top bar with four places (Today,
+  Circle, People, Company) instead of the sidebar and page tree; pages and
+  databases in a Notes drawer inside a company; Today home; three-screen
+  onboarding that flows straight into naming the company.
+- **Phase 2 (next):** the first minute. One question, then SELF shows a rough
+  thesis, the ring with open chairs and one next step, without the question
+  rounds up front. Help areas, what-ifs and rehearsals offered as suggestions
+  on plan steps instead of menu items. The phone app gets the same look.
+
 ## Stage 1 (built): the daily journal, circles and mentors
 - **Invite-only access.** Get in with an invite code from a member, or apply
   with two questions ("What are you building?" and "What did you do on it

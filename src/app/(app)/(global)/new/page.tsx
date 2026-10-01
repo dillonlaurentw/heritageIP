@@ -4,6 +4,7 @@ import { FlowSteps } from "@/components/flow/FlowSteps";
 import { Ring } from "@/components/ring/Ring";
 import { Topbar } from "@/components/shell/Topbar";
 import { AgentMark } from "@/components/ui/AgentMark";
+import { db } from "@/lib/db";
 import { requireOnboarded } from "@/lib/session";
 import { NewWorkspaceForm } from "./NewWorkspaceForm";
 
@@ -11,7 +12,9 @@ export const metadata: Metadata = { title: "What are you building?" };
 
 /** Day one: an empty ring, and one question. */
 export default async function NewWorkspacePage() {
-  await requireOnboarded();
+  const viewer = await requireOnboarded();
+  // Straight from sign-up: what they said they're building is already the idea.
+  const fresh = !(await db.workspaceMember.count({ where: { userId: viewer.user.id, workspace: { kind: "TEAM" } } }));
   return (
     <>
       <Topbar crumbs={[{ label: "You", href: "/home" }, { label: "A new idea" }]} actions={<FlowSteps current="Idea" className="hidden md:flex" />} />
@@ -28,7 +31,7 @@ export default async function NewWorkspacePage() {
             Half-formed is fine. Say it the way you&apos;d tell a friend. We&apos;ll shape it into a thesis, then find the people it
             needs.
           </p>
-          <NewWorkspaceForm />
+          <NewWorkspaceForm defaultIdea={fresh ? (viewer.profile.buildingToward ?? "") : ""} />
           <Link href="/new/ideas" className="text-sm text-fg-muted hover:text-fg">
             No idea yet? Start from your strengths →
           </Link>

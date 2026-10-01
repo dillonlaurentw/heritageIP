@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Field, Input, Textarea } from "@/components/ui/Input";
 
 /** The idea first, a working name second. Starting from an idea leads straight to the questions. */
-export function NewWorkspaceForm() {
+export function NewWorkspaceForm({ defaultIdea = "" }: { defaultIdea?: string }) {
   const [state, action, pending] = useActionState<CreateState, FormData>(createWorkspaceAction, {});
   return (
     <form action={action} className="flex flex-col gap-5">
@@ -15,6 +15,7 @@ export function NewWorkspaceForm() {
           name="rawIdea"
           rows={5}
           autoFocus
+          defaultValue={defaultIdea}
           placeholder="Fish processors on the coast ship in plastic trays. Kelp grown right there could replace them…"
           className="rounded-lg px-4 py-3 text-md shadow-card"
         />

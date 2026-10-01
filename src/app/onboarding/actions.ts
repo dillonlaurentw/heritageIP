@@ -15,7 +15,10 @@ export async function saveStep(fields: Partial<ProfileInput>, nextStep: number):
 }
 
 export async function completeOnboarding() {
-  const { user } = await requireViewer();
-  await db.profile.update({ where: { userId: user.id }, data: { onboardedAt: new Date() } });
-  redirect("/home");
+  const { user, profile } = await requireViewer();
+  // No contact screen any more: until they add one, a yes shares their sign-in email.
+  await db.profile.update({ where: { userId: user.id }, data: { onboardedAt: new Date(), contactEmail: profile.contactEmail ?? user.email } });
+  // A builder goes straight to naming what they just described; everyone else to Today.
+  const hasCompany = await db.workspaceMember.count({ where: { userId: user.id, workspace: { kind: "TEAM" } } });
+  redirect(profile.roles.includes("BUILDER") && !hasCompany && profile.buildingToward ? "/new" : "/home");
 }

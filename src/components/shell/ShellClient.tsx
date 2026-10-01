@@ -2,7 +2,7 @@
 
 import { Copy, ExternalLink, Trash2 } from "lucide-react";
 import type { Route } from "next";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import {
   archivePageAction,
@@ -18,6 +18,7 @@ import { CommandPalette } from "./CommandPalette";
 import { DemoSwitch } from "./DemoSwitch";
 import { ShellProvider } from "./ShellContext";
 import { Sidebar } from "./Sidebar";
+import { TopNav } from "./TopNav";
 import type { PaletteItem, ShellWorkspace, TreeNode } from "./types";
 
 type Props = {
@@ -38,7 +39,10 @@ type Props = {
 /** Wires the sidebar and ⌘K to page actions. Everything visual lives in Sidebar. */
 export function ShellClient(p: Props) {
   const router = useRouter();
+  const pathname = usePathname();
   const toast = useToast();
+  // Pages, databases and private notes live in a drawer inside a company, not on every screen.
+  const inCompany = pathname.startsWith("/w/");
 
   const create = async (workspaceId: string, parentId: string | null) => {
     const res = await newPage(workspaceId, parentId);
@@ -79,8 +83,18 @@ export function ShellClient(p: Props) {
 
   return (
     <ShellProvider>
-      <div className="flex h-dvh overflow-hidden">
-        <Sidebar
+      <div className="flex h-dvh flex-col overflow-hidden">
+        <TopNav
+          user={p.user}
+          workspaces={p.workspaces}
+          current={p.current}
+          inboxCount={p.inboxCount}
+          messagesCount={p.messagesCount}
+          signOut={() => void p.signOut()}
+          footer={p.demoUsers.length > 0 ? <DemoSwitch current={p.user.email} users={p.demoUsers} /> : null}
+        />
+        <div className="flex min-h-0 flex-1">
+        {inCompany && <Sidebar
           user={p.user}
           workspaces={p.workspaces}
           current={p.current}
@@ -128,11 +142,11 @@ export function ShellClient(p: Props) {
               </Menu>
             ),
           }}
-          footer={p.demoUsers.length > 0 ? <DemoSwitch current={p.user.email} users={p.demoUsers} /> : null}
-        />
-        <main id="main" className="scroll-quiet relative flex min-w-0 flex-1 flex-col overflow-y-auto">
+        />}
+        <main id="main" className="scroll-quiet relative flex min-w-0 flex-1 flex-col overflow-y-auto pb-16 md:pb-0">
           {p.children}
         </main>
+        </div>
       </div>
       <CommandPalette
         items={palette}

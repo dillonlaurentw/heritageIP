@@ -2,6 +2,8 @@ import type { ProfileInput } from "@/lib/profile-schema";
 
 /*
  * The onboarding script. Edit copy here; the flow renders whatever is listed.
+ * Self5: three screens for a builder (name, what brings you, what you're
+ * building). The rest of their Self is learned later, never asked up front.
  * Keep prompts short and human. `lines` are the display line breaks.
  */
 
@@ -37,58 +39,13 @@ export const STEPS: Step[] = [
     helper: "Pick everything that fits. Most people are more than one.",
   },
   {
-    id: "beliefs",
-    kind: "reflect",
-    for: "BUILDER",
-    field: "beliefs",
-    lines: ["What do you believe", "that most people", "don't?"],
-    helper: "About your industry, how work should work, the world. Half-formed is fine.",
-    placeholder: "Most people think… I think…",
-  },
-  {
-    id: "workStyle",
-    kind: "reflect",
-    for: "BUILDER",
-    field: "workStyle",
-    lines: ["How do you work", "when it's going", "well?"],
-    helper: "Mornings or midnight. Alone or in a room. Plan first or build first.",
-    placeholder: "When I'm at my best, I…",
-  },
-  {
     id: "buildingToward",
     kind: "reflect",
     for: "BUILDER",
     field: "buildingToward",
-    lines: ["What are you", "building toward?"],
-    helper: "Not the product. The change, the life, the thing ten years out.",
-    placeholder: "In ten years I want…",
-  },
-  {
-    id: "strengths",
-    kind: "reflect",
-    for: "BUILDER",
-    field: "strengths",
-    lines: ["Where are you", "strongest?"],
-    helper: "What do people come to you for?",
-    placeholder: "People come to me when…",
-  },
-  {
-    id: "gaps",
-    kind: "reflect",
-    for: "BUILDER",
-    field: "gaps",
-    lines: ["Where do you need", "other people?"],
-    helper: "Honest answers make better matches. This is how SELF finds your people.",
-    placeholder: "I'm not the one to…",
-  },
-  {
-    id: "decisionStyle",
-    kind: "reflect",
-    for: "BUILDER",
-    field: "decisionStyle",
-    lines: ["How do you make", "hard calls?"],
-    helper: "Gut, data, debate, sleep on it. And what happens when a partner disagrees?",
-    placeholder: "When it's a hard call, I…",
+    lines: ["What are you", "building?"],
+    helper: "Half-formed is fine. Say it the way you'd tell a friend.",
+    placeholder: "I'm building… because…",
   },
   {
     id: "mentor",
@@ -114,12 +71,6 @@ export const STEPS: Step[] = [
     for: "PARTNER",
     lines: ["Who do you", "work with?"],
     helper: "Your firm or studio. You'll set up its full profile in the partner directory.",
-  },
-  {
-    id: "contact",
-    kind: "contact",
-    lines: ["How should people", "reach you?"],
-    helper: "Only shown to someone after you both say yes. Never public.",
   },
 ];
 
