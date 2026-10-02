@@ -37,7 +37,6 @@
   --accent-fg: #ffffff;
   --accent-text: #c2440f;
   --accent-soft: rgb(228 82 27 / 0.1);
-  --brush: #9db4c6; /* Self home: the one painted underline. Decorative only. */
 
   /* The ring */
   --ring-track: #e8e7e3;
@@ -97,7 +96,6 @@
   --accent-fg: #1a1a1a;
   --accent-text: #ff8a5c;
   --accent-soft: rgb(240 97 43 / 0.15);
-  --brush: #5f7a8e;
 
   --ring-track: #2e2e2c;
   --ring-link: #edece8;
@@ -157,7 +155,6 @@
     --accent-fg: #1a1a1a;
     --accent-text: #ff8a5c;
     --accent-soft: rgb(240 97 43 / 0.15);
-    --brush: #5f7a8e;
 
     --ring-track: #2e2e2c;
     --ring-link: #edece8;
@@ -218,7 +215,6 @@
   --color-accent-fg: var(--accent-fg);
   --color-accent-text: var(--accent-text);
   --color-accent-soft: var(--accent-soft);
-  --color-brush: var(--brush);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
   --color-success: var(--success);
