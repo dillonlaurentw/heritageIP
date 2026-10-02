@@ -77,11 +77,16 @@ kept and still runs; its landing moved to `/founders`.
 - **The collection** (`src/lib/inspirations.ts`, tested): **only complete
   poems and paintings with images.** No excerpts, quotes, prints, drawings or
   anything under copyright. Poems in `src/data/texts.ts` keep fixed numbers
-  (spread evenly); paintings in `src/data/artworks.json` fill the rest.
-  Rebuild with `node scripts/build-collection.mjs` (The Met only:
-  public-domain paintings whose image loads; the Art Institute of Chicago's
-  image server blocks non-browser traffic, so it's left out). No full
-  nudity and no crucifixion scenes: Met "nude" tags, title words, and the
+  (spread evenly); paintings fill the rest, The Met's
+  (`src/data/artworks.json`, `node scripts/build-collection.mjs`) mixed
+  evenly with modern and abstract work from Wikidata/Wikimedia Commons
+  (`src/data/modern.json`, `CACHE=<dir> node scripts/build-modern.mjs`).
+  The Met releases no modern art; Wikimedia does, under one rule: the
+  painter died in 1955 or earlier AND the work is dated 1930 or earlier.
+  Images use Wikimedia's standard 960px thumbnails on upload.wikimedia.org.
+  The Art Institute of Chicago's image server blocks non-browser traffic,
+  so it's left out. No full nudity and no crucifixion scenes: nude tags
+  (Met) or genre/depicts (Wikidata), title words, and each script's
   hand-checked `EXCLUDE` list;
   `UNRELIABLE` lists images that failed in a real browser. Review new works
   by eye before shipping. Never add Picasso, Duchamp, Dalí, Basquiat or

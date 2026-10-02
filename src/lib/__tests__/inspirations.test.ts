@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { TEXTS } from "../../data/texts";
-import { FIRST_SCREEN, INSPIRATIONS, inspiration, neighbours, scatter } from "../inspirations";
+import { FIRST_SCREEN, INSPIRATIONS, inspiration, interleave, neighbours, scatter } from "../inspirations";
 
 describe("inspirations", () => {
   it("keeps every word at its own number", () => {
@@ -19,11 +19,25 @@ describe("inspirations", () => {
     }
   });
 
-  it("has hundreds of paintings, each with a museum image", () => {
+  it("has hundreds of paintings, each with an image from The Met or Wikimedia Commons", () => {
     const art = INSPIRATIONS.filter((w) => w.kind === "art");
-    expect(art.length).toBeGreaterThanOrEqual(300);
-    for (const w of art) expect(w.image).toMatch(/^https:\/\/images\.metmuseum\.org\//);
-    for (const w of art) expect(w.image).toMatch(/^https:\/\/(www\.artic\.edu\/iiif|images\.metmuseum\.org)\//);
+    expect(art.length).toBeGreaterThanOrEqual(800);
+    for (const w of art) expect(w.image).toMatch(/^https:\/\/(images\.metmuseum\.org\/|upload\.wikimedia\.org\/wikipedia\/commons\/)/);
+  });
+
+  it("has abstract and modern work", () => {
+    const names = new Set(INSPIRATIONS.filter((w) => w.kind === "art").map((w) => w.author));
+    for (const painter of ["Wassily Kandinsky", "Piet Mondrian", "Henri Matisse", "Kazimir Malevich"]) expect(names.has(painter)).toBe(true);
+  });
+
+  it("only takes modern work from 1930 or earlier", () => {
+    for (const w of INSPIRATIONS) if (w.kind === "art" && w.image.includes("wikimedia")) expect(Number(w.date)).toBeLessThanOrEqual(1930);
+  });
+
+  it("spreads one list evenly through another, keeping both orders", () => {
+    expect(interleave<number | string>([1, 2, 3, 4], ["a", "b"])).toEqual([1, 2, "a", 3, 4, "b"]);
+    expect(interleave<string>([], ["a"])).toEqual(["a"]);
+    expect(interleave([1], [])).toEqual([1]);
   });
 
   it("leaves out artists whose work is still under copyright", () => {

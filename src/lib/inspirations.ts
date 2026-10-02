@@ -1,13 +1,15 @@
 /**
- * Self's inspirations: words (src/data/texts.ts) and artworks
- * (src/data/artworks.json, built by scripts/build-collection.mjs) in one
+ * Self's inspirations: words (src/data/texts.ts) and paintings in one
  * numbered list, plus where the numbers sit on the home page. Pure.
  *
- * Words keep the numbers they're given; artworks fill every other number in
- * the order the script wrote them. Adding artworks at the end or words at
- * an unused number never moves an existing number.
+ * Paintings come from two files: The Met's (src/data/artworks.json, built by
+ * scripts/build-collection.mjs) and modern and abstract work from Wikimedia
+ * Commons (src/data/modern.json, built by scripts/build-modern.mjs), mixed
+ * evenly. Words keep the numbers they're given; paintings fill every other
+ * number.
  */
 import artworks from "../data/artworks.json";
+import modern from "../data/modern.json";
 import { TEXTS } from "../data/texts";
 
 export type TextWork = {
@@ -41,10 +43,24 @@ export type Inspiration = TextWork | ArtWork;
 
 type ArtRecord = { title: string; artist: string; date: string; medium: string; image: string; alt: string; museum: string; url: string };
 
+/** Spreads `b` evenly through `a`, keeping the order of each. */
+export function interleave<T>(a: T[], b: T[]): T[] {
+  const out: T[] = [];
+  const total = a.length + b.length;
+  let i = 0;
+  let j = 0;
+  for (let k = 0; k < total; k++) {
+    const bDue = Math.floor(((k + 1) * b.length) / total) > j;
+    if (j < b.length && (bDue || i >= a.length)) out.push(b[j++]);
+    else out.push(a[i++]);
+  }
+  return out;
+}
+
 function assemble(): Inspiration[] {
   const words = new Map(TEXTS.map((t) => [t.n, t]));
   const lastWord = Math.max(...TEXTS.map((t) => t.n));
-  const art = artworks as ArtRecord[];
+  const art = interleave(artworks as ArtRecord[], modern as ArtRecord[]);
   const out: Inspiration[] = [];
   let next = 0;
   for (let n = 1; next < art.length || n <= lastWord; n++) {
