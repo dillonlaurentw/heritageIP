@@ -31,7 +31,7 @@ improves with every permitted interaction. Not a consumer app, social network or
 chatbot. First use case: AI shopping and discovery. The founder app below is
 kept and still runs; its landing moved to `/founders`.
 
-- **Public site** in `src/app/(site)/`: `/` (home), `/docs` (integration docs;
+- **Public site** in `src/app/(site)/`: `/docs` (integration docs;
   every example must match the API), `/sandbox` (developer sandbox),
   `/sandbox/consent/[id]` (Self's consent screen, simulated customer).
   Chrome in `src/components/site/`; sandbox UI in `src/components/sandbox/`.
@@ -66,11 +66,15 @@ kept and still runs; its landing moved to `/founders`.
 - **Values and beliefs are stated only**: categories with `statedOnly`
   (`values`) are never learned from outcomes or inferred from behaviour; Self
   records only what the person says. Keep this for any belief-like category.
-- **Site voice**: Thrive-style minimalism. Large serif statements
-  (`text-hero`, `text-title`), few words, hairlines, one inverted band. The
-  thesis: people are more than what they buy (actions, preferences, values,
-  beliefs). Bold about the vision, honest about the status (sandbox only), no
-  buzzwords, no unbuilt verticals.
+- **Home (`src/app/page.tsx`, outside the `(site)` group, no menu)**: one
+  hand-drawn mark (`Walker`), plain paragraphs that say what Self is (the
+  first one medium weight), one call to action with a painted underline
+  (`Brush`, colour token `brush`), a one-line footer. Hand-drawn marks live in
+  `src/components/site/Sketch.tsx`. Keep it this sparse: no sections, no
+  cards, no headline banner. Docs and sandbox keep the `(site)` header.
+- **Voice**: people are more than what they buy (choices, preferences,
+  values, beliefs). Bold about the vision, honest about the status (sandbox
+  only), no buzzwords, no unbuilt verticals.
 
 ---
 

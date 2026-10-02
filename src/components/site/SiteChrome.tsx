@@ -23,9 +23,6 @@ export function SiteHeader() {
     <header className="mx-auto flex h-20 w-full max-w-7xl items-center justify-between gap-6 px-6 md:px-10">
       <Wordmark />
       <nav className="flex items-center gap-6 text-sm text-fg-muted md:gap-8">
-        <Link href="/#thesis" className="hidden hover:text-fg sm:inline">
-          Thesis
-        </Link>
         <Link href="/docs" className="hover:text-fg">
           Docs
         </Link>

@@ -37,6 +37,7 @@
   --accent-fg: #ffffff;
   --accent-text: #c2440f;
   --accent-soft: rgb(228 82 27 / 0.1);
+  --brush: #9db4c6; /* Self home: the one painted underline. Decorative only. */
 
   /* The ring */
   --ring-track: #e8e7e3;
@@ -96,6 +97,7 @@
   --accent-fg: #1a1a1a;
   --accent-text: #ff8a5c;
   --accent-soft: rgb(240 97 43 / 0.15);
+  --brush: #5f7a8e;
 
   --ring-track: #2e2e2c;
   --ring-link: #edece8;
@@ -155,6 +157,7 @@
     --accent-fg: #1a1a1a;
     --accent-text: #ff8a5c;
     --accent-soft: rgb(240 97 43 / 0.15);
+    --brush: #5f7a8e;
 
     --ring-track: #2e2e2c;
     --ring-link: #edece8;
@@ -215,6 +218,7 @@
   --color-accent-fg: var(--accent-fg);
   --color-accent-text: var(--accent-text);
   --color-accent-soft: var(--accent-soft);
+  --color-brush: var(--brush);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
   --color-success: var(--success);
@@ -262,9 +266,6 @@
   --text-title: 3.5rem; /* 56px: page titles (serif) */
   --text-title--line-height: 1.05;
   --text-title--letter-spacing: -0.015em;
-  --text-hero: clamp(3.25rem, 10.5vw, 10.5rem); /* the Self site's opening statement (serif) */
-  --text-hero--line-height: 0.92;
-  --text-hero--letter-spacing: -0.03em;
   --text-display: clamp(3rem, 7vw, 6rem); /* the first screen (serif) */
   --text-display--line-height: 1;
   --text-display--letter-spacing: -0.02em;
