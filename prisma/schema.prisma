@@ -1089,3 +1089,166 @@ model PushToken {
 
   @@index([userId])
 }
+
+// ─────────────────────────────────────────────────────────────
+// Self platform (B2B): customer understanding for companies and AI agents.
+// Plain-language guide: CLAUDE.md → "Self platform". Everything below lives
+// inside a Sandbox (synthetic customers, local API) until production exists.
+// ─────────────────────────────────────────────────────────────
+
+/// A developer sandbox: two fictional services and their synthetic customers.
+/// Deleting it removes everything inside it.
+model Sandbox {
+  id        String           @id @default(cuid())
+  createdAt DateTime         @default(now())
+  expiresAt DateTime
+  services  SelfService[]
+  grants    ShareGrant[]
+  audit     SelfAuditEntry[]
+
+  @@index([expiresAt])
+}
+
+/// A participating company or product. It authenticates with an API key;
+/// only the key's hash is stored.
+model SelfService {
+  id          String            @id @default(cuid())
+  sandboxId   String
+  sandbox     Sandbox           @relation(fields: [sandboxId], references: [id], onDelete: Cascade)
+  slug        String
+  name        String
+  description String
+  keyHash     String            @unique
+  keyHint     String // last four characters, for display
+  createdAt   DateTime          @default(now())
+  customers   CustomerProfile[]
+  contexts    ContextRequest[]
+  grantsAsked ShareGrant[]      @relation("GrantSourceService")
+
+  @@unique([sandboxId, slug])
+}
+
+/// One customer as one service knows them, keyed by that service's own user
+/// id (from its existing sign-in). Profiles are never merged across services:
+/// a matching email is not permission. Only an ACTIVE ShareGrant connects two.
+model CustomerProfile {
+  id                     String           @id @default(cuid())
+  serviceId              String
+  service                SelfService      @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  externalId             String
+  displayName            String?
+  email                  String? // display only; never used to match profiles
+  consentPersonalization Boolean          @default(false)
+  consentAgents          Boolean          @default(false)
+  consentUpdatedAt       DateTime?
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
+  preferences            Preference[]
+  events                 CustomerEvent[]
+  contexts               ContextRequest[]
+  sharesOut              ShareGrant[]     @relation("GrantFrom")
+  sharesIn               ShareGrant[]     @relation("GrantTo")
+
+  @@unique([serviceId, externalId])
+}
+
+enum PreferenceStance {
+  LIKES
+  AVOIDS
+}
+
+enum PreferenceSource {
+  STATED // the customer said it
+  OBSERVED // learned from an outcome the customer had
+}
+
+/// One structured preference. `evidence` counts the interactions behind it;
+/// an observed preference whose evidence reaches zero is removed.
+model Preference {
+  id             String           @id @default(cuid())
+  profileId      String
+  profile        CustomerProfile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  category       String // from the domain pack (src/lib/self/domains)
+  value          String // normalized, e.g. "merino wool"
+  stance         PreferenceStance
+  source         PreferenceSource
+  evidence       Int              @default(1)
+  note           String?
+  lastEvidenceAt DateTime         @default(now())
+  createdAt      DateTime         @default(now())
+
+  @@unique([profileId, category, value])
+}
+
+/// A meaningful interaction: stated feedback, a purchase, a return, an outcome.
+/// Events stay with the service that recorded them; they are never shared.
+model CustomerEvent {
+  id        String          @id @default(cuid())
+  profileId String
+  profile   CustomerProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  kind      String
+  summary   String
+  data      Json?
+  contextId String?
+  createdAt DateTime        @default(now())
+
+  @@index([profileId, createdAt])
+}
+
+/// Every context retrieval, so an outcome can point back at what was returned.
+model ContextRequest {
+  id        String          @id @default(cuid())
+  serviceId String
+  service   SelfService     @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  profileId String
+  profile   CustomerProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  purpose   String // personalization | ai_agent
+  query     String?
+  returned  Json
+  outcomeAt DateTime?
+  createdAt DateTime        @default(now())
+}
+
+enum ShareGrantStatus {
+  PENDING // asked by the receiving service, waiting on the customer
+  ACTIVE // the customer approved
+  DECLINED
+  REVOKED
+}
+
+/// Permission for one service to read selected categories of a customer's
+/// understanding held by another. Asked by the receiving service (`to`),
+/// decided by the customer, who proves the source account by signing in there.
+model ShareGrant {
+  id              String           @id @default(cuid())
+  sandboxId       String
+  sandbox         Sandbox          @relation(fields: [sandboxId], references: [id], onDelete: Cascade)
+  toProfileId     String
+  toProfile       CustomerProfile  @relation("GrantTo", fields: [toProfileId], references: [id], onDelete: Cascade)
+  sourceServiceId String
+  sourceService   SelfService      @relation("GrantSourceService", fields: [sourceServiceId], references: [id], onDelete: Cascade)
+  fromProfileId   String?
+  fromProfile     CustomerProfile? @relation("GrantFrom", fields: [fromProfileId], references: [id], onDelete: Cascade)
+  categories      String[]
+  reason          String
+  status          ShareGrantStatus @default(PENDING)
+  createdAt       DateTime         @default(now())
+  decidedAt       DateTime?
+  revokedAt       DateTime?
+
+  @@index([toProfileId, status])
+}
+
+/// What happened to a customer's data and who did it, in plain words.
+model SelfAuditEntry {
+  id        String   @id @default(cuid())
+  sandboxId String
+  sandbox   Sandbox  @relation(fields: [sandboxId], references: [id], onDelete: Cascade)
+  actor     String // a service slug, or "customer"
+  profileId String? // not a relation: entries outlive a deleted profile
+  action    String
+  detail    String
+  createdAt DateTime @default(now())
+
+  @@index([sandboxId, createdAt])
+}

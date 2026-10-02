@@ -22,6 +22,51 @@ the full build.
 
 ---
 
+## Self platform (B2B, current direction)
+
+**Self** (brand: "Self", line: "Understanding that carries forward.") is B2B
+infrastructure: companies integrate it behind their own products and sign-in so
+their product and AI agents get relevant, permissioned customer context that
+improves with every permitted interaction. Not a consumer app, social network or
+chatbot. First use case: AI shopping and discovery. The founder app below is
+kept and still runs; its landing moved to `/founders`.
+
+- **Public site** in `src/app/(site)/`: `/` (home), `/docs` (integration docs;
+  every example must match the API), `/sandbox` (developer sandbox),
+  `/sandbox/consent/[id]` (Self's consent screen, simulated customer).
+  Chrome in `src/components/site/`; sandbox UI in `src/components/sandbox/`.
+- **API** `/api/v1/*` (route handlers via `api()` in `src/lib/self/http.ts`):
+  bearer service key (`self_test_…`, stored as sha256), JSON errors with a stable
+  `code`, `"environment": "sandbox"` on every response. Bodies in
+  `src/lib/self/schemas.ts`; logic in `src/lib/self/store.ts` (server-only);
+  pure rules in `src/lib/self/rules.ts` (tested in `self-rules.test.ts`).
+- **Model** (`prisma/schema.prisma`, bottom): `Sandbox` → `SelfService` →
+  `CustomerProfile` (keyed by the service's own user id) → `Preference`
+  (LIKES/AVOIDS, STATED/OBSERVED, evidence), `CustomerEvent`, `ContextRequest`;
+  `ShareGrant` between two profiles; `SelfAuditEntry` for every read and write.
+  Categories come from domain packs (`src/lib/self/domains.ts`, shopping only).
+- **Permission rules (enforce on the server, never only in UI):**
+  - Consent per purpose: recording needs personalization; context for
+    `ai_agent` also needs `ai_agents`. Refusal is `403 consent_required`.
+  - Profiles are never merged or matched across services, not by email or
+    anything else. Only an ACTIVE `ShareGrant`, approved by the customer after
+    signing in at the source, connects two. The customer can narrow categories,
+    never widen. Either service or the customer can revoke.
+  - Shared preferences are read at request time, labelled with their source,
+    never copied, and never override the receiving service's own. Events are
+    never shared. Outcomes only change the caller's own preferences. The source
+    customer's consent still applies to what leaves that service.
+  - What the customer stated is never changed by an outcome. Returns/rejections
+    teach only through `because`.
+- **Sandbox**: created on demand (`openSandbox`), seeded from
+  `src/lib/self/sandbox-data.ts` (fictional services Cadence Outdoor and
+  Fernhill Home, synthetic customers, example.com emails), tied to one browser
+  by an httpOnly cookie holding sandbox keys, deleted after 3 days. Every demo
+  surface says Sandbox/synthetic; never imply live customers or production.
+- Copy: plain, no buzzwords or grand claims, no unbuilt verticals.
+
+---
+
 ## Core objects
 
 ```

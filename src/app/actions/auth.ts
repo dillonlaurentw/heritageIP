@@ -42,5 +42,5 @@ export async function googleSignIn() {
 
 export async function signOut() {
   await auth.api.signOut({ headers: await headers() });
-  redirect("/");
+  redirect("/founders");
 }

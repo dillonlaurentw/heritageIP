@@ -11,8 +11,8 @@ const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono"
 const serif = Instrument_Serif({ subsets: ["latin"], weight: "400", style: ["normal", "italic"], variable: "--font-instrument-serif", display: "swap" });
 
 export const metadata: Metadata = {
-  title: { default: "SELF", template: "%s · SELF" },
-  description: "One workspace to build a company: from the first idea to running the business and the team.",
+  title: { default: "Self: understanding that carries forward", template: "%s · Self" },
+  description: "Give your product and AI agents relevant customer context that improves with every permitted interaction.",
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

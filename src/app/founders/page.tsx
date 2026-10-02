@@ -15,7 +15,9 @@ const SAMPLE: RingNode[] = [
   { id: "k1", theme: "CAPITAL", kind: "person", state: "pending", name: "Priya Nair", note: "following along" },
 ];
 
-/** The front door: one idea (you, and the people around you) and one action. */
+export const metadata = { title: "SELF for founders" };
+
+/** The founder app's front door (the public site at / is the Self platform). */
 export default async function Landing() {
   const viewer = await getViewer();
   const cta = viewer ? { href: "/home" as const, label: "Open SELF" } : { href: "/sign-in" as const, label: "Begin with you" };
@@ -23,7 +25,7 @@ export default async function Landing() {
   return (
     <div className="flex min-h-dvh flex-col">
       <header className="mx-auto flex h-20 w-full max-w-6xl items-center justify-between px-6 md:px-16">
-        <Link href="/" className="text-[17px] font-semibold tracking-[0.18em]">
+        <Link href="/founders" className="text-[17px] font-semibold tracking-[0.18em]">
           SELF
         </Link>
         <nav className="flex items-center gap-6 text-sm text-fg-muted">

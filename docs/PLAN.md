@@ -1,3 +1,25 @@
+# Self platform (B2B): current
+
+Self is customer-understanding infrastructure for companies and their AI
+agents. The founder app below is kept (landing at `/founders`).
+
+## Phase 1 (built): site, sandbox, API, docs
+- Public site (`/`), integration docs (`/docs`), developer sandbox
+  (`/sandbox`) with two fictional services and synthetic customers.
+- `/api/v1`: link customers, consent, stated preferences, events, context,
+  outcomes (with visible learning), share requests and grants, deletion.
+- Cross-service sharing only through a customer-approved share grant.
+
+## Next (needs approval)
+- Accounts for developer teams and real (non-sandbox) keys, with keys never in
+  a browser; webhooks for grant changes; the consent screen as a redirect flow
+  with real sign-in at the source service.
+- Customer-facing view of everything held about them across services.
+- Production hosting, data-processing terms and a security review before any
+  real customer data.
+
+---
+
 # SELF app: journal, circles, mentors, network (current)
 
 The web platform (Self3) is saved on the `self3` branch. The SELF app is a

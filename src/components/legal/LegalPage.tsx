@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 export function LegalPage({ title, updated, children }: { title: string; updated: string; children: ReactNode }) {
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col gap-8 px-6 py-12 md:px-12">
-      <Link href="/" className="text-[17px] font-semibold tracking-[0.18em]">
+      <Link href="/founders" className="text-[17px] font-semibold tracking-[0.18em]">
         SELF
       </Link>
       <div className="flex flex-col gap-2">
