@@ -524,6 +524,10 @@ export async function answer(user: { id: string }, message: string) {
               <C>ignored</C>: recorded as an event, nothing learned.
             </li>
             <li>What the customer stated is never changed by an outcome. A conflict is reported as <C>kept</C>.</li>
+            <li>
+              <C>values</C> (values and beliefs) are never learned from behaviour. Self records only what the customer says;
+              an outcome touching them is reported as <C>kept</C>.
+            </li>
           </ul>
         </Section>
 
@@ -539,7 +543,10 @@ export async function answer(user: { id: string }, message: string) {
                 <tr key={c.key}>
                   <td className="py-2 pr-4 font-mono text-xs">{c.key}</td>
                   <td className="py-2 pr-4">{c.label}</td>
-                  <td className="py-2 text-fg-muted">e.g. {c.example}</td>
+                  <td className="py-2 text-fg-muted">
+                    e.g. {c.example}
+                    {c.statedOnly && <span className="text-fg-subtle"> · only what the customer says</span>}
+                  </td>
                 </tr>
               ))}
             </tbody>

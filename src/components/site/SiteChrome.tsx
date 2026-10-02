@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { LinkButton } from "@/components/ui/Button";
 
 /** The Self wordmark: the serif, quiet. */
 export function Wordmark() {
@@ -21,21 +20,18 @@ export function DemoLabel({ children = "Sandbox" }: { children?: React.ReactNode
 
 export function SiteHeader() {
   return (
-    <header className="mx-auto flex h-20 w-full max-w-6xl items-center justify-between gap-6 px-6 md:px-10">
+    <header className="mx-auto flex h-20 w-full max-w-7xl items-center justify-between gap-6 px-6 md:px-10">
       <Wordmark />
-      <nav className="flex items-center gap-1 text-sm text-fg-muted sm:gap-5">
-        <Link href="/#how" className="hidden px-2 hover:text-fg sm:inline">
-          How it works
+      <nav className="flex items-center gap-6 text-sm text-fg-muted md:gap-8">
+        <Link href="/#thesis" className="hidden hover:text-fg sm:inline">
+          Thesis
         </Link>
-        <Link href="/#permission" className="hidden px-2 hover:text-fg sm:inline">
-          Permission
-        </Link>
-        <Link href="/docs" className="px-2 hover:text-fg">
+        <Link href="/docs" className="hover:text-fg">
           Docs
         </Link>
-        <LinkButton href="/sandbox" variant="primary" size="sm">
-          Open the sandbox
-        </LinkButton>
+        <Link href="/sandbox" className="text-fg hover:text-fg-muted">
+          Sandbox
+        </Link>
       </nav>
     </header>
   );
@@ -44,37 +40,20 @@ export function SiteHeader() {
 export function SiteFooter() {
   return (
     <footer className="mt-auto border-t border-border">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-10 text-sm text-fg-muted md:flex-row md:items-start md:justify-between md:px-10">
-        <div className="flex max-w-sm flex-col gap-2">
-          <span className="font-display text-xl text-fg">Self</span>
-          <p>
-            Self is in early development. The sandbox runs on synthetic customers and a local API; there is no production
-            service yet.
-          </p>
-        </div>
-        <div className="flex gap-10">
-          <div className="flex flex-col gap-2">
-            <span className="text-fg-subtle">Build</span>
-            <Link href="/docs" className="hover:text-fg">
-              Documentation
-            </Link>
-            <Link href="/docs#api" className="hover:text-fg">
-              API reference
-            </Link>
-            <Link href="/sandbox" className="hover:text-fg">
-              Sandbox
-            </Link>
-          </div>
-          <div className="flex flex-col gap-2">
-            <span className="text-fg-subtle">Principles</span>
-            <Link href="/#permission" className="hover:text-fg">
-              Permission
-            </Link>
-            <Link href="/docs#sharing" className="hover:text-fg">
-              Sharing across services
-            </Link>
-          </div>
-        </div>
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-6 py-8 text-sm text-fg-subtle md:flex-row md:items-center md:justify-between md:px-10">
+        <span className="font-display text-xl text-fg">Self</span>
+        <span>Early development. The sandbox uses synthetic people; nothing here is live.</span>
+        <span className="flex gap-6">
+          <Link href="/docs" className="hover:text-fg">
+            Docs
+          </Link>
+          <Link href="/docs#sharing" className="hover:text-fg">
+            Permission
+          </Link>
+          <Link href="/sandbox" className="hover:text-fg">
+            Sandbox
+          </Link>
+        </span>
       </div>
     </footer>
   );

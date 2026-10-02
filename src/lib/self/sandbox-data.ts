@@ -41,6 +41,7 @@ export const SEED_SERVICES: SeedService[] = [
           { category: "fit", value: "wide toe box", stance: "LIKES", source: "STATED", evidence: 1, daysAgo: 40 },
           { category: "use", value: "commuting by bike in the rain", stance: "LIKES", source: "STATED", evidence: 1, daysAgo: 12 },
           { category: "budget", value: "under $200 for outerwear", stance: "LIKES", source: "STATED", evidence: 1, daysAgo: 12 },
+          { category: "values", value: "a life without a car", stance: "LIKES", source: "STATED", evidence: 1, note: "in her words", daysAgo: 12 },
         ],
         events: [
           { kind: "purchase", summary: "Bought a merino base layer", daysAgo: 30, data: { item: "Ridge merino crew" } },
@@ -97,6 +98,7 @@ export const SEED_SERVICES: SeedService[] = [
           { category: "material", value: "linen", stance: "LIKES", source: "OBSERVED", evidence: 2, daysAgo: 18 },
           { category: "material", value: "polyester", stance: "AVOIDS", source: "OBSERVED", evidence: 1, note: "returned a polyester throw", daysAgo: 35 },
           { category: "values", value: "natural fibres", stance: "LIKES", source: "STATED", evidence: 1, daysAgo: 50 },
+          { category: "values", value: "buy less, buy better", stance: "LIKES", source: "STATED", evidence: 2, daysAgo: 50 },
           { category: "budget", value: "under $120 for textiles", stance: "LIKES", source: "STATED", evidence: 1, daysAgo: 50 },
         ],
         events: [

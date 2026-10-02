@@ -262,6 +262,9 @@
   --text-title: 3.5rem; /* 56px: page titles (serif) */
   --text-title--line-height: 1.05;
   --text-title--letter-spacing: -0.015em;
+  --text-hero: clamp(3.25rem, 10.5vw, 10.5rem); /* the Self site's opening statement (serif) */
+  --text-hero--line-height: 0.92;
+  --text-hero--letter-spacing: -0.03em;
   --text-display: clamp(3rem, 7vw, 6rem); /* the first screen (serif) */
   --text-display--line-height: 1;
   --text-display--letter-spacing: -0.02em;

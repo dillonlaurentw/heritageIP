@@ -192,6 +192,7 @@ export type Learned = { writes: PrefWrite[]; changes: Change[]; note: string };
  *   no reason, nothing is learned: a return can mean anything.
  * - ignored: recorded, nothing learned.
  * Stated preferences are never changed by an outcome; a conflict is reported.
+ * Values and beliefs (statedOnly categories) are never learned at all.
  */
 export function learnFromOutcome(input: { result: OutcomeResult; attributes: Attr[]; because?: Attr[]; existing: Pref[] }): Learned {
   const { result, existing } = input;
@@ -208,6 +209,10 @@ export function learnFromOutcome(input: { result: OutcomeResult; attributes: Att
 
   for (const a of attrs) {
     const value = normalizeValue(a.value);
+    if (categoryDef(a.category)?.statedOnly) {
+      changes.push({ category: a.category, value, stance: want, change: "kept", why: "values and beliefs come only from what the customer says" });
+      continue;
+    }
     const cur = existing.find((p) => p.category === a.category && p.value === value);
     if (!cur) {
       writes.push({ op: "create", category: a.category, value, stance: want, source: "OBSERVED", evidence: 1 });

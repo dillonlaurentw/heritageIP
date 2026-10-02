@@ -127,6 +127,19 @@ describe("learnFromOutcome", () => {
     expect(learnFromOutcome({ result: "ignored", attributes: [{ category: "material", value: "wool" }], existing }).writes).toEqual([]);
   });
 
+  it("never learns values or beliefs from behaviour", () => {
+    const r = learnFromOutcome({
+      result: "purchased",
+      attributes: [
+        { category: "values", value: "buy less, buy better" },
+        { category: "material", value: "wool" },
+      ],
+      existing,
+    });
+    expect(r.writes.map((w) => w.category)).toEqual(["material"]);
+    expect(r.changes[0]).toMatchObject({ category: "values", change: "kept" });
+  });
+
   it("adds an avoid for the named reason only", () => {
     const r = learnFromOutcome({
       result: "rejected",

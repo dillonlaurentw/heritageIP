@@ -63,7 +63,14 @@ kept and still runs; its landing moved to `/founders`.
   Fernhill Home, synthetic customers, example.com emails), tied to one browser
   by an httpOnly cookie holding sandbox keys, deleted after 3 days. Every demo
   surface says Sandbox/synthetic; never imply live customers or production.
-- Copy: plain, no buzzwords or grand claims, no unbuilt verticals.
+- **Values and beliefs are stated only**: categories with `statedOnly`
+  (`values`) are never learned from outcomes or inferred from behaviour; Self
+  records only what the person says. Keep this for any belief-like category.
+- **Site voice**: Thrive-style minimalism. Large serif statements
+  (`text-hero`, `text-title`), few words, hairlines, one inverted band. The
+  thesis: people are more than what they buy (actions, preferences, values,
+  beliefs). Bold about the vision, honest about the status (sandbox only), no
+  buzzwords, no unbuilt verticals.
 
 ---
 

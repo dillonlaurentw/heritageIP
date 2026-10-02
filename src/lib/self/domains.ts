@@ -12,6 +12,11 @@ export type CategoryDef = {
   example: string;
   /** Query words that make this category relevant even when no value matches. */
   cues: string[];
+  /**
+   * Only ever what the customer says. Outcomes never add to or change it:
+   * Self doesn't infer what someone values or believes from what they buy.
+   */
+  statedOnly?: boolean;
 };
 
 export type DomainPack = { key: string; label: string; categories: CategoryDef[] };
@@ -48,9 +53,10 @@ export const SHOPPING: DomainPack = {
     { key: "budget", label: "Budget", example: "under $150 for everyday items", cues: ["budget", "price", "cheap", "affordable", "cost", "spend", "deal", "gift"] },
     {
       key: "values",
-      label: "Values",
-      example: "repairable, made to last",
-      cues: ["sustainable", "ethical", "recycled", "repair", "durable", "organic", "local"],
+      label: "Values and beliefs",
+      example: "buy less, buy better",
+      cues: ["sustainable", "ethical", "recycled", "repair", "durable", "organic", "local", "value", "belief", "matter", "gift"],
+      statedOnly: true,
     },
     {
       key: "use",
