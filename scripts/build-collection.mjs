@@ -41,14 +41,14 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /** The Met: painter → how many paintings at most. */
 const MET_ARTISTS = {
-  "Vincent van Gogh": 30,
+  "Vincent van Gogh": 40,
   "Claude Monet": 30,
-  "Paul Cézanne": 30,
+  "Paul Cézanne": 40,
   "Edgar Degas": 30,
   "Pierre-Auguste Renoir": 25,
   "Édouard Manet": 25,
-  "Paul Gauguin": 20,
-  "Georges Seurat": 15,
+  "Paul Gauguin": 30,
+  "Georges Seurat": 20,
   "Camille Pissarro": 20,
   "Alfred Sisley": 15,
   "Berthe Morisot": 10,
@@ -94,6 +94,33 @@ const MET_ARTISTS = {
   "Childe Hassam": 15,
   "Katsushika Hokusai": 10,
   "Utagawa Hiroshige": 5,
+  "Amedeo Modigliani": 10,
+  "Henri-Edmond Cross": 10,
+  "Canaletto": 10,
+  "Claude Lorrain": 8,
+  "Nicolas Poussin": 6,
+  "Jean Siméon Chardin": 10,
+  "Élisabeth Louise Vigée Le Brun": 8,
+  "Giovanni Battista Tiepolo": 8,
+  "Francesco Guardi": 8,
+  "Jacob van Ruisdael": 8,
+  "Meindert Hobbema": 5,
+  "Aelbert Cuyp": 6,
+  "Jan Steen": 6,
+  "Pieter de Hooch": 5,
+  "Bartolomé Esteban Murillo": 6,
+  "Rosa Bonheur": 5,
+  "Charles-François Daubigny": 10,
+  "Théodore Rousseau": 8,
+  "Frédéric Bazille": 3,
+  "Itō Jakuchū": 10,
+  "Ogata Kōrin": 6,
+  "Sakai Hōitsu": 8,
+  "Maruyama Ōkyo": 8,
+  "Shitao": 8,
+  "Bada Shanren": 8,
+  "Wang Hui": 8,
+  "Shen Zhou": 8,
 };
 
 const RANK = { painting: 0, drawing: 1, "work on paper": 2, print: 3 };
@@ -137,14 +164,22 @@ const EXCLUDE = new Set([
   437007, // Fra Angelico, The Crucifixion
   435972, // Corot, Honfleur: Calvary (roadside crucifix)
   437877, // Vermeer, Allegory of the Catholic Faith (crucifixion on the wall)
+  437328, // Poussin, sleeping figures (partial nudity)
+  435740, // Boucher, cherubs
+  435741, // Boucher, cherubs
+  437792, // Tiepolo, allegory (semi-nude figures)
+  437798, // Tiepolo, allegory (semi-nude figures)
+  437791, // Tiepolo, allegory (semi-nude figures)
+  437793, // Tiepolo, statue (nude)
+  459087, // El Greco, Christ Carrying the Cross
 ]);
 
 /** Crucifixion scenes, by title. */
-const CRUCIFIXION_TITLE = /\b(crucifixion|crucified|calvary|golgotha|christ on the cross|descent from the cross|deposition)\b/i;
+const CRUCIFIXION_TITLE = /\b(crucifixion|crucified|calvary|golgotha|christ on the cross|carrying the cross|descent from the cross|deposition)\b/i;
 
 /** Images that didn't load reliably when each was opened in a real browser. */
 const UNRELIABLE = new Set([
-  435866, 435872, 435874, 435876, 436017, 436179, 436253, 436322, 436442, 436545, 436819, 436949, 437300, 437527, 437542, 437830, 438009, 438815,
+  39664, 42616, 49143, 49145, 49150, 435866, 435872, 435874, 435876, 436017, 436061, 436179, 436253, 436322, 436442, 436545, 436819, 436949, 437300, 437329, 437527, 437542, 437789, 437830, 438009, 438815,
 ]);
 function showsNudity(o) {
   if (EXCLUDE.has(o.objectID) || UNRELIABLE.has(o.objectID)) return true;

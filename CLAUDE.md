@@ -77,7 +77,7 @@ kept and still runs; its landing moved to `/founders`.
 - **The collection** (`src/lib/inspirations.ts`, tested): **only complete
   poems and paintings with images.** No excerpts, quotes, prints, drawings or
   anything under copyright. Poems in `src/data/texts.ts` keep fixed numbers
-  (every 23rd from 3); paintings in `src/data/artworks.json` fill the rest.
+  (spread evenly); paintings in `src/data/artworks.json` fill the rest.
   Rebuild with `node scripts/build-collection.mjs` (The Met only:
   public-domain paintings whose image loads; the Art Institute of Chicago's
   image server blocks non-browser traffic, so it's left out). No full
