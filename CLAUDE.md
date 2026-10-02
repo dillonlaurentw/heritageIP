@@ -67,15 +67,21 @@ kept and still runs; its landing moved to `/founders`.
   (`values`) are never learned from outcomes or inferred from behaviour; Self
   records only what the person says. Keep this for any belief-like category.
 - **Home (`src/app/page.tsx`)**: only "Self", "What moves us." and numbered
-  inspirations scattered around the page (positions in `SPOTS`; a row on
-  phones), each opening one creative work on a white page
-  (`src/app/inspiration/[n]/page.tsx`). The works live in
-  `src/lib/inspirations.ts`. 1 "The Voice" and 2 "Underface" are Shel
-  Silverstein (under copyright): title, opening line and credit unless the
-  permission holder fills in `lines`. 3 is "You. Me." on a blank page.
-  4 onward are public domain (US) only; Bashō is Self's own translation. Add
-  a work there and give it a spot. Nothing else on these pages: no agent, no
-  chat. Docs and sandbox still live at `/docs` and `/sandbox`.
+  inspirations: art, poems and lines of belief, mixed. The first screen
+  scatters them around the words (`scatter()`; 24 on phones, 60 on desktop),
+  then they continue as a loosely scattered field (`jitter()`). Words are
+  italic, artworks upright. Each opens on a white page
+  (`src/app/inspiration/[n]/page.tsx`) with ← n · Self · n → to wander.
+- **The collection** (`src/lib/inspirations.ts`, tested): words in
+  `src/data/texts.ts` keep fixed numbers; artworks in `src/data/artworks.json`
+  fill every other number. Rebuild the art with
+  `node scripts/build-collection.mjs` (Art Institute of Chicago + The Met,
+  public domain only, images hotlinked from the museums). Never add Picasso,
+  Duchamp, Dalí, Basquiat or other in-copyright work; the museums release
+  none of it. 1 and 2 (Silverstein) show title, opening and credit unless the
+  permission holder fills in `lines`. New words go at unused numbers so no
+  existing number moves. No agent, no chat. Docs and sandbox still live at
+  `/docs` and `/sandbox`.
 - **Voice**: people are more than what they buy (choices, preferences,
   values, beliefs). Bold about the vision, honest about the status (sandbox
   only), no buzzwords, no unbuilt verticals.
