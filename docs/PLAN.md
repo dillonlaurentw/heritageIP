@@ -10,6 +10,15 @@ agents. The founder app below is kept (landing at `/founders`).
   outcomes (with visible learning), share requests and grants, deletion.
 - Cross-service sharing only through a customer-approved share grant.
 
+## Deployment
+- Vercel project `selfsite`, production branch `claude/quirky-cannon-0ko1r6`
+  (set under Settings → Environments → Production → Branch Tracking).
+- Domains: `www.forself.xyz` (primary) and `forself.xyz` (redirects to www),
+  DNS at GoDaddy pointing to Vercel.
+- Environment variables: `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`
+  (`https://www.forself.xyz`), and `DATABASE_URL` (Neon) for the sandbox and
+  the founder app. The home and inspiration pages need no database.
+
 ## Next (needs approval)
 - Accounts for developer teams and real (non-sandbox) keys, with keys never in
   a browser; webhooks for grant changes; the consent screen as a redirect flow
