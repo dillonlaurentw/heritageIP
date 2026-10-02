@@ -1,9 +1,11 @@
 import Link from "next/link";
 import type { Route } from "next";
 import { notFound } from "next/navigation";
+import { ArtImage } from "@/components/site/ArtImage";
+import { ThemeCorner } from "@/components/site/ThemeCorner";
 import { INSPIRATIONS, inspiration, neighbours } from "@/lib/inspirations";
 
-/** One inspiration on a white page: an artwork, a poem or a line of belief. */
+/** One inspiration on a white page (dark in dark mode): a painting or a complete poem. */
 
 export function generateStaticParams() {
   return INSPIRATIONS.map((i) => ({ n: String(i.n) }));
@@ -22,19 +24,13 @@ export default async function Inspiration({ params }: { params: Promise<{ n: str
 
   return (
     <main className="flex min-h-dvh flex-col bg-surface px-5 md:px-10">
+      <ThemeCorner />
       <div className="flex flex-1 flex-col items-center justify-center gap-6 py-14 text-center md:gap-8">
         {work.kind === "blank" ? (
           <p className="text-3xl">{work.title}</p>
         ) : work.kind === "art" ? (
           <>
-            {/* Served by the museum (public domain). A plain img: no image-optimisation quota, works on any host. */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={work.image}
-              alt={work.alt || `${work.title} by ${work.author}`}
-              className="max-h-[68dvh] w-auto max-w-full object-contain"
-              decoding="async"
-            />
+            <ArtImage src={work.image} alt={work.alt || `${work.title} by ${work.author}`} href={work.url} museum={work.credit} />
             <div className="flex max-w-xl flex-col gap-1.5">
               <h1 className="font-display text-2xl md:text-3xl">{work.title}</h1>
               <p className="text-fg-muted">

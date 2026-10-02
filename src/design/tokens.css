@@ -7,8 +7,8 @@
  * utilities (bg-bg, text-fg-muted, border-border, bg-accent…) read them via
  * `@theme inline`, so components never need a `dark:` variant.
  *
- * Theme: light by default; dark when the OS asks for it, unless the person
- * picked one (html[data-theme="light" | "dark"], set from a cookie).
+ * Theme: light by default (html[data-theme="light"]). Dark when the person
+ * picks it, or when they chose "system" and the OS is dark (no data-theme).
  */
 
 :root {

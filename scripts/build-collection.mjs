@@ -7,8 +7,10 @@
  *
  *   node scripts/build-collection.mjs
  *
- * Only works each museum marks public domain (AIC `is_public_domain`, Met
- * `isPublicDomain`) are kept. Artists still under copyright (Picasso,
+ * Only paintings each museum marks public domain (AIC `is_public_domain`,
+ * Met `isPublicDomain`) are kept, and only those whose image actually loads
+ * (each image is requested; the run stops if the image servers can't be
+ * reached at all). Artists still under copyright (Picasso,
  * Duchamp, Dalí, Basquiat and most of Matisse) have nothing released by
  * either museum, so they don't appear.
  *
@@ -101,7 +103,12 @@ async function aic(artist, cap) {
     const body = {
       query: {
         bool: {
-          must: [{ term: { is_public_domain: true } }, { exists: { field: "image_id" } }, { match_phrase: { artist_title: artist } }],
+          must: [
+            { term: { is_public_domain: true } },
+            { exists: { field: "image_id" } },
+            { match_phrase: { artist_title: artist } },
+            { term: { "artwork_type_title.keyword": "Painting" } },
+          ],
         },
       },
       fields: ["id", "title", "artist_title", "date_display", "image_id", "classification_title", "medium_display", "is_boosted", "thumbnail"],
@@ -155,7 +162,7 @@ async function met(artist, cap) {
   }
   const surname = plain(artist.split(" ").at(-1));
   const objs = await pool(ids, 8, (id) => curlJson([`https://collectionapi.metmuseum.org/public/collection/v1/objects/${id}`]));
-  const kept = objs.filter((o) => o?.isPublicDomain && o.primaryImageSmall && plain(o.artistDisplayName).includes(surname));
+  const kept = objs.filter((o) => o?.isPublicDomain && o.primaryImageSmall && o.classification === "Paintings" && plain(o.artistDisplayName).includes(surname));
   kept.sort((a, b) => Number(b.isHighlight) - Number(a.isHighlight) || rank(a.classification) - rank(b.classification) || a.objectID - b.objectID);
   return kept.slice(0, cap).map((o) => ({
     key: `met:${o.objectID}`,
@@ -196,7 +203,27 @@ for (const [artist, cap] of Object.entries(MET_ARTISTS)) {
 }
 
 const seen = new Set();
-const unique = all.filter((w) => !seen.has(w.key) && seen.add(w.key));
+let unique = all.filter((w) => !seen.has(w.key) && seen.add(w.key));
+
+/** Keeps only works whose image actually loads (an image comes back, HTTP 200). */
+async function imageLoads(url) {
+  try {
+    const { stdout } = await run("curl", ["-sS", "-m", "30", "-o", "/dev/null", "-r", "0-1023", "-A", UA, "-w", "%{http_code} %{content_type}", url]);
+    const [code, type = ""] = stdout.trim().split(" ");
+    return { reached: code !== "000", ok: (code === "200" || code === "206") && type.startsWith("image/") };
+  } catch {
+    return { reached: false, ok: false };
+  }
+}
+const checks = await pool(unique, 8, (w) => imageLoads(w.image));
+if (!checks.some((c) => c.reached)) {
+  console.error("\nCouldn't reach the museums' image servers, so no image was checked. Nothing written.");
+  console.error("Allow www.artic.edu and images.metmuseum.org, then run this again.");
+  process.exit(1);
+}
+const before = unique.length;
+unique = unique.filter((_, i) => checks[i].ok);
+console.log(`\nImages checked: ${unique.length} of ${before} load.`);
 const ordered = shuffle(unique.sort((a, b) => a.key.localeCompare(b.key)));
 writeFileSync(new URL("../src/data/artworks.json", import.meta.url), JSON.stringify(ordered, null, 1) + "\n");
 console.log(`\n${ordered.length} artworks written to src/data/artworks.json`);

@@ -11,9 +11,17 @@ describe("inspirations", () => {
     INSPIRATIONS.forEach((w, i) => expect(w.n).toBe(i + 1));
   });
 
-  it("has at least a thousand artworks, all served by a museum", () => {
+  it("keeps only complete poems", () => {
+    for (const t of TEXTS) {
+      expect(t.kind).toBe("poem");
+      expect(t.lines?.length).toBeGreaterThan(0);
+      expect(t.opening).toBeUndefined();
+    }
+  });
+
+  it("has hundreds of paintings, each with a museum image", () => {
     const art = INSPIRATIONS.filter((w) => w.kind === "art");
-    expect(art.length).toBeGreaterThanOrEqual(1000);
+    expect(art.length).toBeGreaterThanOrEqual(300);
     for (const w of art) expect(w.image).toMatch(/^https:\/\/(www\.artic\.edu\/iiif|images\.metmuseum\.org)\//);
   });
 

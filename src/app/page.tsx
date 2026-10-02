@@ -1,12 +1,13 @@
 import Link from "next/link";
 import type { Route } from "next";
 import { FIRST_SCREEN, INSPIRATIONS, jitter, scatter, type Inspiration } from "@/lib/inspirations";
+import { ThemeCorner } from "@/components/site/ThemeCorner";
 import { cn } from "@/lib/cn";
 
 /**
  * The Self front door: "Self", "What moves us.", and numbered inspirations
- * (art, poems, lines of belief) scattered around the words, continuing as a
- * field when you scroll. Words are set in italics, pictures upright.
+ * (paintings and complete poems) scattered around the words, continuing as
+ * a field when you scroll. Poems are set in italics, paintings upright.
  */
 
 const SPOTS = scatter(FIRST_SCREEN.desktop);
@@ -45,7 +46,8 @@ export default function Home() {
   const rest = INSPIRATIONS.slice(FIRST_SCREEN.desktop);
 
   return (
-    <main className="overflow-x-hidden">
+    <main className="overflow-x-hidden bg-surface">
+      <ThemeCorner />
       <section aria-label="Self" className="relative h-dvh min-h-[34rem]">
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-4 px-6 text-center">
           <h1 className="text-title">Self</h1>

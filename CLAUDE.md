@@ -67,21 +67,23 @@ kept and still runs; its landing moved to `/founders`.
   (`values`) are never learned from outcomes or inferred from behaviour; Self
   records only what the person says. Keep this for any belief-like category.
 - **Home (`src/app/page.tsx`)**: only "Self", "What moves us." and numbered
-  inspirations: art, poems and lines of belief, mixed. The first screen
+  inspirations: paintings and complete poems, mixed. The first screen
   scatters them around the words (`scatter()`; 24 on phones, 60 on desktop),
-  then they continue as a loosely scattered field (`jitter()`). Words are
-  italic, artworks upright. Each opens on a white page
-  (`src/app/inspiration/[n]/page.tsx`) with ← n · Self · n → to wander.
-- **The collection** (`src/lib/inspirations.ts`, tested): words in
-  `src/data/texts.ts` keep fixed numbers; artworks in `src/data/artworks.json`
-  fill every other number. Rebuild the art with
-  `node scripts/build-collection.mjs` (Art Institute of Chicago + The Met,
-  public domain only, images hotlinked from the museums). Never add Picasso,
-  Duchamp, Dalí, Basquiat or other in-copyright work; the museums release
-  none of it. 1 and 2 (Silverstein) show title, opening and credit unless the
-  permission holder fills in `lines`. New words go at unused numbers so no
-  existing number moves. No agent, no chat. Docs and sandbox still live at
-  `/docs` and `/sandbox`.
+  then they continue as a loosely scattered field (`jitter()`). Poems are
+  italic, paintings upright. Each opens on its own page
+  (`src/app/inspiration/[n]/page.tsx`) with ← n · Self · n → to wander. A
+  very quiet light/dark switch sits top-right (`ThemeCorner`). The whole
+  app is light by default; dark only when picked (or "system" chosen).
+- **The collection** (`src/lib/inspirations.ts`, tested): **only complete
+  poems and paintings with images.** No excerpts, quotes, prints, drawings or
+  anything under copyright. Poems in `src/data/texts.ts` keep fixed numbers
+  (every 23rd from 3); paintings in `src/data/artworks.json` fill the rest.
+  Rebuild with `node scripts/build-collection.mjs` (Art Institute of Chicago
+  + The Met, public-domain paintings; it requests every image and drops any
+  that don't load, and stops if the image servers can't be reached). Never
+  add Picasso, Duchamp, Dalí, Basquiat or other in-copyright work.
+  `ArtImage` shows a quiet museum link if an image ever fails. No agent, no
+  chat. Docs and sandbox still live at `/docs` and `/sandbox`.
 - **Voice**: people are more than what they buy (choices, preferences,
   values, beliefs). Bold about the vision, honest about the status (sandbox
   only), no buzzwords, no unbuilt verticals.
