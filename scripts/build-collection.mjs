@@ -1,18 +1,20 @@
 #!/usr/bin/env node
 /**
- * Builds src/data/artworks.json: public-domain artworks with images from the
- * Art Institute of Chicago and The Met, for the inspirations on the Self home
- * page. Run it again to refresh; the order is stable, so numbers keep pointing
- * at the same works as long as the museums keep them.
+ * Builds src/data/artworks.json: public-domain paintings from The Met, for
+ * the inspirations on the Self home page. Run it again to refresh:
  *
  *   node scripts/build-collection.mjs
  *
- * Only paintings each museum marks public domain (AIC `is_public_domain`,
- * Met `isPublicDomain`) are kept, and only those whose image actually loads
- * (each image is requested; the run stops if the image servers can't be
- * reached at all). Artists still under copyright (Picasso,
- * Duchamp, Dalí, Basquiat and most of Matisse) have nothing released by
- * either museum, so they don't appear.
+ * Only paintings The Met marks public domain (`isPublicDomain`) are kept,
+ * and only those whose image actually loads: every image is requested and
+ * anything that doesn't come back as an image is dropped. The run stops if
+ * the image server can't be reached at all.
+ *
+ * Why only The Met: its images load from anywhere. The Art Institute of
+ * Chicago's image server sits behind bot protection that blocked even a
+ * real browser in testing, so its images can't be promised to load.
+ * Artists still under copyright (Picasso, Duchamp, Dalí, Basquiat, most of
+ * Matisse) have nothing released, so they don't appear.
  *
  * Uses curl so it works behind proxies that Node's fetch ignores.
  */
@@ -26,7 +28,7 @@ const UA = "Self site (forself.xyz)";
 async function curlJson(args) {
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      const { stdout } = await run("curl", ["-sS", "-m", "40", "-H", `AIC-User-Agent: ${UA}`, "-A", UA, ...args], { maxBuffer: 64 * 1024 * 1024 });
+      const { stdout } = await run("curl", ["-sS", "-m", "40", "-A", UA, ...args], { maxBuffer: 64 * 1024 * 1024 });
       return JSON.parse(stdout);
     } catch {
       await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
@@ -37,104 +39,66 @@ async function curlJson(args) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-/** Art Institute of Chicago: artist → how many works at most. */
-const AIC_ARTISTS = {
-  "Vincent van Gogh": 40,
-  "Claude Monet": 50,
-  "Henri Matisse": 10,
-  "Paul Cézanne": 40,
-  "Edgar Degas": 50,
-  "Paul Gauguin": 45,
-  "Georges Seurat": 15,
-  "Gustav Klimt": 5,
-  "Vasily Kandinsky": 10,
-  "Katsushika Hokusai": 50,
-  "Pierre-Auguste Renoir": 45,
-  "Henri de Toulouse-Lautrec": 45,
-  "Édouard Manet": 45,
-  "Camille Pissarro": 40,
-  "Gustave Caillebotte": 5,
-  "Mary Cassatt": 40,
-  "Berthe Morisot": 20,
-  "Edvard Munch": 40,
-  "Amedeo Modigliani": 15,
-  "Egon Schiele": 3,
-  "Piet Mondrian": 10,
-  "Utagawa Hiroshige": 50,
-  "Odilon Redon": 40,
-  "Henri Rousseau": 6,
-  "Alfred Sisley": 10,
-  "James McNeill Whistler": 40,
-  "Winslow Homer": 40,
-  "John Singer Sargent": 25,
-  "Gustave Courbet": 12,
-  "Eugène Delacroix": 30,
-  "Rembrandt van Rijn": 45,
-  "Francisco José de Goya y Lucientes": 45,
-  "Auguste Rodin": 15,
-  "Georges Braque": 5,
-  "Juan Gris": 5,
-};
-
-/** The Met: extra paintings by the best-known names. */
+/** The Met: painter → how many paintings at most. */
 const MET_ARTISTS = {
   "Vincent van Gogh": 30,
   "Claude Monet": 30,
-  "Paul Cézanne": 25,
-  "Johannes Vermeer": 10,
-  "Georges Seurat": 15,
-  "Gustav Klimt": 5,
-  "Pierre-Auguste Renoir": 20,
-  "Édouard Manet": 20,
+  "Paul Cézanne": 30,
+  "Edgar Degas": 30,
+  "Pierre-Auguste Renoir": 25,
+  "Édouard Manet": 25,
   "Paul Gauguin": 20,
-  "Edgar Degas": 25,
-  "Rembrandt": 15,
+  "Georges Seurat": 15,
+  "Camille Pissarro": 20,
+  "Alfred Sisley": 15,
+  "Berthe Morisot": 10,
+  "Mary Cassatt": 15,
+  "Henri de Toulouse-Lautrec": 10,
+  "Gustav Klimt": 5,
+  "Odilon Redon": 10,
+  "Henri Rousseau": 5,
+  "Johannes Vermeer": 10,
+  "Rembrandt": 20,
+  "Frans Hals": 10,
+  "Peter Paul Rubens": 15,
+  "Anthony van Dyck": 15,
+  "Pieter Bruegel the Elder": 3,
+  "Albrecht Dürer": 5,
+  "Hans Holbein the Younger": 8,
+  "El Greco": 10,
+  "Diego Velázquez": 8,
+  "Francisco de Goya": 15,
+  "Titian": 10,
+  "Raphael": 5,
+  "Botticelli": 5,
+  "Fra Angelico": 5,
+  "Jean-Honoré Fragonard": 10,
+  "Antoine Watteau": 5,
+  "François Boucher": 10,
   "Jacques Louis David": 8,
+  "Jean Auguste Dominique Ingres": 8,
+  "Eugène Delacroix": 10,
+  "Gustave Courbet": 20,
+  "Camille Corot": 20,
+  "Jean-François Millet": 10,
   "J. M. W. Turner": 10,
+  "John Constable": 10,
+  "Thomas Gainsborough": 10,
+  "Winslow Homer": 20,
+  "John Singer Sargent": 25,
+  "James McNeill Whistler": 10,
+  "Thomas Eakins": 15,
+  "Frederic Edwin Church": 10,
+  "Albert Bierstadt": 10,
+  "Thomas Cole": 10,
+  "Childe Hassam": 15,
+  "Katsushika Hokusai": 10,
+  "Utagawa Hiroshige": 5,
 };
 
 const RANK = { painting: 0, drawing: 1, "work on paper": 2, print: 3 };
 const rank = (c) => RANK[(c ?? "").toLowerCase()] ?? ((c ?? "").toLowerCase().includes("paint") ? 0 : 4);
 const plain = (s) => (s ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-
-async function aic(artist, cap) {
-  const out = [];
-  for (let page = 1; page <= 3; page++) {
-    const body = {
-      query: {
-        bool: {
-          must: [
-            { term: { is_public_domain: true } },
-            { exists: { field: "image_id" } },
-            { match_phrase: { artist_title: artist } },
-            { term: { "artwork_type_title.keyword": "Painting" } },
-          ],
-        },
-      },
-      fields: ["id", "title", "artist_title", "date_display", "image_id", "classification_title", "medium_display", "is_boosted", "thumbnail"],
-      limit: 100,
-      page,
-    };
-    const j = await curlJson(["-X", "POST", "https://api.artic.edu/api/v1/artworks/search", "-H", "Content-Type: application/json", "-d", JSON.stringify(body)]);
-    const data = j?.data ?? [];
-    const surname = plain(artist.split(" ").at(-1));
-    out.push(...data.filter((d) => d.image_id && plain(d.artist_title).includes(surname)));
-    if (data.length < 100) break;
-    await sleep(600);
-  }
-  out.sort((a, b) => Number(b.is_boosted) - Number(a.is_boosted) || rank(a.classification_title) - rank(b.classification_title) || a.id - b.id);
-  return out.slice(0, cap).map((d) => ({
-    key: `aic:${d.id}`,
-    title: d.title,
-    artist: d.artist_title,
-    date: d.date_display ?? "",
-    medium: d.medium_display ?? "",
-    image: `https://www.artic.edu/iiif/2/${d.image_id}/full/843,/0/default.jpg`,
-    alt: d.thumbnail?.alt_text ?? "",
-    museum: "Art Institute of Chicago",
-    url: `https://www.artic.edu/artworks/${d.id}`,
-  }));
-}
 
 async function pool(items, size, fn) {
   const results = [];
@@ -150,6 +114,36 @@ async function pool(items, size, fn) {
   return results;
 }
 
+/**
+ * No full nudity: anything The Met tags as a nude, or whose title points to
+ * one. A visual pass over the result catches what slips through (EXCLUDE).
+ */
+const NUDE_TITLE =
+  /\b(nude|nudes|naked|bather|bathers|bathing|the bath|after the bath|toilette|odalisque|venus|leda|dana[eë]|susanna|andromeda|nymphs?|satyrs?|bacchanal|bacchus|three graces|judgment of paris|lucretia|cupid and psyche|mars and venus|adam and eve|diana|actaeon|galatea|europa|sleeping woman|reclining woman|woman drying)\b/i;
+const EXCLUDE = new Set([
+  747559, // Delacroix, Male Academy Figure
+  436949, // Manet, copy after Delacroix's "Bark of Dante"
+  437919, // Van Dyck, Two Tritons at the Feast of Acheloüs
+  437439, // Renoir, A Young Girl with Daisies
+  436180, // Delacroix, The Natchez
+  436261, // Van Dyck, Virgin and Child (nursing)
+  437523, // Rubens, Atalanta and Meleager
+  436950, // Manet, The Dead Christ with Angels
+  437837, // Toulouse-Lautrec, The Sofa
+  435977, // Corot, Mother and Child (nursing)
+  438821, // Gauguin, Ia Orana Maria
+]);
+
+/** Images that didn't load reliably when each was opened in a real browser. */
+const UNRELIABLE = new Set([
+  435866, 435872, 435874, 435876, 436017, 436179, 436253, 436322, 436442, 436545, 436819, 436949, 437300, 437527, 437542, 437830, 438009, 438815,
+]);
+function showsNudity(o) {
+  if (EXCLUDE.has(o.objectID) || UNRELIABLE.has(o.objectID)) return true;
+  if ((o.tags ?? []).some((t) => /nude/i.test(t.term ?? ""))) return true;
+  return NUDE_TITLE.test(o.title ?? "");
+}
+
 async function met(artist, cap) {
   const ids = [];
   for (let offset = 0; offset < 600; offset += 100) {
@@ -160,9 +154,11 @@ async function met(artist, cap) {
     ids.push(...batch);
     if (batch.length < 100) break;
   }
-  const surname = plain(artist.split(" ").at(-1));
+  const surname = plain(artist.replace(/ the (elder|younger)$/i, "")).split(" ").at(-1);
   const objs = await pool(ids, 8, (id) => curlJson([`https://collectionapi.metmuseum.org/public/collection/v1/objects/${id}`]));
-  const kept = objs.filter((o) => o?.isPublicDomain && o.primaryImageSmall && o.classification === "Paintings" && plain(o.artistDisplayName).includes(surname));
+  const kept = objs.filter(
+    (o) => o?.isPublicDomain && o.primaryImageSmall && o.classification === "Paintings" && plain(o.artistDisplayName).includes(surname) && !showsNudity(o),
+  );
   kept.sort((a, b) => Number(b.isHighlight) - Number(a.isHighlight) || rank(a.classification) - rank(b.classification) || a.objectID - b.objectID);
   return kept.slice(0, cap).map((o) => ({
     key: `met:${o.objectID}`,
@@ -190,12 +186,6 @@ function shuffle(list, seed = 7) {
 }
 
 const all = [];
-for (const [artist, cap] of Object.entries(AIC_ARTISTS)) {
-  const works = await aic(artist, cap);
-  console.log(`AIC  ${String(works.length).padStart(3)}  ${artist}`);
-  all.push(...works);
-  await sleep(600);
-}
 for (const [artist, cap] of Object.entries(MET_ARTISTS)) {
   const works = await met(artist, cap);
   console.log(`Met  ${String(works.length).padStart(3)}  ${artist}`);

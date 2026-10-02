@@ -78,10 +78,13 @@ kept and still runs; its landing moved to `/founders`.
   poems and paintings with images.** No excerpts, quotes, prints, drawings or
   anything under copyright. Poems in `src/data/texts.ts` keep fixed numbers
   (every 23rd from 3); paintings in `src/data/artworks.json` fill the rest.
-  Rebuild with `node scripts/build-collection.mjs` (Art Institute of Chicago
-  + The Met, public-domain paintings; it requests every image and drops any
-  that don't load, and stops if the image servers can't be reached). Never
-  add Picasso, Duchamp, Dalí, Basquiat or other in-copyright work.
+  Rebuild with `node scripts/build-collection.mjs` (The Met only:
+  public-domain paintings whose image loads; the Art Institute of Chicago's
+  image server blocks non-browser traffic, so it's left out). No full
+  nudity: Met "nude" tags, title words, and the hand-checked `EXCLUDE` list;
+  `UNRELIABLE` lists images that failed in a real browser. Review new works
+  by eye before shipping. Never add Picasso, Duchamp, Dalí, Basquiat or
+  other in-copyright work.
   `ArtImage` shows a quiet museum link if an image ever fails. No agent, no
   chat. Docs and sandbox still live at `/docs` and `/sandbox`.
 - **Voice**: people are more than what they buy (choices, preferences,

@@ -22,6 +22,7 @@ describe("inspirations", () => {
   it("has hundreds of paintings, each with a museum image", () => {
     const art = INSPIRATIONS.filter((w) => w.kind === "art");
     expect(art.length).toBeGreaterThanOrEqual(300);
+    for (const w of art) expect(w.image).toMatch(/^https:\/\/images\.metmuseum\.org\//);
     for (const w of art) expect(w.image).toMatch(/^https:\/\/(www\.artic\.edu\/iiif|images\.metmuseum\.org)\//);
   });
 
