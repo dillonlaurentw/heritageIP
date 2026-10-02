@@ -1,65 +1,39 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { INSPIRATIONS, inspiration } from "@/lib/inspirations";
 
-/**
- * The three inspirations linked from the home page. The poems are Shel
- * Silverstein's (Falling Up, 1996) and under copyright. Until `lines` is
- * filled in (by whoever holds the permission), the page shows the title, the
- * opening line and the credit. With `lines`, it shows the whole poem.
- * Put the exact credit wording the permission asks for in `credit`.
- */
-type Poem = { title: string; opening: string; lines?: string[]; credit: string };
-
-const POEMS: Record<string, Poem> = {
-  "1": {
-    title: "The Voice",
-    opening: "There is a voice inside of you",
-    // lines: ["first line", "second line", ...],
-    credit: "Shel Silverstein, from Falling Up (1996)",
-  },
-  "2": {
-    title: "Underface",
-    opening: "Underneath my outside face",
-    // lines: ["first line", "second line", ...],
-    credit: "Shel Silverstein, from Falling Up (1996)",
-  },
-};
+/** One inspiration on a white page. The works themselves live in src/lib/inspirations.ts. */
 
 export function generateStaticParams() {
-  return [{ n: "1" }, { n: "2" }, { n: "3" }];
+  return INSPIRATIONS.map((i) => ({ n: String(i.n) }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ n: string }> }) {
-  const { n } = await params;
-  return { title: POEMS[n]?.title ?? "You. Me." };
+  return { title: inspiration(Number((await params).n))?.title ?? "Inspiration" };
 }
 
 export default async function Inspiration({ params }: { params: Promise<{ n: string }> }) {
-  const { n } = await params;
+  const work = inspiration(Number((await params).n));
+  if (!work) notFound();
 
-  if (n === "3")
+  if (work.kind === "blank")
     return (
       <main className="flex min-h-dvh items-center justify-center bg-surface px-6">
-        <p className="text-3xl">You. Me.</p>
+        <p className="text-3xl">{work.title}</p>
       </main>
     );
 
-  const poem = POEMS[n];
-  if (!poem) notFound();
-
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center gap-8 bg-surface px-6 text-center">
-      <h1 className="text-sm tracking-[0.2em] uppercase">{poem.title}</h1>
-      {poem.lines?.length ? (
-        <div className="flex flex-col font-display text-2xl leading-snug">
-          {poem.lines.map((line, i) => (
-            <span key={i}>{line}</span>
-          ))}
+    <main className="flex min-h-dvh flex-col items-center justify-center gap-8 bg-surface px-6 py-20 text-center">
+      <h1 className="text-sm tracking-[0.2em] uppercase">{work.title}</h1>
+      {work.lines?.length ? (
+        <div className={`flex max-w-2xl flex-col font-display text-2xl leading-snug ${work.kind === "prose" ? "gap-5" : ""}`}>
+          {work.lines.map((line, i) => (line ? <span key={i}>{line}</span> : <span key={i} aria-hidden className="h-5" />))}
         </div>
       ) : (
-        <p className="font-display text-2xl">{poem.opening} …</p>
+        <p className="font-display text-2xl">{work.opening} …</p>
       )}
-      <p className="text-sm text-fg-subtle">{poem.credit}</p>
+      <p className="text-sm text-fg-subtle">{work.credit}</p>
       <Link href="/" className="mt-10 font-display text-xl text-fg-muted hover:text-fg">
         Self
       </Link>

@@ -66,13 +66,16 @@ kept and still runs; its landing moved to `/founders`.
 - **Values and beliefs are stated only**: categories with `statedOnly`
   (`values`) are never learned from outcomes or inferred from behaviour; Self
   records only what the person says. Keep this for any belief-like category.
-- **Home (`src/app/page.tsx`)**: only "Self", "What moves us." and three
-  links: Inspiration 1, 2, 3 (`src/app/inspiration/[n]/page.tsx`, white
-  pages). 1 is "The Voice", 2 is "Underface" (both Shel Silverstein, Falling
-  Up, 1996, under copyright: title, opening line and credit only; full text
-  needs the estate's permission). 3 is a blank white page: "You. Me."
-  Nothing else on these pages. Docs and sandbox still live at `/docs` and
-  `/sandbox`, unlinked from home.
+- **Home (`src/app/page.tsx`)**: only "Self", "What moves us." and numbered
+  inspirations scattered around the page (positions in `SPOTS`; a row on
+  phones), each opening one creative work on a white page
+  (`src/app/inspiration/[n]/page.tsx`). The works live in
+  `src/lib/inspirations.ts`. 1 "The Voice" and 2 "Underface" are Shel
+  Silverstein (under copyright): title, opening line and credit unless the
+  permission holder fills in `lines`. 3 is "You. Me." on a blank page.
+  4 onward are public domain (US) only; Bashō is Self's own translation. Add
+  a work there and give it a spot. Nothing else on these pages: no agent, no
+  chat. Docs and sandbox still live at `/docs` and `/sandbox`.
 - **Voice**: people are more than what they buy (choices, preferences,
   values, beliefs). Bold about the vision, honest about the status (sandbox
   only), no buzzwords, no unbuilt verticals.
