@@ -81,7 +81,8 @@ kept and still runs; its landing moved to `/founders`.
   Rebuild with `node scripts/build-collection.mjs` (The Met only:
   public-domain paintings whose image loads; the Art Institute of Chicago's
   image server blocks non-browser traffic, so it's left out). No full
-  nudity: Met "nude" tags, title words, and the hand-checked `EXCLUDE` list;
+  nudity and no crucifixion scenes: Met "nude" tags, title words, and the
+  hand-checked `EXCLUDE` list;
   `UNRELIABLE` lists images that failed in a real browser. Review new works
   by eye before shipping. Never add Picasso, Duchamp, Dalí, Basquiat or
   other in-copyright work.

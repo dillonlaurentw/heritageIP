@@ -132,7 +132,15 @@ const EXCLUDE = new Set([
   437837, // Toulouse-Lautrec, The Sofa
   435977, // Corot, Mother and Child (nursing)
   438821, // Gauguin, Ia Orana Maria
+  // No crucifixion scenes (Christ on the cross).
+  435577, // Fra Angelico, The Crucifixion
+  437007, // Fra Angelico, The Crucifixion
+  435972, // Corot, Honfleur: Calvary (roadside crucifix)
+  437877, // Vermeer, Allegory of the Catholic Faith (crucifixion on the wall)
 ]);
+
+/** Crucifixion scenes, by title. */
+const CRUCIFIXION_TITLE = /\b(crucifixion|crucified|calvary|golgotha|christ on the cross|descent from the cross|deposition)\b/i;
 
 /** Images that didn't load reliably when each was opened in a real browser. */
 const UNRELIABLE = new Set([
@@ -141,7 +149,7 @@ const UNRELIABLE = new Set([
 function showsNudity(o) {
   if (EXCLUDE.has(o.objectID) || UNRELIABLE.has(o.objectID)) return true;
   if ((o.tags ?? []).some((t) => /nude/i.test(t.term ?? ""))) return true;
-  return NUDE_TITLE.test(o.title ?? "");
+  return NUDE_TITLE.test(o.title ?? "") || CRUCIFIXION_TITLE.test(o.title ?? "");
 }
 
 async function met(artist, cap) {

@@ -31,6 +31,12 @@ describe("inspirations", () => {
     for (const banned of ["picasso", "dalí", "dali", "basquiat", "duchamp"]) expect(names.some((n) => n.includes(banned))).toBe(false);
   });
 
+  it("has no crucifixion scenes", () => {
+    const art = INSPIRATIONS.filter((w) => w.kind === "art");
+    for (const w of art) expect(w.title).not.toMatch(/crucifixion|calvary|golgotha|christ on the cross/i);
+    for (const id of ["435577", "437007", "435972", "437877"]) expect(art.some((w) => w.url.endsWith(`/${id}`))).toBe(false);
+  });
+
   it("walks to the neighbours", () => {
     expect(neighbours(1)).toEqual({ prev: undefined, next: 2 });
     expect(neighbours(INSPIRATIONS.length).next).toBeUndefined();
