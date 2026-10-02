@@ -66,12 +66,13 @@ kept and still runs; its landing moved to `/founders`.
 - **Values and beliefs are stated only**: categories with `statedOnly`
   (`values`) are never learned from outcomes or inferred from behaviour; Self
   records only what the person says. Keep this for any belief-like category.
-- **Home (`src/app/page.tsx`, outside the `(site)` group, no menu)**: the
-  Self wordmark, the serif statement, one supporting paragraph, one example
-  thread (one synthetic person's understanding carrying forward, labelled as
-  an example), two short paragraphs, one black pill to the sandbox, a
-  one-line footer. Keep it this sparse: no sections, no cards, no banners.
-  Docs and sandbox keep the `(site)` header.
+- **Home (`src/app/page.tsx`)**: only "Self", "What moves us." and three
+  links: Inspiration 1, 2, 3 (`src/app/inspiration/[n]/page.tsx`, white
+  pages). 1 is "The Voice", 2 is "Underface" (both Shel Silverstein, Falling
+  Up, 1996, under copyright: title, opening line and credit only; full text
+  needs the estate's permission). 3 is a blank white page: "You. Me."
+  Nothing else on these pages. Docs and sandbox still live at `/docs` and
+  `/sandbox`, unlinked from home.
 - **Voice**: people are more than what they buy (choices, preferences,
   values, beliefs). Bold about the vision, honest about the status (sandbox
   only), no buzzwords, no unbuilt verticals.
