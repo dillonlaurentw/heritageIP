@@ -74,7 +74,12 @@ kept and still runs; its landing moved to `/founders`.
   scatters them around the words (`scatter()`; 24 on phones, 60 on desktop),
   then they continue as a loosely scattered field (`jitter()`). Poems are
   italic, paintings upright. Each opens on its own page
-  (`src/app/inspiration/[n]/page.tsx`) with ← n · Self · n → to wander. A
+  (`src/app/inspiration/[n]/page.tsx`) with ← n · Self · n → to wander.
+  Every work fits one screen with that row, no scrolling: paintings fill the
+  space the caption leaves (`ArtImage`, object-contain), poems size their
+  text to fit (`FitText`; poems over 20 lines may use two columns, never
+  splitting a stanza). Check all pages at phone and laptop sizes after
+  changing the collection or this page. A
   very quiet light/dark switch sits top-right (`ThemeCorner`). The whole
   app is light by default; dark only when picked (or "system" chosen).
 - **The collection** (`src/lib/inspirations.ts`, tested): **only complete

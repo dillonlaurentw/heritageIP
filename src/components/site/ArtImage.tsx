@@ -13,7 +13,7 @@ export function ArtImage({ src, alt, href, museum }: { src: string; alt: string;
   const retry = () => (tries === 0 ? setTimeout(() => setTries(1), 1500) : setTries(2));
   if (tries === 2)
     return (
-      <a href={href} target="_blank" rel="noopener noreferrer" className="text-sm text-fg-subtle hover:text-fg">
+      <a href={href} target="_blank" rel="noopener noreferrer" className="absolute inset-0 flex items-center justify-center text-sm text-fg-subtle hover:text-fg">
         The image didn&apos;t load. See it at the {museum} ↗
       </a>
     );
@@ -26,9 +26,9 @@ export function ArtImage({ src, alt, href, museum }: { src: string; alt: string;
       alt={alt}
       onError={retry}
       decoding="async"
-      // Leave room for the caption and the ← n · Self · n → row, so a painting
-      // and its way onward fit on one screen.
-      className="max-h-[calc(100dvh-18rem)] min-h-40 w-auto max-w-full object-contain"
+      // Fills the space its page gives it, keeping its proportions, so the
+      // caption and the ← n · Self · n → row always fit on the same screen.
+      className="absolute inset-0 size-full object-contain"
     />
   );
 }
