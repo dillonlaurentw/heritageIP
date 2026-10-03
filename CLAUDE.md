@@ -67,7 +67,10 @@ kept and still runs; its landing moved to `/founders`.
   (`values`) are never learned from outcomes or inferred from behaviour; Self
   records only what the person says. Keep this for any belief-like category.
 - **Home (`src/app/page.tsx`)**: only "Self", "What moves us." and numbered
-  inspirations: paintings and complete poems, mixed. The first screen
+  inspirations: paintings and complete poems, mixed. "Self" links to `/self`,
+  the SELF calibration: a separate app (Self-App repo) that `src/proxy.ts`
+  forwards to, so it stays on forself.xyz (env: `SELF_APP_ORIGIN`,
+  `SELF_PROXY_KEY`). The first screen
   scatters them around the words (`scatter()`; 24 on phones, 60 on desktop),
   then they continue as a loosely scattered field (`jitter()`). Poems are
   italic, paintings upright. Each opens on its own page

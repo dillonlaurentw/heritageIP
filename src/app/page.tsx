@@ -50,7 +50,15 @@ export default function Home() {
       <ThemeCorner />
       <section aria-label="Self" className="relative h-dvh min-h-[34rem]">
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-4 px-6 text-center">
-          <h1 className="text-title">Self</h1>
+          <h1 className="text-title">
+            {/* Opens the SELF calibration, served here at /self (see src/proxy.ts). */}
+            <a
+              href="/self"
+              className="pointer-events-auto transition-opacity duration-(--duration-base) hover:opacity-70 focus-visible:opacity-70"
+            >
+              Self
+            </a>
+          </h1>
           <p className="text-3xl text-fg-muted">What moves us.</p>
         </div>
         {first.map((w, i) => (
