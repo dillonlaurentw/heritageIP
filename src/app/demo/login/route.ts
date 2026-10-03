@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { COOKIE_LOGIN, SELF_ISSUER, cookieBase, demoClient, newLogin, redirectUri } from "@/lib/demo/self-client";
+import { COOKIE_LOGIN, SELF_ISSUER, cookieBase, demoClient, newLogin, publicOrigin, redirectUri } from "@/lib/demo/self-client";
 
 // "Sign in with Self": send the visitor to Self with PKCE, state and nonce.
 export function GET(request: NextRequest) {
@@ -10,7 +10,7 @@ export function GET(request: NextRequest) {
   url.search = new URLSearchParams({
     response_type: "code",
     client_id: client.id,
-    redirect_uri: redirectUri(request.nextUrl.origin),
+    redirect_uri: redirectUri(publicOrigin(request)),
     scope: "openid profile email",
     state: login.state,
     nonce: login.nonce,

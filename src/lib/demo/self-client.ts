@@ -17,8 +17,17 @@ export const COOKIE_LOGIN = "cadence_login";
 export const COOKIE_TOKEN = "cadence_token";
 export const cookieBase = { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax" as const, path: "/demo" };
 
+// The address the visitor sees (e.g. https://forself.xyz). Behind Vercel the
+// request's own URL can carry an internal host, so read the forwarded headers.
+// SELF_DEMO_REDIRECT_URI pins it if ever needed.
+export function publicOrigin(request: Request): string {
+  const host = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim() || request.headers.get("host");
+  const proto = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim() || new URL(request.url).protocol.replace(":", "");
+  return host ? `${proto}://${host}` : new URL(request.url).origin;
+}
+
 export function redirectUri(origin: string) {
-  return `${origin}/demo/callback`;
+  return process.env.SELF_DEMO_REDIRECT_URI ?? `${origin}/demo/callback`;
 }
 
 export function newLogin() {

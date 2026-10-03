@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { COOKIE_LOGIN, COOKIE_TOKEN, cookieBase, exchangeCode } from "@/lib/demo/self-client";
+import { COOKIE_LOGIN, COOKIE_TOKEN, cookieBase, exchangeCode, publicOrigin } from "@/lib/demo/self-client";
 
 // Self sends the visitor back here with a code; swap it for an access token.
 export async function GET(request: NextRequest) {
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
   if (!code || !saved.verifier || params.get("state") !== saved.state) return back("?failed=1");
 
   try {
-    const tokens = await exchangeCode(code, saved.verifier, request.nextUrl.origin);
+    const tokens = await exchangeCode(code, saved.verifier, publicOrigin(request));
     const res = back();
     res.cookies.delete({ name: COOKIE_LOGIN, path: "/demo" });
     res.cookies.set(COOKIE_TOKEN, tokens.access_token, { ...cookieBase, maxAge: tokens.expires_in });
