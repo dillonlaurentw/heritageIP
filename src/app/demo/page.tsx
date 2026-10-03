@@ -34,7 +34,10 @@ export default async function DemoShop({ searchParams }: PageProps<"/demo">) {
                 Sign in with Self
               </a>
             ) : (
-              <p className="mt-8 text-sm text-[#8a8576]">The demo isn’t connected to Self yet.</p>
+              <p className="mt-8 text-sm text-[#8a8576]">
+                The demo isn’t connected to Self yet (missing on this deployment:{" "}
+                {["SELF_DEMO_CLIENT_ID", "SELF_DEMO_CLIENT_SECRET"].filter((k) => !process.env[k]).join(", ")}).
+              </p>
             )}
           </>
         ) : (
