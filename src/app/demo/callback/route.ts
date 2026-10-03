@@ -12,7 +12,8 @@ export async function GET(request: NextRequest) {
     saved = JSON.parse(request.cookies.get(COOKIE_LOGIN)?.value ?? "{}");
   } catch {}
   const code = params.get("code");
-  if (!code || !saved.verifier || params.get("state") !== saved.state) return back("?failed=1");
+  if (!code) return back("?failed=no_code");
+  if (!saved.verifier || params.get("state") !== saved.state) return back("?failed=state");
 
   try {
     const tokens = await exchangeCode(code, saved.verifier, publicOrigin(request));
@@ -22,6 +23,8 @@ export async function GET(request: NextRequest) {
     return res;
   } catch (err) {
     console.error("[demo/callback]", err);
-    return back("?failed=1");
+    // Show the OAuth error code (never a secret) so problems can be fixed.
+    const reason = err instanceof Error ? (err.message.match(/"error":"([a-z_]+)"/)?.[1] ?? err.message.match(/: (\d{3})/)?.[1] ?? "exchange") : "exchange";
+    return back(`?failed=${encodeURIComponent(reason)}`);
   }
 }
