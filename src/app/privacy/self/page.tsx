@@ -31,7 +31,7 @@ export default function SelfPrivacy() {
           <li>You talk with SELF by voice. ElevenLabs runs the voice conversation and turns it into a transcript.</li>
           <li>Our AI provider, Anthropic, reads the transcript to write your SELF: a private profile of your beliefs, values, drives and habits. It isn&apos;t used for ads or sold.</li>
           <li>The transcript is stored encrypted and deleted once your SELF is formed, along with ElevenLabs&apos; copy. At the latest it&apos;s deleted after 7 days.</li>
-          <li>Your SELF profile is stored encrypted. You see your painting, never the full profile; on “Is this you?” you see a few belief lines from it and say which are true.</li>
+          <li>Your SELF profile is stored encrypted and stays private. You see your painting, never the profile.</li>
         </ul>
       </section>
 
@@ -49,12 +49,12 @@ export default function SelfPrivacy() {
         <ul>
           <li>
             <strong>The company receives:</strong> your first name and email; the five dimensions of your SELF (for
-            example restrained ↔ expressive); the belief lines you confirmed on “Is this you?”; and what Self has
-            learned about your taste in that company&apos;s industry.
+            example restrained ↔ expressive); and what Self has learned about your taste in that company&apos;s
+            industry.
           </li>
           <li>
             <strong>The company never receives</strong> your conversation, your transcript, your full SELF profile,
-            your date of birth or gender, or lines you didn&apos;t confirm.
+            or your date of birth or gender.
           </li>
           <li>Each company sees a different ID for you, so companies can&apos;t match you to each other by it.</li>
           <li>
@@ -65,8 +65,8 @@ export default function SelfPrivacy() {
             <strong>How Self learns from it:</strong> our AI provider turns that activity into a short description of
             your taste in that industry (for example “durable, natural materials; avoids loud colours”). Other
             companies in the same industry that you allow receive that description, never your activity itself and
-            never what you did at which company. Activity never changes your beliefs or values; only you can, by
-            talking to SELF or answering “Is this you?”.
+            never what you did at which company. Activity never changes your SELF itself (your beliefs and values);
+            only your conversations with SELF do.
           </li>
           <li>
             We may study patterns across many people, in groups of at least 50 and never about an individual, to

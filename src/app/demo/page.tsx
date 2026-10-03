@@ -63,14 +63,6 @@ export default async function DemoShop({ searchParams }: PageProps<"/demo">) {
                 ) : (
                   <p className="mt-3 text-sm">No SELF yet. Do your SELF conversation at forself.xyz/self and come back.</p>
                 )}
-                {identity.statements && identity.statements.length > 0 && (
-                  <div className="mt-8">
-                    <p className="text-sm text-[#8a8576]">What you confirmed about yourself</p>
-                    <ul className="mt-2 space-y-1.5 text-[13px]">
-                      {identity.statements.map((st) => <li key={st}>“{st}”</li>)}
-                    </ul>
-                  </div>
-                )}
                 <div className="mt-8">
                   <p className="text-sm text-[#8a8576]">What your Self has learned about your taste</p>
                   {learned ? (

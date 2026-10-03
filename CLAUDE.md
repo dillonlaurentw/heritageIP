@@ -105,8 +105,8 @@ kept and still runs; its landing moved to `/founders`.
   Self-App (not this sandbox API), a person's signals across companies in one
   industry are distilled into a learned taste layer shared with the other
   companies in that industry they allow: distilled qualities only, never raw
-  events or which company. Values and beliefs stay stated only (the person
-  confirms them on "Is this you?"). Policy: `src/app/privacy/self/page.tsx`.
+  events or which company. Values and beliefs are never learned from
+  activity and never shared; users are never asked to confirm anything. Policy: `src/app/privacy/self/page.tsx`.
 - **Demo shop** (`src/app/demo/`, `src/lib/demo/`): "Cadence Outdoor", a
   pretend shop that uses **Sign in with Self** (the OpenID Connect provider in
   the Self-App at forself.xyz/self) exactly like a real company would:
