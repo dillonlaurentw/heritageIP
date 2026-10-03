@@ -26,7 +26,9 @@ export function ArtImage({ src, alt, href, museum }: { src: string; alt: string;
       alt={alt}
       onError={retry}
       decoding="async"
-      className="max-h-[68dvh] w-auto max-w-full object-contain"
+      // Leave room for the caption and the ← n · Self · n → row, so a painting
+      // and its way onward fit on one screen.
+      className="max-h-[calc(100dvh-18rem)] min-h-40 w-auto max-w-full object-contain"
     />
   );
 }

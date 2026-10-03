@@ -25,7 +25,7 @@ export default async function Inspiration({ params }: { params: Promise<{ n: str
   return (
     <main className="flex min-h-dvh flex-col bg-surface px-5 md:px-10">
       <ThemeCorner />
-      <div className="flex flex-1 flex-col items-center justify-center gap-6 py-14 text-center md:gap-8">
+      <div className="flex flex-1 flex-col items-center justify-center gap-5 py-6 text-center md:gap-6 md:py-8">
         {work.kind === "blank" ? (
           <p className="text-3xl">{work.title}</p>
         ) : work.kind === "art" ? (
@@ -57,7 +57,7 @@ export default async function Inspiration({ params }: { params: Promise<{ n: str
         )}
       </div>
 
-      <nav aria-label="Wander" className="flex items-center justify-between pb-8 font-display text-xl text-fg-muted">
+      <nav aria-label="Wander" className="flex items-center justify-between pb-4 font-display text-xl text-fg-muted md:pb-6">
         {prev ? (
           <Link href={`/inspiration/${prev}` as Route} className="p-2 hover:text-fg">
             ← {prev}
