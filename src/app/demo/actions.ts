@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers";
 import { findProduct } from "@/lib/demo/catalogue";
-import { COOKIE_TOKEN, sendSignal } from "@/lib/demo/self-client";
+import { COOKIE_TOKEN, askSelf, sendSignal, type SelfAnswer } from "@/lib/demo/self-client";
 
 export type SignalState = { sent?: "saved" | "rejected"; error?: string };
 
@@ -19,4 +19,17 @@ export async function signalAction(_prev: SignalState, formData: FormData): Prom
     ...(type === "rejected" ? { reason: "not for me" } : {}),
   });
   return ok ? { sent: type } : { error: "Couldn’t reach Self. Try again." };
+}
+
+export type AskState = { question?: string; result?: SelfAnswer; error?: string };
+
+// "Ask Self, as Cadence": the kind of question a company's workflow or agent
+// would ask.
+export async function askAction(_prev: AskState, formData: FormData): Promise<AskState> {
+  const question = String(formData.get("question") ?? "").trim();
+  const token = (await cookies()).get(COOKIE_TOKEN)?.value;
+  if (!token) return { error: "Your sign-in expired. Sign in again." };
+  if (question.length < 3) return { error: "Ask a question." };
+  const result = await askSelf(token, { question: question.slice(0, 1000), context: "Cadence Outdoor, an outdoor gear shop, serving this signed-in customer." });
+  return result ? { question, result } : { question, error: "Couldn’t reach Self. Try again." };
 }

@@ -89,3 +89,29 @@ export async function sendSignal(token: string, signal: Record<string, unknown>)
   });
   return res.ok;
 }
+
+export type SelfAnswer = {
+  answer: string;
+  confidence: "high" | "medium" | "low";
+  ranking: { id: string; reason: string }[];
+  declined: boolean;
+  knows_person: boolean;
+};
+
+// Ask Self a plain-language question about the signed-in person.
+export async function askSelf(
+  token: string,
+  body: { question: string; context?: string; options?: { id: string; label: string; details?: string }[] },
+): Promise<SelfAnswer | null> {
+  const res = await fetch(`${SELF_API}/api/v1/ask`, {
+    method: "POST",
+    headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+    body: JSON.stringify(body),
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    console.error("[demo] ask failed", res.status, await res.text().catch(() => ""));
+    return null;
+  }
+  return (await res.json()) as SelfAnswer;
+}

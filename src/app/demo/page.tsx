@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { recommend } from "@/lib/demo/catalogue";
-import { COOKIE_TOKEN, demoClient, fetchIdentity } from "@/lib/demo/self-client";
+import { CATALOGUE, recommend, type Product } from "@/lib/demo/catalogue";
+import { COOKIE_TOKEN, askSelf, demoClient, fetchIdentity } from "@/lib/demo/self-client";
+import { AskBox } from "./ask-box";
 import { SignalButtons } from "./signal-buttons";
 
 export const metadata: Metadata = { title: "Cadence Outdoor (demo)", robots: { index: false, follow: false } };
@@ -14,7 +15,22 @@ export default async function DemoShop({ searchParams }: PageProps<"/demo">) {
   const identity = token ? await fetchIdentity(token) : null;
   const axes = identity?.self.formed ? identity.self.axes : null;
   const learned = identity?.learned ?? null;
-  const picks = recommend(axes ? { aesthetic: axes.aesthetic?.value, riskPosture: axes.riskPosture?.value } : null, learned);
+
+  // Behind the scenes, Cadence asks Self which products to lead with.
+  const LEAD_QUESTION = "Which of these products should we show this customer first, and why?";
+  const lead =
+    token && identity
+      ? await askSelf(token, {
+          question: LEAD_QUESTION,
+          context: "Building the home page for a signed-in customer of Cadence Outdoor.",
+          options: CATALOGUE.map((p) => ({ id: p.id, label: p.name, details: `${p.detail}, $${p.price}` })),
+        })
+      : null;
+  const reasons = new Map(lead && !lead.declined ? lead.ranking.map((r) => [r.id, r.reason]) : []);
+  const ranked = lead && !lead.declined ? lead.ranking.map((r) => CATALOGUE.find((p) => p.id === r.id)).filter((p): p is Product => !!p) : [];
+  const picks = ranked.length >= 4
+    ? ranked.slice(0, 4)
+    : recommend(axes ? { aesthetic: axes.aesthetic?.value, riskPosture: axes.riskPosture?.value } : null, learned);
 
   return (
     <div className="min-h-dvh bg-[#f4f1ea] text-[#2b2a26]">
@@ -78,17 +94,33 @@ export default async function DemoShop({ searchParams }: PageProps<"/demo">) {
                 </div>
               </section>
               <section>
-                <p className="text-sm text-[#8a8576]">{axes ? "Picked for you, from your Self" : "Popular right now"}</p>
+                <p className="text-sm text-[#8a8576]">{reasons.size ? "Picked for you by Self" : axes ? "Picked for you, from your Self" : "Popular right now"}</p>
                 <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
                   {picks.map((p) => (
                     <div key={p.id} className="rounded-md border border-[#e6e0d4] bg-[#fff] p-4 text-sm">
                       <p>{p.name}</p>
                       <p className="text-[#8a8576]">{p.detail} · ${p.price}</p>
+                      {reasons.get(p.id) && <p className="mt-2 text-xs text-[#5c5849]">{reasons.get(p.id)}</p>}
                       <SignalButtons productId={p.id} />
                     </div>
                   ))}
                 </div>
                 <p className="mt-4 text-xs text-[#8a8576]">Save and “Not for me” are sent back to your Self.</p>
+                <div className="mt-10 rounded-md border border-dashed border-[#d6cfbf] p-4">
+                  <p className="text-sm">Behind the scenes</p>
+                  <p className="mt-1 text-xs text-[#8a8576]">
+                    How a company uses Self in its own workflow: it asks questions about you and gets answers, without seeing your
+                    conversations or profile.
+                  </p>
+                  {lead && (
+                    <div className="mt-3 text-sm">
+                      <p className="text-xs text-[#8a8576]">Cadence asked: “{LEAD_QUESTION}”</p>
+                      <p className="mt-1">{lead.answer}</p>
+                    </div>
+                  )}
+                  <p className="mt-5 text-xs text-[#8a8576]">Try asking Self something, as Cadence:</p>
+                  <AskBox />
+                </div>
               </section>
             </div>
           </>

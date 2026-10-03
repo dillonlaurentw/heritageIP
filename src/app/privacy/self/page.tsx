@@ -53,6 +53,13 @@ export default function SelfPrivacy() {
             industry.
           </li>
           <li>
+            <strong>The company can ask Self questions about you</strong> as part of its own work, for example
+            “which of these jackets suits them?” or “should we email or text them?”. Self answers from what it
+            understands about you, as advice to the company. Answers never quote you or reveal your profile, never
+            touch anything sensitive, and never reveal what you did at other companies. Self refuses questions meant
+            to exploit you (like charging you more), and questions about credit, insurance, housing or employment.
+          </li>
+          <li>
             <strong>The company never receives</strong> your conversation, your transcript, your full SELF profile,
             or your date of birth or gender.
           </li>
