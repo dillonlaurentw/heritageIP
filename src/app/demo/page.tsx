@@ -13,7 +13,8 @@ export default async function DemoShop({ searchParams }: PageProps<"/demo">) {
   const token = (await cookies()).get(COOKIE_TOKEN)?.value;
   const identity = token ? await fetchIdentity(token) : null;
   const axes = identity?.self.formed ? identity.self.axes : null;
-  const picks = recommend(axes ? { aesthetic: axes.aesthetic?.value, riskPosture: axes.riskPosture?.value } : null);
+  const learned = identity?.learned ?? null;
+  const picks = recommend(axes ? { aesthetic: axes.aesthetic?.value, riskPosture: axes.riskPosture?.value } : null, learned);
 
   return (
     <div className="min-h-dvh bg-[#f4f1ea] text-[#2b2a26]">
@@ -62,6 +63,27 @@ export default async function DemoShop({ searchParams }: PageProps<"/demo">) {
                 ) : (
                   <p className="mt-3 text-sm">No SELF yet. Do your SELF conversation at forself.xyz/self and come back.</p>
                 )}
+                {identity.statements && identity.statements.length > 0 && (
+                  <div className="mt-8">
+                    <p className="text-sm text-[#8a8576]">What you confirmed about yourself</p>
+                    <ul className="mt-2 space-y-1.5 text-[13px]">
+                      {identity.statements.map((st) => <li key={st}>“{st}”</li>)}
+                    </ul>
+                  </div>
+                )}
+                <div className="mt-8">
+                  <p className="text-sm text-[#8a8576]">What your Self has learned about your taste</p>
+                  {learned ? (
+                    <div className="mt-2 text-[13px]">
+                      <p>{learned.summary}</p>
+                      {learned.likes.length > 0 && <p className="mt-2"><span className="text-[#8a8576]">Likes:</span> {learned.likes.join(" · ")}</p>}
+                      {learned.avoids.length > 0 && <p className="mt-1"><span className="text-[#8a8576]">Avoids:</span> {learned.avoids.join(" · ")}</p>}
+                      <p className="mt-2 text-xs text-[#8a8576]">From {learned.based_on_signals} things you did at shops you signed in to with Self.</p>
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-[13px]">Nothing yet. Save a few things or tell us what’s not for you, and your Self starts learning.</p>
+                  )}
+                </div>
               </section>
               <section>
                 <p className="text-sm text-[#8a8576]">{axes ? "Picked for you, from your Self" : "Popular right now"}</p>

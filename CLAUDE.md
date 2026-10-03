@@ -101,6 +101,12 @@ kept and still runs; its landing moved to `/founders`.
   other in-copyright work.
   `ArtImage` shows a quiet museum link if an image ever fails. No agent, no
   chat. Docs and sandbox still live at `/docs` and `/sandbox`.
+- **Sign in with Self changes two sandbox rules on purpose.** In the live
+  Self-App (not this sandbox API), a person's signals across companies in one
+  industry are distilled into a learned taste layer shared with the other
+  companies in that industry they allow: distilled qualities only, never raw
+  events or which company. Values and beliefs stay stated only (the person
+  confirms them on "Is this you?"). Policy: `src/app/privacy/self/page.tsx`.
 - **Demo shop** (`src/app/demo/`, `src/lib/demo/`): "Cadence Outdoor", a
   pretend shop that uses **Sign in with Self** (the OpenID Connect provider in
   the Self-App at forself.xyz/self) exactly like a real company would:

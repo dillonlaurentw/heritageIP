@@ -17,12 +17,26 @@ export const CATALOGUE: Product[] = [
   { id: "rope-climb", name: "Climbing rope", detail: "60m dynamic", price: 210, aesthetic: 60, risk: 100 },
 ];
 
-export function recommend(axes: { aesthetic?: number; riskPosture?: number } | null, count = 4): Product[] {
+const words = (text: string) => new Set(text.toLowerCase().match(/[a-z]{4,}/g) ?? []);
+
+// Learned taste nudges the ranking: products sharing words with what the
+// person avoids drop, with what they like rise.
+function tasteNudge(p: Product, taste: { likes: string[]; avoids: string[] } | null) {
+  if (!taste) return 0;
+  const text = words(`${p.name} ${p.detail}`);
+  const hits = (phrases: string[]) => phrases.reduce((n, phrase) => n + [...words(phrase)].filter((w) => text.has(w)).length, 0);
+  return hits(taste.avoids) * 30 - hits(taste.likes) * 15;
+}
+
+export function recommend(
+  axes: { aesthetic?: number; riskPosture?: number } | null,
+  taste: { likes: string[]; avoids: string[] } | null = null,
+  count = 4,
+): Product[] {
   if (!axes || axes.aesthetic === undefined || axes.riskPosture === undefined) return CATALOGUE.slice(0, count);
   const { aesthetic, riskPosture } = axes;
-  return [...CATALOGUE]
-    .sort((a, b) => Math.hypot(a.aesthetic - aesthetic, a.risk - riskPosture) - Math.hypot(b.aesthetic - aesthetic, b.risk - riskPosture))
-    .slice(0, count);
+  const score = (p: Product) => Math.hypot(p.aesthetic - aesthetic, p.risk - riskPosture) + tasteNudge(p, taste);
+  return [...CATALOGUE].sort((a, b) => score(a) - score(b)).slice(0, count);
 }
 
 export const findProduct = (id: string) => CATALOGUE.find((p) => p.id === id);

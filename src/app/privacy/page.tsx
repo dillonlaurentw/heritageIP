@@ -7,6 +7,10 @@ export const metadata: Metadata = { title: "Privacy" };
 export default function Privacy() {
   return (
     <LegalPage title="Privacy" updated="October 2026">
+      <p>
+        For SELF at forself.xyz/self (the conversation, your painting) and Sign in with Self, see{" "}
+        <a href="/privacy/self">Privacy: SELF and Sign in with Self</a>.
+      </p>
       <p>SELF is a place for founders to think, and to find the people they need. That only works if what you write here is safe. This page says what we keep, who can see it, and how to delete it.</p>
       <section className="flex flex-col gap-3">
         <h2>Your journal is yours</h2>

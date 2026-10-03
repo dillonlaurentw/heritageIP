@@ -72,6 +72,8 @@ export type SelfIdentity = {
   given_name: string | null;
   email: string | null;
   self: { formed: false } | { formed: true; updated_at: string; axes: Record<string, Axis> };
+  statements?: string[];
+  learned?: { industry: string; summary: string; likes: string[]; avoids: string[]; based_on_signals: number; updated_at: string } | null;
 };
 
 export async function fetchIdentity(token: string): Promise<SelfIdentity | null> {
