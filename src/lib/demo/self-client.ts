@@ -6,10 +6,14 @@ import { createHash, randomBytes } from "node:crypto";
 // Register it on the Self-App review page (redirect URL
 // https://forself.xyz/demo/callback) and set the two env vars below.
 export const SELF_ISSUER = (process.env.SELF_ISSUER ?? "https://forself.xyz/self").replace(/\/$/, "");
+// Server-to-server calls (token, identity, signals) go straight to the
+// Self-App rather than through this site's /self rewrite. Locally it's the
+// issuer.
+const SELF_API = (process.env.SELF_API_BASE ?? (process.env.SELF_ISSUER ? SELF_ISSUER : "https://self-app-iota.vercel.app/self")).replace(/\/$/, "");
 
 export function demoClient() {
-  const id = process.env.SELF_DEMO_CLIENT_ID;
-  const secret = process.env.SELF_DEMO_CLIENT_SECRET;
+  const id = process.env.SELF_DEMO_CLIENT_ID?.trim();
+  const secret = process.env.SELF_DEMO_CLIENT_SECRET?.trim();
   return id && secret ? { id, secret } : null;
 }
 
@@ -43,13 +47,19 @@ export function newLogin() {
 export async function exchangeCode(code: string, verifier: string, origin: string) {
   const client = demoClient();
   if (!client) throw new Error("Demo not configured");
-  const res = await fetch(`${SELF_ISSUER}/oauth/token`, {
+  // client_secret_post: credentials in the body, so nothing depends on the
+  // Authorization header surviving the forself.xyz → Self-App rewrite.
+  const res = await fetch(`${SELF_API}/oauth/token`, {
     method: "POST",
-    headers: {
-      "content-type": "application/x-www-form-urlencoded",
-      authorization: `Basic ${Buffer.from(`${encodeURIComponent(client.id)}:${encodeURIComponent(client.secret)}`).toString("base64")}`,
-    },
-    body: new URLSearchParams({ grant_type: "authorization_code", code, redirect_uri: redirectUri(origin), code_verifier: verifier }),
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      grant_type: "authorization_code",
+      code,
+      redirect_uri: redirectUri(origin),
+      code_verifier: verifier,
+      client_id: client.id,
+      client_secret: client.secret.trim(),
+    }),
     cache: "no-store",
   });
   if (!res.ok) throw new Error(`token exchange failed: ${res.status} ${await res.text()}`);
@@ -65,12 +75,12 @@ export type SelfIdentity = {
 };
 
 export async function fetchIdentity(token: string): Promise<SelfIdentity | null> {
-  const res = await fetch(`${SELF_ISSUER}/api/v1/identity`, { headers: { authorization: `Bearer ${token}` }, cache: "no-store" });
+  const res = await fetch(`${SELF_API}/api/v1/identity`, { headers: { authorization: `Bearer ${token}` }, cache: "no-store" });
   return res.ok ? ((await res.json()) as SelfIdentity) : null;
 }
 
 export async function sendSignal(token: string, signal: Record<string, unknown>) {
-  const res = await fetch(`${SELF_ISSUER}/api/v1/signals`, {
+  const res = await fetch(`${SELF_API}/api/v1/signals`, {
     method: "POST",
     headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
     body: JSON.stringify({ signals: [signal] }),
