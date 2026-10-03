@@ -101,6 +101,15 @@ kept and still runs; its landing moved to `/founders`.
   other in-copyright work.
   `ArtImage` shows a quiet museum link if an image ever fails. No agent, no
   chat. Docs and sandbox still live at `/docs` and `/sandbox`.
+- **Demo shop** (`src/app/demo/`, `src/lib/demo/`): "Cadence Outdoor", a
+  pretend shop that uses **Sign in with Self** (the OpenID Connect provider in
+  the Self-App at forself.xyz/self) exactly like a real company would:
+  PKCE login, token exchange, `GET /api/v1/identity`, and Save / "Not for me"
+  sent back as signals. Recommendations rank a fixed catalogue by closeness to
+  the person's aesthetic and riskPosture axes. Env: `SELF_DEMO_CLIENT_ID`,
+  `SELF_DEMO_CLIENT_SECRET` (from the Self-App review page; redirect URL
+  `https://forself.xyz/demo/callback`), optional `SELF_ISSUER`. Always
+  labelled as a demo, never a real store.
 - **Voice**: people are more than what they buy (choices, preferences,
   values, beliefs). Bold about the vision, honest about the status (sandbox
   only), no buzzwords, no unbuilt verticals.
