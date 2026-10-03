@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { recommend } from "@/lib/demo/catalogue";
 import { COOKIE_TOKEN, demoClient, fetchIdentity } from "@/lib/demo/self-client";
-import { signalAction } from "./actions";
+import { SignalButtons } from "./signal-buttons";
 
 export const metadata: Metadata = { title: "Cadence Outdoor (demo)", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -70,11 +70,7 @@ export default async function DemoShop({ searchParams }: PageProps<"/demo">) {
                     <div key={p.id} className="rounded-md border border-[#e6e0d4] bg-[#fff] p-4 text-sm">
                       <p>{p.name}</p>
                       <p className="text-[#8a8576]">{p.detail} · ${p.price}</p>
-                      <form action={signalAction} className="mt-3 flex gap-3 text-xs">
-                        <input type="hidden" name="productId" value={p.id} />
-                        <button name="type" value="saved" className="underline-offset-4 hover:underline">Save</button>
-                        <button name="type" value="rejected" className="text-[#8a8576] underline-offset-4 hover:underline">Not for me</button>
-                      </form>
+                      <SignalButtons productId={p.id} />
                     </div>
                   ))}
                 </div>
