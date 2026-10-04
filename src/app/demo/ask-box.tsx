@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useRef } from "react";
+import { ThinkingOrb } from "thinking-orbs";
 import { askAction, type AskState } from "./actions";
 
 const EXAMPLES = [
@@ -35,9 +36,15 @@ export function AskBox() {
           </button>
         ))}
       </div>
-      <button disabled={pending} className="rounded-full bg-[#111] px-5 py-2 text-sm text-[#fff] disabled:opacity-50">
-        {pending ? "Asking Self…" : "Ask Self"}
-      </button>
+      {pending ? (
+        // Self's "deciding" orb (the solving thinking orb), as in SELF itself.
+        <span className="inline-flex items-center gap-3 rounded-full bg-[#efeadf] py-2 pr-5 pl-3 text-sm text-[#5c5849]">
+          <ThinkingOrb state="solving" size={20} theme="light" aria-hidden />
+          Self is thinking it through
+        </span>
+      ) : (
+        <button className="rounded-full bg-[#111] px-5 py-2 text-sm text-[#fff]">Ask Self</button>
+      )}
       {state.error && <p className="text-sm text-[#b42318]">{state.error}</p>}
       {state.result && (
         <div className="rounded-md border border-[#e6e0d4] bg-[#fff] p-4 text-sm">
