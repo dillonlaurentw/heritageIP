@@ -83,6 +83,27 @@ export default function SelfPrivacy() {
       </section>
 
       <section className="flex flex-col gap-3">
+        <h2>Access</h2>
+        <p>
+          Access shows you discounts, events and opportunities, from companies and from SELF, that suit you. Companies
+          describe who an offer is for; Self decides privately, from what it understands about you, whether to show it
+          to you.
+        </p>
+        <ul>
+          <li>
+            <strong>Companies never learn who was shown an offer</strong>, only how many people were. Self never
+            matches offers on anything sensitive, and never shows offers aimed at people who are struggling (for
+            example with money or gambling).
+          </li>
+          <li>
+            <strong>When you claim an offer</strong>, you get a code. The company learns that the code was claimed
+            when you use it or show it. If you&apos;ve signed in to that company with Self, the company can also see
+            the offers you&apos;ve claimed there, so it can apply them for you.
+          </li>
+        </ul>
+      </section>
+
+      <section className="flex flex-col gap-3">
         <h2>Stopping and deleting</h2>
         <ul>
           <li>
