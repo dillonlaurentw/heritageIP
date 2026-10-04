@@ -37,9 +37,9 @@ export function AskBox() {
         ))}
       </div>
       {pending ? (
-        // Self's "deciding" orb (the solving thinking orb), as in SELF itself.
+        // SELF's orb (the working thinking orb), as in SELF itself.
         <span className="inline-flex items-center gap-3 rounded-full bg-[#efeadf] py-2 pr-5 pl-3 text-sm text-[#5c5849]">
-          <ThinkingOrb state="solving" size={20} theme="light" aria-hidden />
+          <ThinkingOrb state="working" size={20} theme="light" aria-hidden />
           Self is thinking it through
         </span>
       ) : (
