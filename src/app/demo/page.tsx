@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { CATALOGUE, recommend, type Product } from "@/lib/demo/catalogue";
-import { COOKIE_TOKEN, askSelf, demoClient, fetchIdentity } from "@/lib/demo/self-client";
+import { COOKIE_TOKEN, askSelf, demoClient, fetchIdentity, secretFingerprint } from "@/lib/demo/self-client";
 import { AskBox } from "./ask-box";
 import { SignalButtons } from "./signal-buttons";
 
@@ -46,7 +46,7 @@ export default async function DemoShop({ searchParams }: PageProps<"/demo">) {
             <h1 className="font-display text-[40px] leading-tight">Find gear that fits how you walk.</h1>
             <p className="mt-3 text-sm text-[#8a8576]">Sign in to get recommendations made for you.</p>
             {query.cancelled && <p className="mt-4 text-sm text-[#8a8576]">Sign-in was cancelled.</p>}
-            {query.failed && <p className="mt-4 text-sm text-[#b42318]">Sign-in didn’t complete ({String(query.failed)}). Please try again.</p>}
+            {query.failed && <p className="mt-4 text-sm text-[#b42318]">Sign-in didn’t complete ({String(query.failed)}). Please try again.{query.failed === "invalid_client" ? ` (This shop’s secret fingerprint: ${secretFingerprint()}.)` : ""}</p>}
             {demoClient() ? (
               <a href="/demo/login" className="mt-8 inline-flex items-center gap-3 rounded-full bg-[#111] px-6 py-3 text-sm tracking-wide text-[#fff]">
                 <span className="size-3.5 rounded-full bg-[radial-gradient(circle_at_40%_40%,#8a87a6,#2d2b3a)]" />

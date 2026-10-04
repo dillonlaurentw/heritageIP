@@ -11,6 +11,13 @@ export const SELF_ISSUER = (process.env.SELF_ISSUER ?? "https://forself.xyz/self
 // issuer.
 const SELF_API = (process.env.SELF_API_BASE ?? (process.env.SELF_ISSUER ? SELF_ISSUER : "https://self-app-iota.vercel.app/self")).replace(/\/$/, "");
 
+// First 6 of the secret's SHA-256: matches "secret fingerprint" on the
+// Self-App admin page when the secret is right. Reveals nothing usable.
+export function secretFingerprint(): string | null {
+  const client = demoClient();
+  return client ? createHash("sha256").update(client.secret).digest("hex").slice(0, 6) : null;
+}
+
 export function demoClient() {
   const id = process.env.SELF_DEMO_CLIENT_ID?.trim();
   const secret = process.env.SELF_DEMO_CLIENT_SECRET?.trim();
