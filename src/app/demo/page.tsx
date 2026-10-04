@@ -7,6 +7,8 @@ import { SignalButtons } from "./signal-buttons";
 
 export const metadata: Metadata = { title: "Cadence Outdoor (demo)", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
+// The page (and its Ask Self box) waits for Self's answers.
+export const maxDuration = 60;
 
 // A pretend shop that uses "Sign in with Self", the way a real company would.
 export default async function DemoShop({ searchParams }: PageProps<"/demo">) {
