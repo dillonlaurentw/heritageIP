@@ -123,13 +123,18 @@ export default function SelfPrivacy() {
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2>Stopping and deleting</h2>
+        <h2>Stopping, downloading and deleting</h2>
         <ul>
           <li>
-            To stop sharing with a company, write to us at [PRIVACY EMAIL]. We cut the company off at once: its access
-            stops working, and Self re-learns your taste without what that company sent.
+            To stop sharing with a company, open Your account (from your Self ID, or Account in the app) and tap Stop sharing.
+            The company is cut off at once: its access stops working, it&apos;s notified if it has asked to be, and Self re-learns
+            your taste without what that company sent.
           </li>
-          <li>To delete your account and everything SELF keeps about you, write to the same address.</li>
+          <li>To download everything SELF keeps about you, tap Download my data on the same page. You get one file.</li>
+          <li>
+            To delete your account and everything SELF keeps about you, use Delete account on the same page. It can&apos;t be undone.
+            You can also write to us at [PRIVACY EMAIL] for any of these.
+          </li>
           <li>A company keeps what it already received under its own privacy policy; ask it to delete it.</li>
         </ul>
       </section>
