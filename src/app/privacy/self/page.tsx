@@ -20,7 +20,7 @@ export default function SelfPrivacy() {
         <h2>Your account</h2>
         <ul>
           <li>Your email (to sign you in and send codes), a password (stored only as a one-way hash), and your first name.</li>
-          <li>Your mobile number, so places can ask your Self to confirm it’s you in person (see Self ID below).</li>
+          <li>Your mobile number, so places can ask your Self to confirm it’s you in person (see Self ID below). We confirm it’s yours with a code sent by text message through Twilio, and keep a record of codes sent to limit abuse.</li>
           <li>Your date of birth and gender, stored encrypted. SELF is for adults: we ask your date of birth to confirm you&apos;re 18 or over.</li>
           <li>A scrambled form of your internet address, kept for up to two days, only to limit how many conversations can start.</li>
         </ul>
@@ -137,7 +137,7 @@ export default function SelfPrivacy() {
       <section className="flex flex-col gap-3">
         <h2>Services we use</h2>
         <p>
-          ElevenLabs (voice conversation), Anthropic (AI), fal.ai (paintings), Resend (email), Inngest (background
+          ElevenLabs (voice conversation), Anthropic (AI), fal.ai (paintings), Resend (email), Twilio (text message codes), Inngest (background
           processing), and Vercel and Prisma (hosting and database). They process data only to provide their service to
           us.
         </p>
