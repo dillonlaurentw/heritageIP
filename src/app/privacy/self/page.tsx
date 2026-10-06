@@ -19,7 +19,7 @@ export default function SelfPrivacy() {
       <section className="flex flex-col gap-3">
         <h2>Your account</h2>
         <ul>
-          <li>Your email (to sign you in and send codes), a password (stored only as a one-way hash), and your first name.</li>
+          <li>Your email (to sign you in and send codes), a password (stored only as a one-way hash), and your first and last name.</li>
           <li>Your mobile number, so places can ask your Self to confirm it’s you in person (see Self ID below). We confirm it’s yours with a code sent by text message through Twilio, and keep a record of codes sent to limit abuse.</li>
           <li>Your date of birth and gender, stored encrypted. SELF is for adults: we ask your date of birth to confirm you&apos;re 18 or over.</li>
           <li>A scrambled form of your internet address, kept for up to two days, only to limit how many conversations can start.</li>
@@ -49,7 +49,7 @@ export default function SelfPrivacy() {
         <p>When a company offers Sign in with Self and you choose Allow:</p>
         <ul>
           <li>
-            <strong>The company receives:</strong> your first name and email; the five dimensions of your SELF (for
+            <strong>The company receives:</strong> your first and last name and email; the five dimensions of your SELF (for
             example restrained ↔ expressive); and what Self has learned about your taste in that company&apos;s
             industry.
           </li>
@@ -92,7 +92,7 @@ export default function SelfPrivacy() {
         <ul>
           <li>
             <strong>If you confirm</strong>, the place learns it’s you (the same ID it uses for you with Sign in with Self),
-            your first name, and the Access you’ve claimed there. Confirming also connects your Self to that place.
+            your first and last name, and the Access you’ve claimed there. Confirming also connects your Self to that place.
           </li>
           <li>
             <strong>If you say it isn’t you, or don’t answer within two minutes</strong>, the place learns nothing, not even

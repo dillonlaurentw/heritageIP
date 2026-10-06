@@ -52,7 +52,7 @@ export function CheckInBox() {
       )}
       {result?.status === "approved" && (
         <div className="rounded-md border border-[#e6e0d4] bg-[#fff] p-4 text-sm">
-          <p className="font-medium">Confirmed: {result.given_name ?? "a Self member"} is here.</p>
+          <p className="font-medium">Confirmed: {[result.given_name, result.family_name].filter(Boolean).join(" ") || "a Self member"} is here.</p>
           <p className="mt-1 text-xs text-[#8a8576]">Their id at Cadence: {result.sub.slice(0, 12)}…</p>
           {result.claims.length > 0 ? (
             <ul className="mt-2 space-y-1">

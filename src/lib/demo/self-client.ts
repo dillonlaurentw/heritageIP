@@ -129,7 +129,7 @@ export async function askSelf(
 
 export type ConfirmStatus =
   | { status: "pending" | "denied" | "expired" }
-  | { status: "approved"; sub: string; given_name: string | null; claims: { title: string; code: string; redeem_code: string | null; redeemed: boolean }[] };
+  | { status: "approved"; sub: string; given_name: string | null; family_name?: string | null; claims: { title: string; code: string; redeem_code: string | null; redeemed: boolean }[] };
 
 export async function requestConfirm(contact: string, purpose: string): Promise<{ id: string } | { error: string }> {
   const client = demoClient();
