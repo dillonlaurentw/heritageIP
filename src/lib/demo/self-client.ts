@@ -122,3 +122,36 @@ export async function askSelf(
   }
   return (await res.json()) as SelfAnswer;
 }
+
+// ── In the shop: confirm it's them (Self ID) ────────────────────────────
+// Staff enter the phone number or email someone gives; SELF asks the person
+// on their phone; the shop learns who it is only if they confirm.
+
+export type ConfirmStatus =
+  | { status: "pending" | "denied" | "expired" }
+  | { status: "approved"; sub: string; given_name: string | null; claims: { title: string; code: string; redeem_code: string | null; redeemed: boolean }[] };
+
+export async function requestConfirm(contact: string, purpose: string): Promise<{ id: string } | { error: string }> {
+  const client = demoClient();
+  if (!client) return { error: "The demo isn’t connected to Self." };
+  const isEmail = contact.includes("@");
+  const res = await fetch(`${SELF_API}/api/v1/confirm`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    // Credentials in the body: the forself.xyz rewrite drops Authorization.
+    body: JSON.stringify({ client_id: client.id, client_secret: client.secret, purpose, ...(isEmail ? { email: contact } : { phone: contact }) }),
+    cache: "no-store",
+  });
+  const body = (await res.json().catch(() => ({}))) as { id?: string; error?: string };
+  return body.id ? { id: body.id } : { error: body.error ?? `Self said ${res.status}` };
+}
+
+export async function confirmStatus(id: string): Promise<ConfirmStatus | null> {
+  const client = demoClient();
+  if (!client) return null;
+  // HTTP Basic is fine here: SELF_API is the SELF server itself, not the
+  // forself.xyz rewrite (which drops Authorization).
+  const auth = "Basic " + Buffer.from(`${encodeURIComponent(client.id)}:${encodeURIComponent(client.secret)}`).toString("base64");
+  const res = await fetch(`${SELF_API}/api/v1/confirm/${encodeURIComponent(id)}`, { headers: { authorization: auth }, cache: "no-store" });
+  return res.ok ? ((await res.json()) as ConfirmStatus) : null;
+}

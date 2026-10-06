@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { CATALOGUE, recommend, type Product } from "@/lib/demo/catalogue";
 import { COOKIE_TOKEN, askSelf, demoClient, fetchIdentity, secretFingerprint } from "@/lib/demo/self-client";
 import { AskBox } from "./ask-box";
+import { CheckInBox } from "./check-in-box";
 import { SignalButtons } from "./signal-buttons";
 
 export const metadata: Metadata = { title: "Cadence Outdoor (demo)", robots: { index: false, follow: false } };
@@ -126,6 +127,16 @@ export default async function DemoShop({ searchParams }: PageProps<"/demo">) {
               </section>
             </div>
           </>
+        )}
+        {demoClient() && (
+          <section className="mt-16 rounded-md border border-dashed border-[#d6cfbf] p-4">
+            <p className="text-sm">At the counter: Self ID</p>
+            <p className="mt-1 text-xs text-[#8a8576]">
+              How a shop confirms it’s someone in person. Staff enter the number or email they give; their Self asks them on their
+              phone, and the shop learns who it is only if they confirm.
+            </p>
+            <CheckInBox />
+          </section>
         )}
       </main>
     </div>
