@@ -92,7 +92,7 @@ export default function SelfPrivacy() {
         <ul>
           <li>
             <strong>If you confirm</strong>, the place learns it’s you (the same ID it uses for you with Sign in with Self),
-            your first and last name, and the Access you’ve claimed there. Confirming also connects your Self to that place.
+            your first and last name, and the Access you’ve claimed there. It&apos;s one time only: confirming doesn&apos;t connect your Self to that place or let it read your Self later.
           </li>
           <li>
             <strong>If you say it isn’t you, or don’t answer within two minutes</strong>, the place learns nothing, not even
