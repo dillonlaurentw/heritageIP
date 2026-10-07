@@ -37,6 +37,13 @@ export default function SelfPrivacy() {
           <li>Our AI provider, Anthropic, reads the transcript to write your SELF: a private profile of your beliefs, values, drives and habits. It isn&apos;t used for ads or sold.</li>
           <li>The transcript is stored encrypted and deleted once your SELF is formed, along with ElevenLabs&apos; copy. At the latest it&apos;s deleted after 7 days.</li>
           <li>Your SELF profile is stored encrypted and stays private. You see your painting, never the profile.</li>
+          <li>
+            SELF also keeps what it understands as separate statements (for example a value, a habit or a taste),
+            each with how sure it is, where it applies, and short notes of why in its own words, never yours. They
+            build up from your conversations, from what you do at companies you allow, and from what you confirm or
+            correct; older evidence counts for less over time. They&apos;re stored encrypted, included in your data
+            download, and deleted with your account. What a company taught SELF goes when you stop sharing with it.
+          </li>
         </ul>
       </section>
 
