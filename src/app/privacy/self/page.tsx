@@ -30,6 +30,10 @@ export default function SelfPrivacy() {
         <h2>Your conversation</h2>
         <ul>
           <li>You talk with SELF by voice. ElevenLabs runs the voice conversation and turns it into a transcript.</li>
+          <li>
+            So each conversation can pick up where the last one left off, SELF gives ElevenLabs a short summary at the start: what
+            it already understands about you and what it would like to explore. Never quotes from past conversations.
+          </li>
           <li>Our AI provider, Anthropic, reads the transcript to write your SELF: a private profile of your beliefs, values, drives and habits. It isn&apos;t used for ads or sold.</li>
           <li>The transcript is stored encrypted and deleted once your SELF is formed, along with ElevenLabs&apos; copy. At the latest it&apos;s deleted after 7 days.</li>
           <li>Your SELF profile is stored encrypted and stays private. You see your painting, never the profile.</li>
