@@ -59,9 +59,11 @@ export default function SelfPrivacy() {
           </li>
           <li>
             <strong>The company can ask Self questions about you</strong> as part of its own work, for example
-            “which of these jackets suits them?” or “should we email or text them?”. Self answers from what it
-            understands about you, as advice to the company. Answers never quote you or reveal your profile, never
-            touch anything sensitive, and never reveal what you did at other companies. Self refuses questions meant
+            “which of these jackets suits them?” or “should we email or text them?”. Self answers from everything it
+            understands about you (your SELF, your taste in that company&apos;s industry, and patterns from other parts
+            of your life) as advice to the company. Answers never quote you or reveal your profile, never touch
+            anything sensitive, and never reveal what you did at other companies or which part of your life something
+            comes from. Self refuses questions meant
             to exploit you (like charging you more), and questions about credit, insurance, housing or employment.
           </li>
           <li>
@@ -76,8 +78,9 @@ export default function SelfPrivacy() {
           <li>
             <strong>How Self learns from it:</strong> our AI provider turns that activity into a short description of
             your taste in that industry (for example “durable, natural materials; avoids loud colours”). Other
-            companies in the same industry that you allow receive that description, never your activity itself and
-            never what you did at which company. Activity never changes your SELF itself (your beliefs and values);
+            companies in the same industry that you allow receive that description. When any company you allow asks
+            Self a question, Self may also draw on your taste in other areas, as general patterns in its advice.
+            Companies never receive those other descriptions, your activity itself, or what you did at which company. Activity never changes your SELF itself (your beliefs and values);
             only your conversations with SELF do.
           </li>
           <li>
