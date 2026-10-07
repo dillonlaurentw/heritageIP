@@ -74,6 +74,10 @@ export default function SelfPrivacy() {
             to exploit you (like charging you more), and questions about credit, insurance, housing or employment.
           </li>
           <li>
+            The company&apos;s team (on its SELF dashboard) and its systems and AI assistants can look you up among its
+            customers and ask Self about you in the same way. Each time they do, it&apos;s logged.
+          </li>
+          <li>
             <strong>The company never receives</strong> your conversation, your transcript, your full SELF profile,
             or your date of birth or gender.
           </li>
