@@ -111,6 +111,14 @@ export default function SelfPrivacy() {
             your taste to the others.
           </li>
           <li>
+            <strong>What your agent remembers.</strong> To get better at looking after you, your agent at a company keeps
+            short notes about what you respond to there (for example “opens emails about repairs, ignores new
+            arrivals”), what happened after each of its suggestions (opened, clicked, ordered, unsubscribed), and the
+            next step it planned. These are encrypted, kept per company, and never shown to the company or used at
+            any other company. If you unsubscribe from a company&apos;s emails, your agent there stops suggesting emails
+            to you. Stopping sharing with the company ends your agent there.
+          </li>
+          <li>
             To tell Self what happened, the company&apos;s tools may identify you by the email you share with it, or
             by the company&apos;s own customer number for you. That only works while you share with the company.
           </li>
