@@ -48,6 +48,27 @@ export default function SelfPrivacy() {
       </section>
 
       <section className="flex flex-col gap-3">
+        <h2>Social accounts (if you connect them)</h2>
+        <ul>
+          <li>
+            <strong>Spotify:</strong> when you connect it, SELF reads your top artists and their genres (Spotify&apos;s
+            “top-read” permission). Its access is stored encrypted so you can sync again; nothing is posted.
+          </li>
+          <li>
+            <strong>Instagram, TikTok and X:</strong> you download your data from the app and choose the file in SELF. It&apos;s
+            read on your own device; only a short summary leaves it (interest topics, accounts you follow, accounts whose posts
+            you liked or saved, hashtags, and a small sample of liked posts&apos; text). Your photos, videos and messages
+            never leave your device.
+          </li>
+          <li>
+            Our AI provider turns that summary into a few statements about your tastes and interests (never about health,
+            sexuality, religion, politics or anything similarly sensitive). SELF keeps those statements, not the summary.
+          </li>
+          <li>Remove an account any time: what it taught SELF is deleted at once.</li>
+        </ul>
+      </section>
+
+      <section className="flex flex-col gap-3">
         <h2>Your painting</h2>
         <p>
           Each piece is painted by an image service (fal.ai) from a description of colours, shapes and movement. That
