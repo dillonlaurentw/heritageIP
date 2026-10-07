@@ -95,8 +95,24 @@ export default function SelfPrivacy() {
             to exploit you (like charging you more), and questions about credit, insurance, housing or employment.
           </li>
           <li>
-            The company&apos;s team (on its SELF dashboard) and its systems and AI assistants can look you up among its
-            customers and ask Self about you in the same way. Each time they do, it&apos;s logged.
+            The company&apos;s systems and AI assistants can look you up among its customers and ask Self about you in
+            the same way. Each time they do, it&apos;s logged.
+          </li>
+          <li>
+            <strong>Your agent at that company.</strong> The company can have Self run an AI agent for you whose only
+            job is your experience there. When something happens (you look at something, leave it in your cart, order,
+            a delivery is late, you write to support or walk into a store), the company&apos;s tools tell Self, and your
+            agent suggests one next step, or none: an email, a reply to your message, a note for staff, a post you
+            might see, or an offer that suits you. It decides from what Self understands about you, what it has
+            already done, and the company&apos;s rules, including a limit on how many emails you get. The company
+            receives the suggestion and a short reason, never your profile. Agents never use pressure, fake urgency or
+            anything sensitive. When you do something together with other people who also use Self (for example a
+            shared cart or a group booking), your agents decide together, and a message to the group never reveals
+            your taste to the others.
+          </li>
+          <li>
+            To tell Self what happened, the company&apos;s tools may identify you by the email you share with it, or
+            by the company&apos;s own customer number for you. That only works while you share with the company.
           </li>
           <li>
             <strong>The company never receives</strong> your conversation, your transcript, your full SELF profile,
