@@ -106,6 +106,23 @@ export default function SelfPrivacy() {
       </section>
 
       <section className="flex flex-col gap-3">
+        <h2>Visits and regulars</h2>
+        <p>
+          A place you’ve connected your Self to can tell SELF when you visit (checking in, a booking, paying), so it can
+          recognise you as a regular and treat you like one.
+        </p>
+        <ul>
+          <li>The place records only that you visited: when, and optionally which of its locations and the amount. Visits count towards being a regular there, together with purchases on a card you linked.</li>
+          <li>Each place sees only visits to its own places, never where else you go.</li>
+          <li>Visits are in your data download, stop when you stop sharing with that place, and are deleted with your account.</li>
+          <li>
+            A company’s AI assistant can ask your Self how to serve you in the same way the company can, with the same
+            limits: only while you share with that company, and never your conversations or written profile.
+          </li>
+        </ul>
+      </section>
+
+      <section className="flex flex-col gap-3">
         <h2>Access</h2>
         <p>
           Access shows you discounts, events and opportunities, from companies and from SELF, that suit you. Companies
