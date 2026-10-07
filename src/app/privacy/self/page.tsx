@@ -36,7 +36,7 @@ export default function SelfPrivacy() {
           </li>
           <li>Our AI provider, Anthropic, reads the transcript to write your SELF: a private profile of your beliefs, values, drives and habits. It isn&apos;t used for ads or sold.</li>
           <li>The transcript is stored encrypted and deleted once your SELF is formed, along with ElevenLabs&apos; copy. At the latest it&apos;s deleted after 7 days.</li>
-          <li>Your SELF profile is stored encrypted and stays private. You see your painting, never the profile.</li>
+          <li>Your SELF profile is stored encrypted and stays private. You see your collage, never the profile.</li>
           <li>
             SELF also keeps what it understands as separate statements (for example a value, a habit or a taste),
             each with how sure it is, where it applies, and short notes of why in its own words, never yours. They
@@ -69,10 +69,13 @@ export default function SelfPrivacy() {
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2>Your painting</h2>
+        <h2>Your collage</h2>
         <p>
-          Each piece is painted by an image service (fal.ai) from a description of colours, shapes and movement. That
-          description contains nothing about you: no names, words you said, places or personal details.
+          Every few weeks, SELF makes a new collage of your life. It is made by an image service (fal.ai) from a
+          description of the collage: everyday things and activities from your life as simple cut-out pictures (for
+          example a bicycle, a loaf of bread, the sea), with colours and layout. That description never contains your
+          name, anything you said word for word, specific places, people or faces, brands, or anything about health,
+          sexuality, trauma, religion, politics or money.
         </p>
       </section>
 
@@ -224,7 +227,7 @@ export default function SelfPrivacy() {
       <section className="flex flex-col gap-3">
         <h2>Services we use</h2>
         <p>
-          ElevenLabs (voice conversation), Anthropic (AI), fal.ai (paintings), Resend (email), Twilio (text message codes), Inngest (background
+          ElevenLabs (voice conversation), Anthropic (AI), fal.ai (collages), Resend (email), Twilio (text message codes), Inngest (background
           processing), and Vercel and Prisma (hosting and database). They process data only to provide their service to
           us.
         </p>
