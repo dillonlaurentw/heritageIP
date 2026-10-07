@@ -92,7 +92,9 @@ export default function SelfPrivacy() {
           </li>
           <li>
             We may study patterns across many people, in groups of at least 50 and never about an individual, to
-            improve SELF and to describe how people decide.
+            improve SELF and to describe how people decide. A company you allow can see the same kind of patterns
+            about its own customers as a whole (for example “53% value things made well”), only for groups of at
+            least 50 people. It never sees which group you&apos;re in or anything about you from these.
           </li>
         </ul>
       </section>
